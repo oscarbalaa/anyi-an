@@ -5,6 +5,7 @@ namespace App\Servicios\Asistencia;
 use App\Exceptions\ErrorRegla;
 use App\Models\Usuario;
 use App\Support\Calendario;
+use App\Support\Cursos;
 use App\Support\PerfilUsuario;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -55,8 +56,8 @@ class ReportesAsistencia
         return [
             'periodo' => $periodo->nombre,
             'aula' => PerfilUsuario::nombreAula($aula->numero, $aula->nivel, $aula->seccion),
-            'bimestre' => $this->datosBimestre($bimestre),
-            'bimestres' => $bimestres->map(fn ($b) => $this->datosBimestre($b))->all(),
+            'bimestre' => Cursos::datosBimestre($bimestre),
+            'bimestres' => $bimestres->map(fn ($b) => Cursos::datosBimestre($b))->all(),
             'meta' => (int) DB::table('institucion')->value('umbral_asistencia_medio'),
             'resumen' => $this->conteo($filas),
             'por_curso' => $cursos->map(fn ($nombre, $id) => ['curso_id' => $id, 'asignatura' => $nombre] + $this->conteo($filas->where('curso_aula_id', $id)))
@@ -115,8 +116,8 @@ class ReportesAsistencia
             });
 
         return [
-            'bimestre' => $this->datosBimestre($bimestre),
-            'bimestres' => $bimestres->map(fn ($b) => $this->datosBimestre($b))->all(),
+            'bimestre' => Cursos::datosBimestre($bimestre),
+            'bimestres' => $bimestres->map(fn ($b) => Cursos::datosBimestre($b))->all(),
             'meta' => (int) DB::table('institucion')->value('umbral_asistencia_medio'),
             'aulas' => $aulas->all(),
             'sin_registro' => $this->sinRegistro($periodo->id, $bimestre),
@@ -163,10 +164,5 @@ class ReportesAsistencia
         $bimestre = $bimestreId ? $bimestres->firstWhere('id', $bimestreId) : Calendario::bimestreVigente($bimestres);
 
         return $bimestre ?? throw new ErrorRegla('Elige un bimestre del periodo en curso.', 'bimestre_id');
-    }
-
-    private function datosBimestre(object $b): array
-    {
-        return ['id' => $b->id, 'nombre' => $b->nombre, 'estado' => $b->estado, 'fecha_inicio' => $b->fecha_inicio, 'fecha_fin' => $b->fecha_fin];
     }
 }

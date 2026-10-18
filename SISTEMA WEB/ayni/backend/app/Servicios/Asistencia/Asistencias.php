@@ -6,7 +6,7 @@ use App\Exceptions\ErrorRegla;
 use App\Models\Usuario;
 use App\Support\Auditoria;
 use App\Support\Calendario;
-use App\Support\PerfilUsuario;
+use App\Support\Cursos;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -19,18 +19,18 @@ class Asistencias
     public function cursosDelDocente(Usuario $usuario, Pendientes $pendientes): array
     {
         $periodo = Calendario::periodoEnCurso();
-        $docenteId = DB::table('docente')->where('usuario_id', $usuario->id)->value('id');
+        $docenteId = Cursos::docenteDe($usuario);
         if (! $periodo || ! $docenteId) {
             return ['cursos' => [], 'bimestre' => null];
         }
         $bimestre = Calendario::bimestreVigente(Calendario::bimestres($periodo->id));
-        $cursos = $this->consultaCursos()->where('aula.periodo_id', $periodo->id)->where('curso_aula.docente_id', $docenteId)->get();
+        $cursos = Cursos::consulta()->where('aula.periodo_id', $periodo->id)->where('curso_aula.docente_id', $docenteId)->get();
         $dias = $this->diasDeClase($cursos->pluck('id')->all());
         $atrasadas = $bimestre ? $pendientes->porCurso($cursos->pluck('id')->all(), $bimestre) : [];
 
         return [
             'bimestre' => $bimestre ? ['id' => $bimestre->id, 'nombre' => $bimestre->nombre, 'estado' => $bimestre->estado] : null,
-            'cursos' => $cursos->map(fn ($c) => $this->datosCurso($c) + [
+            'cursos' => $cursos->map(fn ($c) => Cursos::datos($c) + [
                 'dias' => $dias[$c->id] ?? [],
                 'pendientes' => count($atrasadas[$c->id] ?? []),
             ])->all(),
@@ -40,8 +40,8 @@ class Asistencias
     /** Para el administrador: cursos del periodo agrupados por aula */
     public function cursosDelPeriodo(int $periodoId): array
     {
-        return $this->consultaCursos()->where('aula.periodo_id', $periodoId)->get()
-            ->map(fn ($c) => $this->datosCurso($c))
+        return Cursos::consulta()->where('aula.periodo_id', $periodoId)->get()
+            ->map(fn ($c) => Cursos::datos($c))
             ->groupBy('aula_id')
             ->map(fn ($cursos, $aulaId) => ['id' => $aulaId, 'nombre' => $cursos[0]['aula'], 'cursos' => $cursos->values()->all()])
             ->values()->all();
@@ -72,9 +72,9 @@ class Asistencias
         krsort($fechas);
 
         return [
-            'curso' => $this->datosCurso($curso),
-            'bimestre' => $this->datosBimestre($bimestre),
-            'bimestres' => $bimestres->map(fn ($b) => $this->datosBimestre($b))->all(),
+            'curso' => Cursos::datos($curso),
+            'bimestre' => Cursos::datosBimestre($bimestre),
+            'bimestres' => $bimestres->map(fn ($b) => Cursos::datosBimestre($b))->all(),
             'fechas' => array_map(fn ($f) => [
                 'fecha' => $f,
                 'estado' => $sesiones[$f] ?? 'SIN_REGISTRO',
@@ -111,9 +111,9 @@ class Asistencias
         })->values();
 
         return [
-            'curso' => $this->datosCurso($curso),
+            'curso' => Cursos::datos($curso),
             'fecha' => $fecha,
-            'bimestre' => $this->datosBimestre($bimestre),
+            'bimestre' => Cursos::datosBimestre($bimestre),
             'sesion' => [
                 'estado' => $sesion->estado ?? 'SIN_REGISTRO',
                 'tema' => $sesion->tema ?? null,
@@ -303,51 +303,10 @@ class Asistencias
     /** Solo el docente del curso (o el administrador) ve y registra su asistencia */
     private function curso(int $id, Usuario $usuario): object
     {
-        $curso = $this->consultaCursos()->where('curso_aula.id', $id)->first() ?? abort(404);
-        if ($usuario->rol->codigo === 'DOCENTE') {
-            $docenteId = DB::table('docente')->where('usuario_id', $usuario->id)->value('id');
-            abort_unless($docenteId && $docenteId === $curso->docente_id, 403);
-        }
-
-        return $curso;
+        return Cursos::autorizado($id, $usuario);
     }
 
     // ------------------------------------------------------------ consultas
-
-    private function consultaCursos()
-    {
-        return DB::table('curso_aula')
-            ->join('asignatura', 'asignatura.id', '=', 'curso_aula.asignatura_id')
-            ->join('aula', 'aula.id', '=', 'curso_aula.aula_id')
-            ->join('grado', 'grado.id', '=', 'aula.grado_id')
-            ->join('seccion', 'seccion.id', '=', 'aula.seccion_id')
-            ->join('docente', 'docente.id', '=', 'curso_aula.docente_id')
-            ->join('persona', 'persona.id', '=', 'docente.persona_id')
-            ->orderBy('grado.orden')->orderBy('seccion.nombre')->orderBy('asignatura.nombre')
-            ->select([
-                'curso_aula.id', 'curso_aula.aula_id', 'curso_aula.docente_id', 'aula.periodo_id', 'asignatura.nombre as asignatura',
-                'grado.numero', 'grado.nivel', 'seccion.nombre as seccion', 'persona.nombres', 'persona.apellidos',
-            ]);
-    }
-
-    private function datosCurso(object $c): array
-    {
-        $aula = PerfilUsuario::nombreAula($c->numero, $c->nivel, $c->seccion);
-
-        return [
-            'id' => $c->id,
-            'nombre' => "{$c->asignatura} · {$aula}",
-            'asignatura' => $c->asignatura,
-            'aula' => $aula,
-            'aula_id' => $c->aula_id,
-            'docente' => explode(' ', $c->nombres)[0].' '.explode(' ', $c->apellidos)[0],
-        ];
-    }
-
-    private function datosBimestre(object $b): array
-    {
-        return ['id' => $b->id, 'nombre' => $b->nombre, 'estado' => $b->estado, 'fecha_inicio' => $b->fecha_inicio, 'fecha_fin' => $b->fecha_fin];
-    }
 
     /** [curso_id => [1, 3]] días de la semana con clase */
     public function diasDeClase(array $cursoIds): array
