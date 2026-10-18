@@ -19,6 +19,8 @@ export const filtros = {
   captcha: (v: string) => v.toUpperCase().replace(/[^A-Z0-9]/g, ''),
   celular: (v: string) => v.replace(/\D/g, ''),
   nombre: (v: string) => v.replace(/[^\p{L}' -]/gu, ''),
+  /** Nota: solo dígitos y un separador decimal (punto o coma) */
+  nota: (v: string) => v.replace(/[^\d.,]/g, '').replace(/([.,].*)[.,]/, '$1'),
 }
 
 const contrasena = z
@@ -521,3 +523,34 @@ export const esquemaAsistencia = z.object({
 })
 
 export type DatosAsistencia = z.input<typeof esquemaAsistencia>
+
+/** Evaluación de un curso (RF-38) */
+export const esquemaEvaluacion = z
+  .object({
+    titulo: z
+      .string()
+      .transform(limpio)
+      .refine((v) => v.length > 0, 'Escribe el título de la evaluación.')
+      .refine((v) => v.length === 0 || (v.length >= 3 && v.length <= 150), 'El título debe tener de 3 a 150 caracteres.'),
+    tipo_evaluacion_id: z.string().min(1, 'Elige el tipo de evaluación.'),
+    subperiodo_id: z.string().min(1, 'Elige el bimestre.'),
+    fecha_asignacion: z.string().min(1, 'Ingresa una fecha de asignación válida.'),
+    fecha_limite: z.string().min(1, 'Ingresa una fecha límite válida.'),
+    peso: z.string().regex(/^([1-9]|10)$/, 'El peso es un número entero de 1 a 10.'),
+    indicaciones: z.string().max(2000, 'Las indicaciones no deben tener más de 2000 caracteres.'),
+    requiere_entrega: z.boolean(),
+  })
+  .refine((d) => !d.fecha_asignacion || !d.fecha_limite || d.fecha_limite >= d.fecha_asignacion, {
+    path: ['fecha_limite'],
+    message: 'La fecha límite no puede ser anterior a la de asignación.',
+  })
+
+export type DatosEvaluacion = z.input<typeof esquemaEvaluacion>
+
+/** RN-08: de 0 a 20, hasta 2 decimales, con punto o coma. Devuelve el error o null */
+export function errorNota(valor: string): string | null {
+  const v = valor.trim()
+  if (v === '') return null
+  if (!/^\d{1,2}([.,]\d{1,2})?$/.test(v)) return 'La nota debe ser un número de 0 a 20, con hasta 2 decimales.'
+  return Number(v.replace(',', '.')) > 20 ? 'La nota debe estar entre 0 y 20.' : null
+}

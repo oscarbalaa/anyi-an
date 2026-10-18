@@ -109,7 +109,7 @@ services:
       LOG_CHANNEL: "null"
       # Las pruebas NUNCA usan la base del sistema
       DB_DATABASE: ayni_pruebas
-    command: ["sh", "-c", "composer check-platform-reqs --no-dev && vendor/bin/pint --test && php artisan test --log-junit /reportes/backend.xml"]
+    command: ["sh", "-c", "composer check-platform-reqs --no-dev && vendor/bin/pint --test -v && php artisan test --log-junit /reportes/backend.xml"]
     volumes:
       - ./reportes/actual:/reportes
 
