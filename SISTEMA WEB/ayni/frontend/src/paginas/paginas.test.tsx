@@ -85,10 +85,10 @@ describe('layout por rol', () => {
   })
 
   it('las pantallas pendientes indican su módulo', async () => {
-    entrarComo('docente', '/docente/asistencia')
+    entrarComo('docente', '/docente/evaluaciones')
 
-    expect(await screen.findByRole('heading', { level: 1, name: 'Asistencia' })).toBeInTheDocument()
-    expect(screen.getByText('Módulo 8')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: 'Evaluaciones' })).toBeInTheDocument()
+    expect(screen.getByText('Módulo 9')).toBeInTheDocument()
   })
 
   it('si la API no responde, el menú sigue funcionando', async () => {

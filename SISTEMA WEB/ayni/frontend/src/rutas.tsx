@@ -3,6 +3,8 @@ import type { RouteObject } from 'react-router'
 import { Cargando } from '@/components/ui/estados'
 import { EXTRAS, ROLES, type Rol } from '@/layout/roles'
 import {
+  Asistencia,
+  AsistenciaAdmin,
   CambiarContrasena,
   Docentes,
   EstadoSistema,
@@ -10,6 +12,7 @@ import {
   Estudiantes,
   Ingreso,
   LayoutRol,
+  MiAsistencia,
   Perfil,
   Proximamente,
   Recuperar,
@@ -30,6 +33,9 @@ const pantalla = (rol: Rol, ruta: string): ReactNode => {
   if (rol === 'admin' && ruta === 'estructura') return <Estructura />
   if (rol === 'admin' && ruta === 'docentes') return <Docentes />
   if (rol === 'admin' && ruta === 'estudiantes') return <Estudiantes />
+  if (rol === 'admin' && ruta === 'asistencia') return <AsistenciaAdmin />
+  if (rol === 'docente' && ruta === 'asistencia') return <Asistencia />
+  if (rol === 'estudiante' && ruta === 'asistencia') return <MiAsistencia />
   return <Proximamente rol={rol} />
 }
 

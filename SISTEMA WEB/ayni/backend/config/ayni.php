@@ -17,6 +17,11 @@ return [
         'recuperacion_minutos' => 30,
     ],
 
+    'asistencia' => [
+        // RF-37: desde cuántas faltas en la semana se avisa al docente
+        'aviso_faltas_semana' => 2,
+    ],
+
     'captcha' => [
         'caracteres' => 'ABCDEFGHJKMNPQRSTUVWXYZ23456789',
         'longitud' => 5,

@@ -1,5 +1,7 @@
 <?php
 
+use App\Servicios\Asistencia\Pendientes;
+use App\Support\Calendario;
 use Carbon\Carbon;
 use Database\Seeders\DemostracionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabaseState;
@@ -89,6 +91,17 @@ describe('calendario relativo a hoy', function () {
         $fueraDeBimestre = valor('SELECT COUNT(*) FROM sesion_clase s JOIN subperiodo b ON b.id = s.subperiodo_id WHERE s.fecha NOT BETWEEN b.fecha_inicio AND b.fecha_fin');
 
         expect([$futuras, $finDeSemana, $sinHorario, $fueraDeBimestre])->toBe([0, 0, 0, 0]);
+    });
+
+    it('deja sin registrar la última clase de cada curso del docente demo (M8)', function () {
+        $cursos = DB::table('curso_aula')->join('docente', 'docente.id', '=', 'curso_aula.docente_id')
+            ->join('usuario', 'usuario.id', '=', 'docente.usuario_id')->where('usuario.username', '41234567')->pluck('curso_aula.id');
+        $bimestre = Calendario::bimestreVigente(Calendario::bimestres(DB::table('periodo_academico')->where('estado', 'EN_CURSO')->value('id')));
+        $pendientes = array_map('count', (new Pendientes)->porCurso($cursos->all(), $bimestre));
+        ksort($pendientes);
+
+        expect($cursos)->toHaveCount(3)
+            ->and($pendientes)->toBe(array_fill_keys($cursos->sort()->values()->all(), 1));
     });
 
     it('acepta otra fecha de instalación y vuelve a armar el calendario', function () {

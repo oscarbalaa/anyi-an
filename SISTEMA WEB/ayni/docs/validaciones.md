@@ -79,7 +79,11 @@ Las pruebas automáticas de cada módulo recorren esta tabla con valores válido
 | Campo | Regla | Ejemplo válido | Ejemplos inválidos |
 |---|---|---|---|
 | Estado de asistencia | P, F, T o J | P | X |
-| Fecha de asistencia | Día de clase del curso, dentro del bimestre, no futura (RN-06) | — | sábado sin clase, mañana |
+| Fecha de asistencia | Día de clase del curso, dentro del bimestre, no futura (RN-06); fecha real | — | sábado sin clase, mañana, 31/02 |
+| Observación de asistencia | Hasta 300 caracteres. **Obligatoria si el estado es J** (motivo de la justificación) | Cita médica con constancia | J sin motivo |
+| Tema de la clase | Opcional, hasta 200 caracteres | Ecuaciones lineales | — |
+| Lista de la clase | Solo estudiantes matriculados en el aula, sin repetir; hasta 60 | — | un estudiante de otra aula |
+| Motivo para eliminar una clase | 10 a 300 caracteres | No hubo clase por simulacro de sismo | "feriado" |
 | Tipo de incidencia | Uno de la lista | Conducta | — |
 | Gravedad | LEVE, MODERADA o GRAVE | LEVE | — |
 | Fecha de incidencia | No futura y dentro del periodo | — | — |

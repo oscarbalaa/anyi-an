@@ -496,3 +496,28 @@ export const esquemaMotivo = z.object({
     .transform(limpio)
     .refine((v) => v.length >= 10 && v.length <= 300, 'Explica el motivo en 10 a 300 caracteres.'),
 })
+
+/** Asistencia de una clase: la justificación (J) exige su motivo; las observaciones, hasta 300 caracteres */
+export const esquemaAsistencia = z.object({
+  tema: z
+    .string()
+    .transform(limpio)
+    .refine((v) => v.length <= 200, 'El tema no debe tener más de 200 caracteres.'),
+  registros: z.array(
+    z
+      .object({
+        matricula_id: z.number(),
+        estado: z.enum(['P', 'F', 'T', 'J'], 'El estado de asistencia debe ser P, F, T o J.'),
+        observacion: z
+          .string()
+          .transform(limpio)
+          .refine((v) => v.length <= 300, 'La observación no debe tener más de 300 caracteres.'),
+      })
+      .superRefine((r, ctx) => {
+        if (r.estado === 'J' && !r.observacion)
+          ctx.addIssue({ code: 'custom', path: ['observacion'], message: 'Escribe el motivo de la justificación.' })
+      }),
+  ),
+})
+
+export type DatosAsistencia = z.input<typeof esquemaAsistencia>

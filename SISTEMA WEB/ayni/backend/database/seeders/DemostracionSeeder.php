@@ -106,6 +106,7 @@ class DemostracionSeeder extends Seeder
             $this->estudiantes();
             $this->archivosDemo();
             $this->historial();
+            $this->claseSinRegistrar();
             $this->incidencias();
             $this->casosParaAlertas();
         });
@@ -576,6 +577,19 @@ class DemostracionSeeder extends Seeder
         }
         foreach (array_chunk($filas, 1000) as $lote) {
             DB::table('asistencia')->insert($lote);
+        }
+    }
+
+    /**
+     * El docente demo aún no registra su última clase de cada curso: así siempre puede probar el registro (M8).
+     * Se borra después de generarla para no cambiar la secuencia aleatoria del resto de los datos.
+     */
+    private function claseSinRegistrar(): void
+    {
+        $cursos = array_keys(array_filter($this->cursos, fn ($c) => $c['docente'] === 'mat_b'));
+        foreach ($cursos as $cursoId) {
+            DB::table('sesion_clase')->where('curso_aula_id', $cursoId)->where('subperiodo_id', $this->bimestreId[$this->cal->bimestreDeHoy()])
+                ->orderByDesc('fecha')->limit(1)->delete();
         }
     }
 

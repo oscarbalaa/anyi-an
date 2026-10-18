@@ -138,12 +138,12 @@ describe('rutas protegidas (RF-09)', () => {
       'POST /auth/ingresar': [200, { token: 't', usuario: usuarioDe('docente') }],
       '/calendario/actual': [200, calendario],
     })
-    const { router } = renderizarEn('/docente/asistencia')
+    const { router } = renderizarEn('/docente/evaluaciones')
 
     expect(await screen.findByRole('heading', { name: 'Bienvenido de nuevo' })).toBeInTheDocument()
     expect(router.state.location.pathname).toBe('/ingresar/docente')
     await llenarIngreso('41234567')
-    expect(await screen.findByRole('heading', { level: 1, name: 'Asistencia' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: 'Evaluaciones' })).toBeInTheDocument()
   })
 
   it('un rol no puede entrar a la sección de otro', async () => {

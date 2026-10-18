@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\V1\Admin\AsistenciaController as AsistenciaAdminController;
 use App\Http\Controllers\Api\V1\Admin\AulaController;
 use App\Http\Controllers\Api\V1\Admin\CargaController;
 use App\Http\Controllers\Api\V1\Admin\CatalogoController;
@@ -10,8 +11,10 @@ use App\Http\Controllers\Api\V1\Admin\MatriculaController;
 use App\Http\Controllers\Api\V1\Admin\OpcionesController;
 use App\Http\Controllers\Api\V1\Admin\PeriodoController;
 use App\Http\Controllers\Api\V1\Admin\UsuarioController;
+use App\Http\Controllers\Api\V1\AsistenciaController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CalendarioController;
+use App\Http\Controllers\Api\V1\Estudiante\AsistenciaController as MiAsistenciaController;
 use App\Http\Controllers\Api\V1\PerfilController;
 use App\Http\Controllers\Api\V1\SaludController;
 use Illuminate\Support\Facades\Route;
@@ -39,8 +42,20 @@ Route::prefix('v1')->group(function () {
             Route::get('perfil', [PerfilController::class, 'show'])->name('perfil');
             Route::put('perfil', [PerfilController::class, 'update'])->name('perfil.actualizar');
 
+            // Asistencia por clase (M8): el docente, de sus cursos; el administrador, de todos
+            $fecha = '\d{4}-\d{2}-\d{2}';
+            Route::middleware('rol:DOCENTE')->prefix('docente')->name('docente.')->group(function () use ($fecha) {
+                Route::get('asistencia/cursos', [AsistenciaController::class, 'misCursos'])->name('asistencia.cursos');
+                Route::get('asistencia/cursos/{curso}/fechas', [AsistenciaController::class, 'fechas'])->whereNumber('curso')->name('asistencia.fechas');
+                Route::get('asistencia/cursos/{curso}/{fecha}', [AsistenciaController::class, 'show'])->whereNumber('curso')->where('fecha', $fecha)->name('asistencia.show');
+                Route::put('asistencia/cursos/{curso}/{fecha}', [AsistenciaController::class, 'guardar'])->whereNumber('curso')->where('fecha', $fecha)->name('asistencia.guardar');
+            });
+            Route::middleware('rol:ESTUDIANTE')->prefix('estudiante')->name('estudiante.')->group(function () {
+                Route::get('asistencia', MiAsistenciaController::class)->name('asistencia');
+            });
+
             // Administración de usuarios (M5)
-            Route::middleware('rol:ADMIN')->prefix('admin')->name('admin.')->group(function () {
+            Route::middleware('rol:ADMIN')->prefix('admin')->name('admin.')->group(function () use ($fecha) {
                 Route::get('usuarios', [UsuarioController::class, 'index'])->name('usuarios.index');
                 Route::post('usuarios', [UsuarioController::class, 'store'])->name('usuarios.store');
                 Route::get('usuarios/{usuario}', [UsuarioController::class, 'show'])->whereNumber('usuario')->name('usuarios.show');
@@ -108,6 +123,14 @@ Route::prefix('v1')->group(function () {
                 Route::post('matriculas', [MatriculaController::class, 'store'])->name('matriculas.store');
                 Route::post('matriculas/{matricula}/retirar', [MatriculaController::class, 'retirar'])->whereNumber('matricula')->name('matriculas.retirar');
                 Route::post('matriculas/{matricula}/anular', [MatriculaController::class, 'anular'])->whereNumber('matricula')->name('matriculas.anular');
+
+                // Asistencia (M8)
+                Route::get('asistencia/resumen', [AsistenciaAdminController::class, 'resumen'])->name('asistencia.resumen');
+                Route::get('asistencia/cursos', [AsistenciaAdminController::class, 'cursos'])->name('asistencia.cursos');
+                Route::get('asistencia/cursos/{curso}/fechas', [AsistenciaController::class, 'fechas'])->whereNumber('curso')->name('asistencia.fechas');
+                Route::get('asistencia/cursos/{curso}/{fecha}', [AsistenciaController::class, 'show'])->whereNumber('curso')->where('fecha', $fecha)->name('asistencia.show');
+                Route::put('asistencia/cursos/{curso}/{fecha}', [AsistenciaController::class, 'guardar'])->whereNumber('curso')->where('fecha', $fecha)->name('asistencia.guardar');
+                Route::delete('asistencia/cursos/{curso}/{fecha}', [AsistenciaAdminController::class, 'eliminar'])->whereNumber('curso')->where('fecha', $fecha)->name('asistencia.eliminar');
 
                 Route::get('institucion', [InstitucionController::class, 'show'])->name('institucion.show');
                 Route::put('institucion', [InstitucionController::class, 'update'])->name('institucion.update');
