@@ -1,0 +1,151 @@
+# AYNI - modo normal (el que usa el panel 1. INICIO/AYNI.bat)
+name: ayni
+
+services:
+  mysql:
+    image: mysql:8.4.11
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${AYNI_BD_ROOT_CLAVE:?Falta AYNI_BD_ROOT_CLAVE en .env}
+      MYSQL_DATABASE: ${AYNI_BD_NOMBRE:-ayni}
+      MYSQL_USER: ${AYNI_BD_USUARIO:-ayni}
+      MYSQL_PASSWORD: ${AYNI_BD_CLAVE:?Falta AYNI_BD_CLAVE en .env}
+      TZ: America/Lima
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-time-zone=-05:00
+    ports:
+      - "127.0.0.1:${AYNI_PUERTO_BD:-3307}:3306"
+    volumes:
+      - ayni-bd:/var/lib/mysql
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+      target: produccion
+    image: ayni-app:local
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment: &entorno-app
+      APP_NAME: AYNI
+      APP_ENV: local
+      APP_KEY: ${AYNI_APP_KEY:?Falta AYNI_APP_KEY en .env}
+      APP_DEBUG: "false"
+      APP_URL: http://localhost:${AYNI_PUERTO_WEB:-5173}
+      LOG_CHANNEL: stderr
+      LOG_LEVEL: warning
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: "3306"
+      DB_DATABASE: ${AYNI_BD_NOMBRE:-ayni}
+      DB_USERNAME: ${AYNI_BD_USUARIO:-ayni}
+      DB_PASSWORD: ${AYNI_BD_CLAVE}
+      CACHE_DRIVER: file
+      SESSION_DRIVER: file
+      SESSION_LIFETIME: "60"
+      QUEUE_CONNECTION: sync
+      MAIL_MAILER: smtp
+      MAIL_HOST: mailpit
+      MAIL_PORT: "1025"
+      AYNI_SECRETO_E2E: ${AYNI_SECRETO_E2E:-}
+      MAIL_ENCRYPTION: "null"
+      MAIL_FROM_ADDRESS: no-responder@ayni.local
+      MAIL_FROM_NAME: AYNI
+    ports:
+      - "${AYNI_PUERTO_WEB:-5173}:80"
+    volumes:
+      - ayni-archivos:/var/www/ayni/backend/storage/app
+    networks:
+      default:
+        # "app" no sirve en el navegador: Chrome fuerza HTTPS en el dominio .app
+        aliases: [ayni-web]
+
+  phpmyadmin:
+    image: phpmyadmin:5.2.3
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: "3306"
+      UPLOAD_LIMIT: 64M
+    ports:
+      - "127.0.0.1:${AYNI_PUERTO_PMA:-8080}:80"
+
+  mailpit:
+    image: axllent/mailpit:v1.31.6
+    restart: unless-stopped
+    environment:
+      TZ: America/Lima
+    ports:
+      - "127.0.0.1:${AYNI_PUERTO_CORREO:-8025}:8025"
+
+  # ---- Pruebas (opción 10 del panel) ----
+  pruebas-backend:
+    profiles: ["pruebas"]
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+      target: pruebas
+    image: ayni-pruebas:local
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      <<: *entorno-app
+      APP_ENV: testing
+      LOG_CHANNEL: "null"
+      # Las pruebas NUNCA usan la base del sistema
+      DB_DATABASE: ayni_pruebas
+    command: ["sh", "-c", "composer check-platform-reqs --no-dev && vendor/bin/pint --test && php artisan test --log-junit /reportes/backend.xml"]
+    volumes:
+      - ./reportes/actual:/reportes
+
+  pruebas-frontend:
+    profiles: ["pruebas"]
+    image: node:22-alpine
+    working_dir: /app
+    command: ["sh", "-c", "npm ci --no-audit --no-fund && npm run lint && npm run formato:revisar && npx tsc -b && npx vitest run --reporter=default --reporter=junit --outputFile.junit=/reportes/frontend.xml"]
+    volumes:
+      - ./frontend:/app
+      - ayni-frontend-modulos:/app/node_modules
+      - ./reportes/actual:/reportes
+
+  pruebas-e2e:
+    profiles: ["pruebas"]
+    image: mcr.microsoft.com/playwright:v1.64.1-noble
+    working_dir: /e2e
+    depends_on:
+      app:
+        condition: service_healthy
+    environment:
+      AYNI_URL: http://ayni-web
+      AYNI_SECRETO_E2E: ${AYNI_SECRETO_E2E:-}
+      AYNI_CORREOS_URL: http://mailpit:8025
+      CI: "1"
+      # Solo el equipo: scripts/equipo/capturas.ps1 lo activa para el manual
+      AYNI_CAPTURAS: ${AYNI_CAPTURAS:-}
+    command: ["sh", "-c", "npm ci --no-audit --no-fund && npx playwright test && node lighthouse.mjs"]
+    volumes:
+      - ./e2e:/e2e
+      - ayni-e2e-modulos:/e2e/node_modules
+      - ./reportes/actual:/reportes
+      - ./docs/manual/capturas:/capturas
+
+volumes:
+  ayni-bd:
+  ayni-archivos:
+  ayni-frontend-modulos:
+  ayni-e2e-modulos:

@@ -1,0 +1,17 @@
+import { lazy } from 'react'
+
+// Se descargan solo cuando se visitan, para que la landing cargue rápido
+export const EstadoSistema = lazy(() => import('@/paginas/publicas/EstadoSistema'))
+export const SelectorIngreso = lazy(() => import('@/paginas/publicas/SelectorIngreso'))
+export const Ingreso = lazy(() => import('@/paginas/publicas/Ingreso'))
+export const Recuperar = lazy(() => import('@/paginas/publicas/Recuperar'))
+export const Restablecer = lazy(() => import('@/paginas/publicas/Restablecer'))
+export const CambiarContrasena = lazy(() => import('@/paginas/publicas/CambiarContrasena'))
+export const LayoutRol = lazy(() => import('@/layout/LayoutRol'))
+export const VistaPrevia = lazy(() => import('@/paginas/rol/VistaPrevia'))
+export const Proximamente = lazy(() => import('@/paginas/rol/Proximamente'))
+export const Perfil = lazy(() => import('@/paginas/rol/Perfil'))
+export const Usuarios = lazy(() => import('@/paginas/admin/Usuarios'))
+export const Estructura = lazy(() => import('@/paginas/admin/Estructura'))
+export const Docentes = lazy(() => import('@/paginas/admin/Docentes'))
+export const Estudiantes = lazy(() => import('@/paginas/admin/Estudiantes'))

@@ -1,0 +1,43 @@
+name: Pruebas
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configuración local
+        run: |
+          cp .env.example .env
+          sed -i "s|^AYNI_APP_KEY=.*|AYNI_APP_KEY=base64:$(head -c 32 /dev/urandom | base64)|" .env
+          sed -i "s|^AYNI_SECRETO_E2E=.*|AYNI_SECRETO_E2E=$(head -c 20 /dev/urandom | od -An -tx1 | tr -d ' \n')|" .env
+
+      - name: Revisar el panel de Linux (ShellCheck)
+        run: docker run --rm -v "$PWD:/w" koalaman/shellcheck:stable -S warning /w/scripts/ayni.sh "/w/1. INICIO/AYNI.sh"
+
+      - name: Construir y encender AYNI
+        run: |
+          docker compose build app
+          docker compose up -d --wait mysql app
+          docker compose exec -T -w /var/www/ayni/backend -u www-data app php artisan ayni:preparar-bd
+
+      - name: Pruebas del backend
+        run: docker compose --profile pruebas run --rm pruebas-backend
+
+      - name: Pruebas del frontend
+        run: docker compose --profile pruebas run --rm pruebas-frontend
+
+      - name: Pruebas punta a punta
+        run: docker compose --profile pruebas run --rm pruebas-e2e
+
+      - name: Guardar reportes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reportes-de-pruebas
+          path: reportes/actual
