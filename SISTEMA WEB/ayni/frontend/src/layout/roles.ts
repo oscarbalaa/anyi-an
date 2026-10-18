@@ -68,6 +68,7 @@ export const ROLES: Record<Rol, ConfigRol> = {
       { ruta: 'alertas', texto: 'Alertas', icono: Bell, modulo: 'M11' },
       { ruta: 'estudiantes', texto: 'Estudiantes', icono: Users, modulo: 'M7' },
       { ruta: 'docentes', texto: 'Docentes', icono: GraduationCap, modulo: 'M7' },
+      { ruta: 'asistencia', texto: 'Asistencia', icono: CalendarCheck, modulo: 'M8' },
       { ruta: 'usuarios', texto: 'Usuarios', icono: ShieldCheck, modulo: 'M5' },
       { ruta: 'estructura', texto: 'Estructura académica', icono: Network, modulo: 'M6' },
       { ruta: 'incidencias', texto: 'Incidencias', icono: BookOpenCheck, modulo: 'M10' },

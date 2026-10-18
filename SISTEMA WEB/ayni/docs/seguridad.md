@@ -56,3 +56,10 @@ En GCP sí se controla la versión de PHP. Allí conviene actualizar a Laravel 1
 - **Credenciales:** la contraseña temporal de cada estudiante importado se muestra una sola vez (y en el CSV que se arma en el navegador); en la BD solo queda su hash. Sin "crear usuario", las cuentas se crean desactivadas.
 - **Estado y acceso:** un docente inactivo o un estudiante retirado, trasladado o egresado pierde el acceso (su cuenta se desactiva y se cierran sus sesiones).
 - **Auditoría:** altas, cambios (con antes y después), apoderados, matrículas, retiros, anulaciones e importaciones quedan en `auditoria`.
+
+## Asistencia (Módulo 8)
+- **Por rol:** `/api/v1/docente/*` (`rol:DOCENTE`), `/api/v1/estudiante/*` (`rol:ESTUDIANTE`) y `/api/v1/admin/*` (`rol:ADMIN`). El docente solo ve y registra **sus** cursos: si pide el de otro docente recibe 403. El estudiante solo ve su propia asistencia (se busca por su sesión, nunca por un id que llegue en la petición).
+- **Reglas en el servidor:** RN-06 (día de clase según el horario, dentro del bimestre, nunca en el futuro) y RN-07 (el docente corrige hasta las 11:59 p. m. del día de la clase) se revisan siempre en el backend con la hora de Lima; la interfaz solo las anticipa. Un bimestre cerrado no admite cambios de nadie.
+- **Sin duplicados:** una sola clase por curso y fecha (índice único `ux_sesion_clase` y un estudiante por clase `ux_asistencia`). El guardado va en una transacción con bloqueo de la fila; si dos personas guardan a la vez una clase nueva, la segunda se reintenta y la encuentra.
+- **Solo estudiantes de la clase:** se rechaza cualquier matrícula que no sea del aula (no se puede marcar a un estudiante de otra aula cambiando el id).
+- **Quién cambió qué:** cada fila guarda quién la registró y, si se corrigió después de ser definitiva, quién la corrigió (`modificado_por`). En `auditoria` quedan el registro, cada corrección con los estados antes y después, y el borrado de una clase con su motivo.

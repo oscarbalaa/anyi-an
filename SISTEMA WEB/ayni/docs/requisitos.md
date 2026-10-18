@@ -233,7 +233,7 @@ Funciona en la web (hosting del curso) y en local (panel `AYNI.bat` / `AYNI.sh`)
 | RN-04 | Un estudiante tiene **una sola matrícula por periodo**, en un aula de ese periodo, sin superar la capacidad del aula. |
 | RN-05 | Un docente o un aula no pueden tener dos clases que se crucen en horario. |
 | RN-06 | La asistencia solo se registra en días en que el curso tiene clase según el horario, dentro del bimestre y nunca en fechas futuras. |
-| RN-07 | El docente puede corregir la asistencia hasta las **11:59 p. m. del mismo día**; después solo el administrador, y queda registrado. |
+| RN-07 | El docente puede corregir la asistencia hasta las **11:59 p. m. del mismo día** de la clase; después solo el administrador, y queda registrado quién la corrigió. Una clase pasada que nunca se registró (o quedó en borrador) el docente aún puede registrarla una vez. |
 | RN-08 | Las notas van de **0 a 20**, con hasta 2 decimales; se aceptan con punto o coma. |
 | RN-09 | **Promedio del bimestre** = Σ(nota × peso) / Σ(peso) de las evaluaciones del curso en el bimestre. Las evaluaciones **sin nota cuentan como 0**. Se redondea a 1 decimal (0,05 sube). |
 | RN-10 | Aprobado si el promedio es ≥ la nota aprobatoria (11 por defecto). |
@@ -253,6 +253,7 @@ Funciona en la web (hosting del curso) y en local (panel `AYNI.bat` / `AYNI.sh`)
 | RN-24 | Cada estudiante tiene **a lo sumo un apoderado principal**. |
 | RN-25 | El enlace de recuperación de contraseña es de un solo uso y vence a los 30 minutos. La respuesta es la misma exista o no la cuenta. |
 | RN-26 | Los archivos de entrega son **PDF de hasta 10 MB** (o el límite menor del hosting); solo los ven el estudiante dueño, el docente del curso y el administrador. |
+| RN-27 | **% de asistencia** = (clases − faltas) ÷ clases × 100, con 1 decimal. Tardanzas (T) y faltas justificadas (J) no restan. Solo cuentan los registros **definitivos**; los borradores no los ve el estudiante. |
 
 ---
 
@@ -427,7 +428,7 @@ Funciona en la web (hosting del curso) y en local (panel `AYNI.bat` / `AYNI.sh`)
 | RF-11 – RF-16 | M5 | Pest `Usuarios/UsuariosTest` (lista, filtros, búsqueda sin tildes, sin N+1, permisos, alta, validaciones e inyección CRLF en correo, edición con auditoría, activar/inactivar, desbloqueo con contraseña temporal y correo), `Usuarios/PerfilTest`; Vitest `usuarios.test.tsx`, `validaciones.test.ts`; E2E `m5-usuarios.spec.ts` (PC y celular, desbloqueo con Mailpit) | ✅ Pasan (M5) |
 | RF-17 – RF-26 | M6 | Pest `Estructura/PeriodosTest` (RN-01, RN-02, cierre automático RN-14), `AulasTest` (RN-03, tutor, capacidad, coordinadores), `HorariosTest` (carga, cruces de aula y de docente RN-05), `CatalogosTest` (asignaturas, tipos de evaluación, colegio y escala RN-11, opciones), `CalendarioActualTest`; Vitest `estructura.test.tsx`, `validaciones.test.ts`; E2E `m6-estructura.spec.ts` (aula completa con cursos y horario; PC y celular) | ✅ Pasan (M6) |
 | RF-27 – RF-32 | M7 | Pest `Personas/DocentesTest` (usuario = DNI, RN-23, inactivo desactiva la cuenta), `EstudiantesTest` (código RN-22, apoderado principal RN-24), `MatriculasTest` (RN-04, edad RN-23, retiro y anulación), `ImportacionTest` (plantilla, revisión por fila, filas con error, importación en una transacción); Vitest `personas.test.tsx`, `validaciones.test.ts`; E2E `m7-personas.spec.ts` (importar un Excel con una fila errónea y matricular; PC y celular) | ✅ Pasan (M7) |
-| RF-33 – RF-37 | M8 | — | Pendiente |
+| RF-33 – RF-37 | M8 | Pest `Asistencia/AsistenciaTest` (401/403 por rol y solo el docente del curso, todos presentes por defecto, excepciones, aviso de falta al estudiante, sin duplicados, borrador → definitivo, fechas RN-06, medianoche RN-07 y corrección del administrador, validaciones por campo, faltas de la semana RF-37, % RN-27, resumen por aula y clases sin registrar, borrado con motivo, retirados), `DatosDemostracionTest` (clase pendiente del docente demo); Vitest `asistencia.test.tsx` (registro, solo lectura, errores del servidor, mi asistencia, corrección); E2E `m8-asistencia.spec.ts` (el docente registra, la estudiante lo ve, el administrador justifica; PC y celular) | ⏳ Escritas (falta la corrida completa) |
 | RF-38 – RF-48 | M9 | — | Pendiente |
 | RF-49 – RF-51 | M10 | — | Pendiente |
 | RF-52 – RF-58 | M11 | — | Pendiente |

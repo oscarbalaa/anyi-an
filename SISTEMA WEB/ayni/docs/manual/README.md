@@ -26,6 +26,7 @@ Cada módulo escribe aquí su parte. En el Módulo 15 se exportan a Word y PDF e
 | 4.1 Administrador → Usuarios; Mi perfil (todos) | `usuario-03-usuarios-y-perfil.md` | ✅ M5 |
 | 4.2 Administrador → Estructura académica | `usuario-04-estructura-academica.md` | ✅ M6 |
 | 4.3 Administrador → Docentes, Estudiantes (importación desde Excel) y Matrículas | `usuario-05-personas-y-matriculas.md` | ✅ M7 |
+| 4.4 Docente → Asistencia; Estudiante → Mi asistencia; Administrador → corrección de asistencia | `usuario-06-asistencia.md` | ✅ M8 |
 | 5. Cierre de sesión (a pedido y por inactividad) | `usuario-02-inicio-de-sesion.md` | ✅ M4 |
 | 6. Solución de problemas frecuentes | — | Cada módulo |
 
