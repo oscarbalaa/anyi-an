@@ -23,7 +23,7 @@ jobs:
       - name: Construir y encender AYNI
         run: |
           docker compose build app
-          docker compose up -d --wait mysql app
+          docker compose up -d --wait mysql app mailpit
           docker compose exec -T -w /var/www/ayni/backend -u www-data app php artisan ayni:preparar-bd
 
       - name: Pruebas del backend
