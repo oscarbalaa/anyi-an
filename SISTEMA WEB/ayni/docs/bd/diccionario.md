@@ -453,6 +453,7 @@ Evaluaciones o actividades de un curso en un bimestre
 | `fecha_asignacion` | date | No |  |  |  |
 | `fecha_limite` | date | No |  |  | Se puede entregar hasta las 11:59 p. m. de este día |
 | `peso` | tinyint unsigned | No |  | `1` | Peso relativo (1 a 10) en el promedio |
+| `requiere_entrega` | tinyint(1) | No |  | `1` | El estudiante sube un archivo |
 | `creado_por` | bigint unsigned | Sí | FK → usuario |  |  |
 | `created_at` | timestamp | No |  | `CURRENT_TIMESTAMP` | Fecha de registro |
 | `updated_at` | timestamp | No |  | `CURRENT_TIMESTAMP` | Última modificación |
