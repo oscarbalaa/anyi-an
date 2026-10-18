@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Servicios\Evaluacion\Calificaciones;
 use Carbon\CarbonImmutable;
 use Database\Seeders\Demo\Azar;
 use Database\Seeders\Demo\Calendario;
@@ -499,6 +500,8 @@ class DemostracionSeeder extends Seeder
                         'fecha_asignacion' => $asignacion->toDateString(),
                         'fecha_limite' => $limite->toDateString(),
                         'peso' => $peso,
+                        // El examen se rinde en clase: no se sube archivo
+                        'requiere_entrega' => $tipo !== 'Examen',
                         'creado_por' => $usuarioDocente,
                         'created_at' => $asignacion->setTime(7, 30),
                     ]);
@@ -517,6 +520,9 @@ class DemostracionSeeder extends Seeder
 
                 if ($this->cal->cerrado($b)) {
                     $this->calificaciones($curso, $b, $alumnos, $notasBimestre);
+                } elseif ($b === $bimestreActual) {
+                    // Promedio en borrador del bimestre en curso: el docente aún no lo publica (M9)
+                    (new Calificaciones)->recalcular($curso['id'], $this->bimestreId[$b]);
                 }
             }
         }

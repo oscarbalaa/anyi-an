@@ -3,6 +3,7 @@
 namespace Tests\Soporte;
 
 use App\Models\Usuario;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\Sanctum;
@@ -162,6 +163,54 @@ final class Fabrica
         $persona = self::persona(['nombres' => $nombres, 'apellidos' => $apellidos]);
 
         return DB::table('docente')->insertGetId(['persona_id' => $persona, 'usuario_id' => self::usuario()]);
+    }
+
+    /**
+     * Aula 3.º B del periodo 2026 con Matemática (docente 41234567, lunes y miércoles) y Comunicación
+     * (docente 42345678, lunes), y tres estudiantes con cuenta (E-2026-001 a 003). II Bimestre: 18/05 al 24/07.
+     */
+    public static function aulaConCursos(): object
+    {
+        $admin = self::cuenta('ADMIN', 'cmedina');
+        $profe = self::cuenta('DOCENTE', '41234567');
+        $otroProfe = self::cuenta('DOCENTE', '42345678');
+        $periodo = self::periodo(['nombre' => '2026', 'estado' => 'EN_CURSO']);
+        $b1 = self::bimestre($periodo);
+        $b2 = self::bimestre($periodo, ['numero' => 2, 'nombre' => 'II Bimestre', 'fecha_inicio' => '2026-05-18', 'fecha_fin' => '2026-07-24', 'fecha_cierre_notas' => '2026-07-31']);
+        $aula = self::aula($periodo, ['seccion_id' => self::seccion('B'), 'ambiente' => 'Aula 12']);
+        $docente = fn (int $usuario) => DB::table('docente')->where('usuario_id', $usuario)->value('id');
+        $mat = DB::table('curso_aula')->insertGetId(['aula_id' => $aula, 'asignatura_id' => DB::table('asignatura')->insertGetId(['codigo' => 'MAT', 'nombre' => 'Matemática']), 'docente_id' => $docente($profe)]);
+        $com = DB::table('curso_aula')->insertGetId(['aula_id' => $aula, 'asignatura_id' => DB::table('asignatura')->insertGetId(['codigo' => 'COM', 'nombre' => 'Comunicación']), 'docente_id' => $docente($otroProfe)]);
+        DB::table('horario')->insert([
+            ['curso_aula_id' => $mat, 'dia_semana' => 1, 'hora_inicio' => '09:45:00', 'hora_fin' => '11:15:00', 'ambiente' => null],
+            ['curso_aula_id' => $mat, 'dia_semana' => 3, 'hora_inicio' => '08:00:00', 'hora_fin' => '09:30:00', 'ambiente' => null],
+            ['curso_aula_id' => $com, 'dia_semana' => 1, 'hora_inicio' => '08:00:00', 'hora_fin' => '09:30:00', 'ambiente' => 'Biblioteca'],
+        ]);
+
+        $alumnos = [];
+        foreach (['Aranda Ruiz', 'Quispe Mendoza', 'Ramírez Torres'] as $i => $apellidos) {
+            $codigo = sprintf('E-2026-%03d', $i + 1);
+            $usuario = self::usuario('ESTUDIANTE', ['username' => $codigo]);
+            $estudiante = DB::table('estudiante')->insertGetId(['persona_id' => self::persona(['nombres' => 'Alumno', 'apellidos' => $apellidos]), 'usuario_id' => $usuario, 'codigo' => $codigo]);
+            $alumnos[$apellidos] = (object) ['matricula' => self::matricula($aula, $periodo, $estudiante), 'usuario' => $usuario];
+        }
+
+        return (object) compact('admin', 'profe', 'otroProfe', 'periodo', 'b1', 'b2', 'aula', 'mat', 'com', 'alumnos');
+    }
+
+    /** Inicia sesión (Sanctum) con el usuario indicado */
+    public static function como(int $usuarioId): void
+    {
+        app('auth')->forgetGuards();
+        Sanctum::actingAs(Usuario::find($usuarioId));
+    }
+
+    /** Un PDF mínimo pero real */
+    public static function pdf(string $nombre = 'tarea.pdf', int $relleno = 0): UploadedFile
+    {
+        $contenido = "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 595 842]>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF\n";
+
+        return UploadedFile::fake()->createWithContent($nombre, $contenido.str_repeat('%', $relleno));
     }
 
     /** Escenario completo: periodo, bimestre, aula, curso, matrícula y evaluación */

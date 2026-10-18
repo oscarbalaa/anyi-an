@@ -141,14 +141,21 @@ describe('calificaciones (RN-09)', function () {
                 FROM nota_evaluacion n JOIN evaluacion e ON e.id = n.evaluacion_id
                 GROUP BY n.matricula_id, e.curso_aula_id, e.subperiodo_id
             ) r ON r.matricula_id = c.matricula_id AND r.curso_aula_id = c.curso_aula_id AND r.subperiodo_id = c.subperiodo_id
+            JOIN subperiodo b ON b.id = c.subperiodo_id AND b.estado = \'CERRADO\'
             WHERE ABS(c.promedio - r.esperado) > 0.05');
 
         expect(DB::table('calificacion_periodo')->count())->toBeGreaterThan(0)
             ->and($diferencias)->toBe(0);
     });
 
-    it('solo tiene calificaciones cerradas en bimestres cerrados', function () {
-        expect(valor("SELECT COUNT(*) FROM calificacion_periodo c JOIN subperiodo b ON b.id = c.subperiodo_id WHERE b.estado <> 'CERRADO' OR c.estado <> 'CERRADA'"))->toBe(0);
+    it('cierra las calificaciones de los bimestres cerrados y deja en borrador las del bimestre en curso (M9)', function () {
+        expect(valor("SELECT COUNT(*) FROM calificacion_periodo c JOIN subperiodo b ON b.id = c.subperiodo_id WHERE b.estado = 'CERRADO' AND c.estado <> 'CERRADA'"))->toBe(0)
+            ->and(valor("SELECT COUNT(*) FROM calificacion_periodo c JOIN subperiodo b ON b.id = c.subperiodo_id WHERE b.estado = 'ABIERTO' AND c.estado <> 'BORRADOR'"))->toBe(0)
+            ->and(valor("SELECT COUNT(*) FROM calificacion_periodo c JOIN subperiodo b ON b.id = c.subperiodo_id WHERE b.estado = 'ABIERTO'"))->toBeGreaterThan(100);
+    });
+
+    it('los exámenes se rinden en clase y las demás actividades piden archivo (M9)', function () {
+        expect(valor("SELECT COUNT(*) FROM evaluacion e JOIN tipo_evaluacion t ON t.id = e.tipo_evaluacion_id WHERE (t.nombre = 'Examen') = e.requiere_entrega"))->toBe(0);
     });
 
     it('deja actividades por entregar y por calificar en el bimestre en curso', function () {

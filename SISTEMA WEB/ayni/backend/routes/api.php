@@ -11,10 +11,13 @@ use App\Http\Controllers\Api\V1\Admin\MatriculaController;
 use App\Http\Controllers\Api\V1\Admin\OpcionesController;
 use App\Http\Controllers\Api\V1\Admin\PeriodoController;
 use App\Http\Controllers\Api\V1\Admin\UsuarioController;
+use App\Http\Controllers\Api\V1\ArchivoController;
 use App\Http\Controllers\Api\V1\AsistenciaController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CalendarioController;
+use App\Http\Controllers\Api\V1\Docente\EvaluacionController;
 use App\Http\Controllers\Api\V1\Estudiante\AsistenciaController as MiAsistenciaController;
+use App\Http\Controllers\Api\V1\Estudiante\EvaluacionController as MisEvaluacionesController;
 use App\Http\Controllers\Api\V1\PerfilController;
 use App\Http\Controllers\Api\V1\SaludController;
 use Illuminate\Support\Facades\Route;
@@ -49,10 +52,33 @@ Route::prefix('v1')->group(function () {
                 Route::get('asistencia/cursos/{curso}/fechas', [AsistenciaController::class, 'fechas'])->whereNumber('curso')->name('asistencia.fechas');
                 Route::get('asistencia/cursos/{curso}/{fecha}', [AsistenciaController::class, 'show'])->whereNumber('curso')->where('fecha', $fecha)->name('asistencia.show');
                 Route::put('asistencia/cursos/{curso}/{fecha}', [AsistenciaController::class, 'guardar'])->whereNumber('curso')->where('fecha', $fecha)->name('asistencia.guardar');
+
+                // Evaluaciones, notas y calificaciones (M9)
+                Route::get('cursos/{curso}/evaluaciones', [EvaluacionController::class, 'index'])->whereNumber('curso')->name('evaluaciones.index');
+                Route::post('cursos/{curso}/evaluaciones', [EvaluacionController::class, 'store'])->whereNumber('curso')->name('evaluaciones.store');
+                Route::put('evaluaciones/{evaluacion}', [EvaluacionController::class, 'update'])->whereNumber('evaluacion')->name('evaluaciones.update');
+                Route::delete('evaluaciones/{evaluacion}', [EvaluacionController::class, 'destroy'])->whereNumber('evaluacion')->name('evaluaciones.destroy');
+                Route::post('evaluaciones/{evaluacion}/material', [EvaluacionController::class, 'subirMaterial'])->whereNumber('evaluacion')->name('evaluaciones.material');
+                Route::delete('evaluaciones/{evaluacion}/material/{archivo}', [EvaluacionController::class, 'quitarMaterial'])->whereNumber(['evaluacion', 'archivo'])->name('evaluaciones.material.destroy');
+                Route::get('evaluaciones/{evaluacion}/notas', [EvaluacionController::class, 'notas'])->whereNumber('evaluacion')->name('notas.show');
+                Route::put('evaluaciones/{evaluacion}/notas', [EvaluacionController::class, 'guardarNotas'])->whereNumber('evaluacion')->name('notas.guardar');
+                Route::get('evaluaciones/{evaluacion}/notas/excel', [EvaluacionController::class, 'excelNotas'])->whereNumber('evaluacion')->name('notas.excel');
+                Route::get('cursos/{curso}/calificaciones', [EvaluacionController::class, 'calificaciones'])->whereNumber('curso')->name('calificaciones.show');
+                Route::post('cursos/{curso}/calificaciones/publicar', [EvaluacionController::class, 'publicar'])->whereNumber('curso')->name('calificaciones.publicar');
+                Route::get('cursos/{curso}/calificaciones/excel', [EvaluacionController::class, 'excelCalificaciones'])->whereNumber('curso')->name('calificaciones.excel');
             });
             Route::middleware('rol:ESTUDIANTE')->prefix('estudiante')->name('estudiante.')->group(function () {
                 Route::get('asistencia', MiAsistenciaController::class)->name('asistencia');
+                Route::get('notas', [MisEvaluacionesController::class, 'notas'])->name('notas');
+                Route::get('notas/cursos/{curso}', [MisEvaluacionesController::class, 'curso'])->whereNumber('curso')->name('notas.curso');
+                Route::get('actividades', [MisEvaluacionesController::class, 'actividades'])->name('actividades');
+                Route::get('actividades/{evaluacion}', [MisEvaluacionesController::class, 'actividad'])->whereNumber('evaluacion')->name('actividades.show');
+                Route::post('actividades/{evaluacion}/entrega', [MisEvaluacionesController::class, 'entregar'])->whereNumber('evaluacion')->name('actividades.entregar');
+                Route::get('horario', [MisEvaluacionesController::class, 'horario'])->name('horario');
             });
+
+            // Entregas y material de apoyo: cada rol descarga solo lo que le corresponde (M9)
+            Route::get('archivos/{archivo}', ArchivoController::class)->whereNumber('archivo')->name('archivos.show');
 
             // Administración de usuarios (M5)
             Route::middleware('rol:ADMIN')->prefix('admin')->name('admin.')->group(function () use ($fecha) {

@@ -22,6 +22,12 @@ return [
         'aviso_faltas_semana' => 2,
     ],
 
+    'archivos' => [
+        // RN-26: tope de 10 MB (o el límite menor del hosting)
+        'max_mb' => 10,
+        'material' => ['pdf', 'docx', 'pptx', 'xlsx', 'jpg', 'jpeg', 'png'],
+    ],
+
     'captcha' => [
         'caracteres' => 'ABCDEFGHJKMNPQRSTUVWXYZ23456789',
         'longitud' => 5,
