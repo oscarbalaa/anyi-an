@@ -1,0 +1,26 @@
+# Configuración y credenciales locales
+.env
+1. INICIO/CREDENCIALES_PRIVADAS.txt
+
+# Dependencias y compilados
+node_modules/
+frontend/dist/
+backend/vendor/
+backend/public/index.html
+backend/public/assets/
+backend/public/logo-ayni.svg
+dist-hosting/
+
+# Generados por el panel
+reportes/
+respaldos/
+e2e/test-results/
+e2e/playwright-report/
+e2e/.sesiones.json
+
+# Sistema
+.DS_Store
+Thumbs.db
+*.log
+.idea/
+.vscode/

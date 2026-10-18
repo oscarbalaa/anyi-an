@@ -1,0 +1,176 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/nunito-sans/wght.css';
+
+/* Paleta oficial de AYNI (palette.svg): un tema por rol */
+@theme {
+  /* Estudiante · Tierra cercana */
+  --color-terracota: #c65d3a;
+  --color-maiz: #f2c14e;
+  --color-bosque: #2f6b4f;
+  --color-arena: #f5e8d3;
+  --color-tinta: #263238;
+  /* Docente · Comunidad viva */
+  --color-coral: #e66a5b;
+  --color-turquesa: #2a9d8f;
+  --color-sol: #f4b942;
+  --color-cielo: #ddeff2;
+  --color-noche: #243b53;
+  /* Administrativo · Calma activa */
+  --color-ciruela: #6e4b6b;
+  --color-salvia: #7fa58a;
+  --color-durazno: #f2a97e;
+  --color-marfil: #fff7e8;
+  --color-grafito: #2e3138;
+
+  /* Estados */
+  --color-exito: #1f7a4d;
+  --color-aviso: #8a5208;
+  --color-peligro: #b42318;
+  --color-info: #1d5d90;
+
+  --font-sans: 'Nunito Sans Variable', 'Segoe UI', system-ui, sans-serif;
+
+  --animate-aparecer: aparecer 0.25s ease-out;
+  @keyframes aparecer {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+/* Colores semánticos según el tema activo (data-tema en el contenedor) */
+@theme inline {
+  --color-primario: var(--primario);
+  --color-primario-suave: var(--primario-suave);
+  --color-primario-oscuro: var(--primario-oscuro);
+  --color-accion: var(--accion);
+  --color-accion-hover: var(--accion-hover);
+  --color-acento: var(--acento);
+  --color-acento-texto: var(--acento-texto);
+  --color-fondo: var(--fondo);
+  --color-superficie: var(--superficie);
+  --color-texto: var(--texto);
+  --color-texto-suave: var(--texto-suave);
+  --color-borde: var(--borde);
+}
+
+:root,
+[data-tema='estudiante'] {
+  --primario: #c65d3a;
+  /* Botones y enlaces: contraste AA con texto blanco */
+  --accion: #b3522f;
+  --accion-hover: #9a4527;
+  --primario-suave: #fbe9df;
+  --primario-oscuro: #9e4528;
+  --acento: #2f6b4f;
+  --acento-texto: #2f6b4f;
+  --fondo: #fcf7f0;
+  --superficie: #ffffff;
+  --texto: #263238;
+  --texto-suave: #55606a;
+  --borde: #ebe2d6;
+}
+
+[data-tema='docente'] {
+  --primario: #2a9d8f;
+  /* Botones y enlaces: contraste AA con texto blanco */
+  --accion: #1e7a6f;
+  --accion-hover: #18645b;
+  --primario-suave: #e2f3f1;
+  --primario-oscuro: #1e7368;
+  --acento: #e66a5b;
+  --acento-texto: #b8463a;
+  --fondo: #f6fafb;
+  --superficie: #ffffff;
+  --texto: #243b53;
+  --texto-suave: #52627a;
+  --borde: #dfe8ec;
+}
+
+[data-tema='admin'] {
+  --primario: #6e4b6b;
+  /* Botones y enlaces: contraste AA con texto blanco */
+  --accion: #6e4b6b;
+  --accion-hover: #573a55;
+  --primario-suave: #f2e9f1;
+  --primario-oscuro: #553952;
+  --acento: #7fa58a;
+  --acento-texto: #4c7559;
+  --fondo: #fffbf3;
+  --superficie: #ffffff;
+  --texto: #2e3138;
+  --texto-suave: #5a5d66;
+  --borde: #ece5da;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-fondo font-sans text-texto antialiased;
+}
+
+/* Foco visible y consistente para teclado */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 3px solid var(--primario);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Efectos de la landing (inspirados en React Bits, sin librerías) */
+@keyframes desenfoque-entrada {
+  from {
+    filter: blur(10px);
+    transform: translateY(-8px);
+  }
+  to {
+    filter: blur(0);
+    transform: none;
+  }
+}
+
+.palabra-animada {
+  display: inline-block;
+  animation: desenfoque-entrada 0.7s ease-out both;
+}
+
+.revelar {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.6s ease-out,
+    transform 0.6s ease-out;
+}
+
+.revelar[data-visible='true'] {
+  opacity: 1;
+  transform: none;
+}
+
+@keyframes flotar {
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.flotar {
+  animation: flotar 4s ease-in-out infinite;
+}

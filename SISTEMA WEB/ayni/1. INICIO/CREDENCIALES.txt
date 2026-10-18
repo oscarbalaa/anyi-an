@@ -1,0 +1,40 @@
+﻿==============================================================
+  AYNI - CREDENCIALES (versión local)
+  Actualizado por el panel: 18/10/2026 12:16
+==============================================================
+
+DIRECCIONES
+  Sistema AYNI ............. http://localhost:5173
+  Desde un celular (Wi-Fi) . http://192.168.1.8:5173
+  phpMyAdmin (ver la BD) ... http://localhost:8080
+  Correos de prueba ........ http://localhost:8025
+  Versión web (hosting) .... https://aplicacionenlanube.cetivirgendelapuerta.com/grupo02/
+                             (se publica en el Módulo 14)
+
+BASE DE DATOS LOCAL (para phpMyAdmin)
+  Usuario .......... ayni
+  Contraseña ....... AyniLocal2026
+  Base de datos .... ayni
+  Administrador .... root / AyniRoot2026
+  Desde otro programa (HeidiSQL, Workbench): 127.0.0.1, puerto 3307
+
+USUARIOS DE DEMOSTRACIÓN (entran por "Ingresar" o "Administración")
+  Rol                    Usuario      Contraseña  Persona
+  Administrador ........ cmedina      Ayni#2026   Carlos Medina
+  Administrador ........ promero      Ayni#2026   Patricia Romero
+  Coordinador/docente .. 41234567     Ayni#2026   Luis Paredes (coordina 3.º A)
+  Docente/tutora ....... 42345678     Ayni#2026   Carmen Rivas (tutora 3.º B)
+  Estudiante secundaria  E-2026-001   piki2026    Valeria Quispe (3.º B)
+  Estudiante primaria .. E-2026-002   piki2026    Mateo Flores (4.º primaria)
+  Los demás docentes entran con su DNI y Ayni#2026; los demás
+  estudiantes con su código y piki2026 (ver phpMyAdmin).
+
+  Al ingresar se pide el código de la imagen (captcha).
+  Tras 5 intentos fallidos la cuenta se bloquea: las de administración
+  se liberan solas a los 15 minutos; para las demás, la opción 14 del
+  panel restaura los datos de demostración.
+  Los correos de recuperación de contraseña llegan a "Correos de prueba".
+
+--------------------------------------------------------------
+Estas claves son solo de la instalación local: la base de datos
+no se expone fuera de esta PC.

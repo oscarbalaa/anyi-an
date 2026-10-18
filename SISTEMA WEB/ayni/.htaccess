@@ -1,0 +1,17 @@
+# Raíz del proyecto (local y hosting).
+# Solo backend/public es visible desde el navegador; el resto del proyecto
+# (código, .env, 1. INICIO, docs) solo se descarga por FTP.
+
+Options -Indexes
+DirectoryIndex disabled
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    RewriteRule ^backend/public/ - [L]
+    RewriteRule ^(.*)$ backend/public/$1 [L]
+</IfModule>
+
+<IfModule !mod_rewrite.c>
+    Require all denied
+</IfModule>

@@ -1,0 +1,36 @@
+# AYNI - modo desarrollo (solo el equipo): scripts/equipo/modo-desarrollo.ps1
+# Web con recarga en caliente en :5173 y API en :8000.
+services:
+  app:
+    build:
+      target: desarrollo
+    image: ayni-app:desarrollo
+    environment:
+      APP_DEBUG: "true"
+      LOG_LEVEL: debug
+    ports: !override
+      - "8000:80"
+    volumes:
+      - ./.htaccess:/var/www/ayni/.htaccess:ro
+      - ./backend:/var/www/ayni/backend
+      - ayni-vendor:/var/www/ayni/backend/vendor
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost/api/v1/health > /dev/null || exit 1"]
+      interval: 10s
+      retries: 30
+      start_period: 60s
+
+  frontend:
+    image: node:22-alpine
+    working_dir: /app
+    command: ["sh", "-c", "npm ci --no-audit --no-fund && npm run dev"]
+    environment:
+      AYNI_API_DESTINO: http://app:80
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - ayni-frontend-modulos:/app/node_modules
+
+volumes:
+  ayni-vendor:

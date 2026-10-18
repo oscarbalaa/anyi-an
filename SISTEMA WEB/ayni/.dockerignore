@@ -1,0 +1,21 @@
+.git
+.github
+.env
+**/.env
+!**/.env.example
+1. INICIO
+docs
+e2e
+reportes
+respaldos
+scripts
+**/node_modules
+frontend/dist
+backend/vendor
+backend/storage/logs/*
+backend/storage/framework/cache/*
+backend/storage/framework/sessions/*
+backend/storage/framework/views/*
+backend/bootstrap/cache/*.php
+backend/public/index.html
+backend/public/assets

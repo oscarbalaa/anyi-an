@@ -1,0 +1,14 @@
+{
+  "name": "ayni-e2e",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "chrome-launcher": "^1.2.2",
+    "lighthouse": "^13.5.0"
+  }
+}
