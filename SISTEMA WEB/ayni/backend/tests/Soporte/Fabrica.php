@@ -51,7 +51,8 @@ final class Fabrica
         return DB::table('estudiante')->insertGetId([
             'persona_id' => self::persona(),
             'usuario_id' => self::usuario('ESTUDIANTE'),
-            'codigo' => sprintf('E-2026-%03d', $n),
+            // Otro año y 3 dígitos: no cuenta para el correlativo de 2026 que generan las pruebas (RN-22)
+            'codigo' => sprintf('E-1999-%03d', $n % 1000),
         ]);
     }
 
