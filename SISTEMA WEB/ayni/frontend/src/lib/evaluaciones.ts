@@ -125,7 +125,12 @@ export type DetalleActividad = Actividad & {
   indicaciones: string | null
   bimestre: Bimestre
   material: Archivo[]
-  entrega: { estado: 'BORRADOR' | 'ENTREGADA'; entregada_en: string | null; es_tardia: boolean; archivo: Archivo | null } | null
+  entrega: {
+    estado: 'BORRADOR' | 'ENTREGADA'
+    entregada_en: string | null
+    es_tardia: boolean
+    archivo: Archivo | null
+  } | null
   historial: { fecha: string; texto: string }[]
   puede_entregar: boolean
   aviso: string
@@ -136,7 +141,14 @@ export type MisNotas = {
   aula: string | null
   bimestre: Bimestre | null
   bimestres: Bimestre[]
-  cursos: { id: number; asignatura: string; docente: string; publicado: boolean; promedio: number | null; literal: string | null }[]
+  cursos: {
+    id: number
+    asignatura: string
+    docente: string
+    publicado: boolean
+    promedio: number | null
+    literal: string | null
+  }[]
   promedio: number | null
   anterior: { nombre: string; promedio: number | null } | null
   ultimas: { id: number; titulo: string; curso: string; nota: number; fecha: string }[]

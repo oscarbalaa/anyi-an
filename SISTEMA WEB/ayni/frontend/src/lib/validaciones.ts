@@ -531,7 +531,10 @@ export const esquemaEvaluacion = z
       .string()
       .transform(limpio)
       .refine((v) => v.length > 0, 'Escribe el título de la evaluación.')
-      .refine((v) => v.length === 0 || (v.length >= 3 && v.length <= 150), 'El título debe tener de 3 a 150 caracteres.'),
+      .refine(
+        (v) => v.length === 0 || (v.length >= 3 && v.length <= 150),
+        'El título debe tener de 3 a 150 caracteres.',
+      ),
     tipo_evaluacion_id: z.string().min(1, 'Elige el tipo de evaluación.'),
     subperiodo_id: z.string().min(1, 'Elige el bimestre.'),
     fecha_asignacion: z.string().min(1, 'Ingresa una fecha de asignación válida.'),
