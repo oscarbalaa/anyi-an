@@ -776,7 +776,7 @@ No se trabaja hasta que lo indiques. Cuando lo retomes, ya tendremos los insumos
 | M5 | Usuarios y perfil | ✅ aprobado |
 | M6 | Estructura académica + fechas de cierre | ✅ aprobado |
 | M7 | Personas, importación Excel y matrículas | ✅ aprobado |
-| M8 | Asistencia por clase | 🔍 en revisión |
+| M8 | Asistencia por clase | ✅ aprobado |
 | M9 | Evaluaciones, entregas y notas ★ | ⬜ |
 | M10 | Incidencias y notificaciones | ⬜ |
 | M11 | Alertas por reglas (sin IA) | ⬜ |
