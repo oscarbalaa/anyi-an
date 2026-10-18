@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ClipboardList, Clock, Download, FileText, PieChart, Plus, Trash2, Upload } from 'lucide-react'
 import { useId, useRef, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { Link } from 'react-router'
 import { useAvisos } from '@/components/ui/avisos-contexto'
 import { Button } from '@/components/ui/button'
@@ -16,7 +16,13 @@ import { TablaDatos } from '@/components/ui/tabla-datos'
 import { TarjetaKpi } from '@/components/ui/tarjeta-kpi'
 import { descargar, type ErrorApi } from '@/lib/api'
 import { fechaCorta } from '@/lib/asistencia'
-import { tamano, useCambioEvaluaciones, useEvaluaciones, type FilaEvaluacion, type ListaEvaluaciones } from '@/lib/evaluaciones'
+import {
+  tamano,
+  useCambioEvaluaciones,
+  useEvaluaciones,
+  type FilaEvaluacion,
+  type ListaEvaluaciones,
+} from '@/lib/evaluaciones'
 import { esquemaEvaluacion, type DatosEvaluacion } from '@/lib/validaciones'
 import { FiltrosCurso } from './FiltrosCurso'
 import { useCursoElegido } from './useCursoElegido'
@@ -67,7 +73,10 @@ export default function Evaluaciones() {
       {isPending ? (
         <Esqueleto className="h-96" />
       ) : isError ? (
-        <EstadoVacio titulo="No se pudo cargar las evaluaciones" accion={<Button onClick={() => refetch()}>Reintentar</Button>} />
+        <EstadoVacio
+          titulo="No se pudo cargar las evaluaciones"
+          accion={<Button onClick={() => refetch()}>Reintentar</Button>}
+        />
       ) : (
         <>
           <div className="grid gap-4 sm:grid-cols-3">
@@ -145,7 +154,8 @@ export default function Evaluaciones() {
         conCerrar
         className="w-[min(94vw,40rem)]"
       >
-        {panel && data && (
+        {panel && data && panel.id !== null && !editando && <Esqueleto className="h-80" />}
+        {panel && data && (panel.id === null || editando) && (
           <FormEvaluacion
             key={panel.id ?? 'nueva'}
             lista={data}
@@ -195,14 +205,16 @@ function FormEvaluacion({
     register,
     handleSubmit,
     setError,
-    watch,
+    control,
     setValue,
     formState: { errors, isSubmitting },
   } = useForm<DatosEvaluacion>({
     resolver: zodResolver(esquemaEvaluacion),
     defaultValues: {
       titulo: evaluacion?.titulo ?? '',
-      tipo_evaluacion_id: String(evaluacion?.tipo_evaluacion_id ?? tipos.find((t) => t.nombre === 'Práctica')?.id ?? tipos[0]?.id ?? ''),
+      tipo_evaluacion_id: String(
+        evaluacion?.tipo_evaluacion_id ?? tipos.find((t) => t.nombre === 'Práctica')?.id ?? tipos[0]?.id ?? '',
+      ),
       subperiodo_id: String(bimestre.id),
       fecha_asignacion: evaluacion?.fecha_asignacion ?? '',
       fecha_limite: evaluacion?.fecha_limite ?? '',
@@ -211,7 +223,8 @@ function FormEvaluacion({
       requiere_entrega: evaluacion?.requiere_entrega ?? true,
     },
   })
-  const elegido = bimestres.find((b) => String(b.id) === watch('subperiodo_id')) ?? bimestre
+  const subperiodo = useWatch({ control, name: 'subperiodo_id' })
+  const elegido = bimestres.find((b) => String(b.id) === subperiodo) ?? bimestre
 
   const guardar = handleSubmit(async (d) => {
     const datos = {
@@ -252,7 +265,9 @@ function FormEvaluacion({
           />
           <Selector
             etiqueta="Bimestre"
-            opciones={bimestres.filter((b) => b.estado === 'ABIERTO').map((b) => ({ valor: String(b.id), texto: b.nombre }))}
+            opciones={bimestres
+              .filter((b) => b.estado === 'ABIERTO')
+              .map((b) => ({ valor: String(b.id), texto: b.nombre }))}
             {...register('subperiodo_id')}
           />
           <Campo
@@ -359,7 +374,11 @@ function Material({ evaluacion, limite, editable }: { evaluacion: FilaEvaluacion
     datos.append('archivo', archivo)
     setErrorArchivo(null)
     try {
-      const r = await cambio.mutateAsync({ metodo: 'SUBIR', ruta: `/docente/evaluaciones/${evaluacion.id}/material`, datos })
+      const r = await cambio.mutateAsync({
+        metodo: 'SUBIR',
+        ruta: `/docente/evaluaciones/${evaluacion.id}/material`,
+        datos,
+      })
       avisos.exito(r.mensaje)
     } catch (e) {
       const err = e as ErrorApi
@@ -378,7 +397,10 @@ function Material({ evaluacion, limite, editable }: { evaluacion: FilaEvaluacion
       ) : (
         <ul className="flex flex-col gap-2">
           {evaluacion.material.map((a) => (
-            <li key={a.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-borde px-3 py-2">
+            <li
+              key={a.id}
+              className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-borde px-3 py-2"
+            >
               <span className="min-w-0 truncate">
                 {a.nombre} <span className="text-sm text-texto-suave">· {tamano(a.tamano)}</span>
               </span>
@@ -386,7 +408,9 @@ function Material({ evaluacion, limite, editable }: { evaluacion: FilaEvaluacion
                 <Button
                   variante="fantasma"
                   tamano="chico"
-                  onClick={() => descargar(`/archivos/${a.id}`, a.nombre).catch((e) => avisos.error((e as ErrorApi).message))}
+                  onClick={() =>
+                    descargar(`/archivos/${a.id}`, a.nombre).catch((e) => avisos.error((e as ErrorApi).message))
+                  }
                   aria-label={`Descargar ${a.nombre}`}
                 >
                   <Download className="size-4" aria-hidden />
@@ -399,7 +423,10 @@ function Material({ evaluacion, limite, editable }: { evaluacion: FilaEvaluacion
                     onClick={() =>
                       cambio.mutate(
                         { metodo: 'DELETE', ruta: `/docente/evaluaciones/${evaluacion.id}/material/${a.id}` },
-                        { onSuccess: (r) => avisos.exito(r.mensaje), onError: (e) => avisos.error((e as ErrorApi).message) },
+                        {
+                          onSuccess: (r) => avisos.exito(r.mensaje),
+                          onError: (e) => avisos.error((e as ErrorApi).message),
+                        },
                       )
                     }
                   >
@@ -421,7 +448,13 @@ function Material({ evaluacion, limite, editable }: { evaluacion: FilaEvaluacion
             accept=".pdf,.docx,.pptx,.xlsx,.jpg,.jpeg,.png"
             onChange={(e) => e.target.files?.[0] && subirArchivo(e.target.files[0])}
           />
-          <Button variante="secundario" tamano="chico" onClick={() => entrada.current?.click()} disabled={cambio.isPending} className="self-start">
+          <Button
+            variante="secundario"
+            tamano="chico"
+            onClick={() => entrada.current?.click()}
+            disabled={cambio.isPending}
+            className="self-start"
+          >
             <Upload className="size-4" aria-hidden /> {cambio.isPending ? 'Subiendo…' : 'Agregar archivo'}
           </Button>
           <label htmlFor={`subir-${evaluacion.id}`} className="text-sm text-texto-suave">

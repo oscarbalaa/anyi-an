@@ -62,7 +62,12 @@ function ElegirEvaluacion() {
             descripcion="Evaluaciones para calificar"
             vacio="No hay evaluaciones asignadas en este bimestre."
             columnas={[
-              { clave: 'titulo', titulo: 'Evaluación', principal: true, celda: (e) => <span className="font-bold">{e.titulo}</span> },
+              {
+                clave: 'titulo',
+                titulo: 'Evaluación',
+                principal: true,
+                celda: (e) => <span className="font-bold">{e.titulo}</span>,
+              },
               { clave: 'limite', titulo: 'Fecha límite', celda: (e) => fechaCorta(e.fecha_limite) },
               {
                 clave: 'calificadas',
@@ -117,11 +122,17 @@ function Formulario({ planilla }: { planilla: Planilla }) {
   const avisos = useAvisos()
   const { evaluacion, curso, editable } = planilla
 
-  const sucias = Object.keys(filas).filter((k) => JSON.stringify(filas[Number(k)]) !== JSON.stringify(original[Number(k)]))
+  const sucias = Object.keys(filas).filter(
+    (k) => JSON.stringify(filas[Number(k)]) !== JSON.stringify(original[Number(k)]),
+  )
   const sinGuardar = sucias.length > 0
 
   // Aviso de cambios sin guardar al salir de la pantalla o cerrar la pestaña
-  const bloqueo = useBlocker(({ currentLocation, nextLocation }) => sinGuardar && currentLocation.search !== nextLocation.search || (sinGuardar && currentLocation.pathname !== nextLocation.pathname))
+  const bloqueo = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      sinGuardar &&
+      (currentLocation.pathname !== nextLocation.pathname || currentLocation.search !== nextLocation.search),
+  )
   useEffect(() => {
     if (!sinGuardar) return
     const avisar = (e: BeforeUnloadEvent) => e.preventDefault()
@@ -134,7 +145,8 @@ function Formulario({ planilla }: { planilla: Planilla }) {
     if (campo === 'nota') {
       const mensaje = errorNota(valor)
       setErrores((e) => {
-        const { [matricula]: _, ...resto } = e
+        const resto = { ...e }
+        delete resto[matricula]
         return mensaje ? { ...resto, [matricula]: mensaje } : resto
       })
     }
@@ -175,7 +187,10 @@ function Formulario({ planilla }: { planilla: Planilla }) {
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6">
       <div>
-        <Link to={`/docente/evaluaciones?curso=${curso.id}`} className="inline-flex items-center gap-2 font-bold text-accion hover:underline">
+        <Link
+          to={`/docente/evaluaciones?curso=${curso.id}`}
+          className="inline-flex items-center gap-2 font-bold text-accion hover:underline"
+        >
           <ArrowLeft className="size-4" aria-hidden /> Volver a Evaluaciones
         </Link>
         <h1 className="mt-2 text-3xl font-black sm:text-4xl">{evaluacion.titulo}</h1>
@@ -186,7 +201,11 @@ function Formulario({ planilla }: { planilla: Planilla }) {
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Indicador valor={nota(planilla.resumen.promedio)} etiqueta="Promedio del aula" />
-        <Indicador valor={planilla.resumen.desaprobados} etiqueta={`Desaprobados (< ${nota(planilla.nota_aprobatoria)})`} tono="text-peligro" />
+        <Indicador
+          valor={planilla.resumen.desaprobados}
+          etiqueta={`Desaprobados (< ${nota(planilla.nota_aprobatoria)})`}
+          tono="text-peligro"
+        />
         <Indicador valor={planilla.resumen.sin_entregar} etiqueta="Sin entregar" tono="text-aviso" />
       </div>
 
@@ -203,7 +222,10 @@ function Formulario({ planilla }: { planilla: Planilla }) {
       )}
 
       <Card className="flex flex-col gap-4 p-0 sm:p-0">
-        <div className="hidden grid-cols-[minmax(0,1.4fr)_11rem_8rem_minmax(0,1fr)] gap-4 border-b border-borde bg-primario-suave/60 px-5 py-3 text-sm font-bold md:grid" aria-hidden>
+        <div
+          className="hidden grid-cols-[minmax(0,1.4fr)_11rem_8rem_minmax(0,1fr)] gap-4 border-b border-borde bg-primario-suave/60 px-5 py-3 text-sm font-bold md:grid"
+          aria-hidden
+        >
           <span>Estudiante</span>
           <span>Estado de entrega</span>
           <span>Nota (0 – 20)</span>
@@ -216,17 +238,25 @@ function Formulario({ planilla }: { planilla: Planilla }) {
             const valor = Number(f.nota.replace(',', '.'))
             const baja = f.nota !== '' && !error && valor < planilla.nota_aprobatoria
             return (
-              <li key={e.matricula_id} className="grid gap-3 px-5 py-3 md:grid-cols-[minmax(0,1.4fr)_11rem_8rem_minmax(0,1fr)] md:items-center md:gap-4">
+              <li
+                key={e.matricula_id}
+                className="grid gap-3 px-5 py-3 md:grid-cols-[minmax(0,1.4fr)_11rem_8rem_minmax(0,1fr)] md:items-center md:gap-4"
+              >
                 <div className="min-w-0">
                   <p className="font-bold">{e.nombre}</p>
                   {e.entrega?.archivo ? (
                     <button
                       type="button"
                       className="inline-flex cursor-pointer items-center gap-1 text-sm font-semibold text-accion hover:underline"
-                      onClick={() => descargar(`/archivos/${e.entrega!.archivo!.id}`, e.entrega!.archivo!.nombre).catch((x) => avisos.error((x as ErrorApi).message))}
+                      onClick={() =>
+                        descargar(`/archivos/${e.entrega!.archivo!.id}`, e.entrega!.archivo!.nombre).catch((x) =>
+                          avisos.error((x as ErrorApi).message),
+                        )
+                      }
                       aria-label={`Descargar la entrega de ${e.nombre}`}
                     >
-                      <Download className="size-4" aria-hidden /> Entregó el {fechaCorta(e.entrega.entregada_en.slice(0, 10))}
+                      <Download className="size-4" aria-hidden /> Entregó el{' '}
+                      {fechaCorta(e.entrega.entregada_en.slice(0, 10))}
                     </button>
                   ) : (
                     <p className="text-sm text-texto-suave">{e.codigo}</p>
@@ -300,7 +330,9 @@ function Formulario({ planilla }: { planilla: Planilla }) {
           <Button
             variante="secundario"
             onClick={() =>
-              descargar(`/docente/evaluaciones/${evaluacion.id}/notas/excel`, 'notas.xlsx').catch((x) => avisos.error((x as ErrorApi).message))
+              descargar(`/docente/evaluaciones/${evaluacion.id}/notas/excel`, 'notas.xlsx').catch((x) =>
+                avisos.error((x as ErrorApi).message),
+              )
             }
           >
             <FileDown className="size-5" aria-hidden /> Exportar
@@ -327,7 +359,15 @@ function Formulario({ planilla }: { planilla: Planilla }) {
   )
 }
 
-function Indicador({ valor, etiqueta, tono = 'text-texto' }: { valor: string | number; etiqueta: string; tono?: string }) {
+function Indicador({
+  valor,
+  etiqueta,
+  tono = 'text-texto',
+}: {
+  valor: string | number
+  etiqueta: string
+  tono?: string
+}) {
   return (
     <div className="rounded-2xl border border-borde bg-superficie p-5">
       <p className={cn('text-4xl leading-none font-black', tono)}>{valor}</p>

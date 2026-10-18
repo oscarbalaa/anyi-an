@@ -3,16 +3,22 @@ import type { RouteObject } from 'react-router'
 import { Cargando } from '@/components/ui/estados'
 import { EXTRAS, ROLES, type Rol } from '@/layout/roles'
 import {
+  Actividades,
   Asistencia,
   AsistenciaAdmin,
+  Calificaciones,
   CambiarContrasena,
   Docentes,
   EstadoSistema,
   Estructura,
   Estudiantes,
+  Evaluaciones,
   Ingreso,
   LayoutRol,
   MiAsistencia,
+  MiHorario,
+  MisNotas,
+  Notas,
   Perfil,
   Proximamente,
   Recuperar,
@@ -36,6 +42,12 @@ const pantalla = (rol: Rol, ruta: string): ReactNode => {
   if (rol === 'admin' && ruta === 'asistencia') return <AsistenciaAdmin />
   if (rol === 'docente' && ruta === 'asistencia') return <Asistencia />
   if (rol === 'estudiante' && ruta === 'asistencia') return <MiAsistencia />
+  if (rol === 'docente' && ruta === 'evaluaciones') return <Evaluaciones />
+  if (rol === 'docente' && ruta === 'notas') return <Notas />
+  if (rol === 'docente' && ruta === 'calificaciones') return <Calificaciones />
+  if (rol === 'estudiante' && ruta === 'notas') return <MisNotas />
+  if (rol === 'estudiante' && ruta === 'actividades') return <Actividades />
+  if (rol === 'estudiante' && ruta === 'horario') return <MiHorario />
   return <Proximamente rol={rol} />
 }
 
