@@ -1,0 +1,382 @@
+-- =====================================================================
+-- SCRIPT SQL AYNI
+-- =====================================================================
+
+BEGIN;
+
+-- ---------------------------------------------------------------------
+-- 1. SEGURIDAD
+-- ---------------------------------------------------------------------
+CREATE TABLE rol (
+    id      BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    codigo  VARCHAR(20)  NOT NULL UNIQUE
+            CHECK (codigo IN ('ADMIN','DOCENTE','ESTUDIANTE')),
+    nombre  VARCHAR(60)  NOT NULL
+);
+
+CREATE TABLE usuario (
+    id             BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    rol_id         BIGINT       NOT NULL REFERENCES rol(id),
+    username       VARCHAR(60)  NOT NULL UNIQUE,
+    email          VARCHAR(120) UNIQUE,
+    password_hash  VARCHAR(255) NOT NULL,
+    estado         VARCHAR(15)  NOT NULL DEFAULT 'ACTIVO'
+                   CHECK (estado IN ('ACTIVO','INACTIVO','BLOQUEADO')),
+    ultimo_acceso  TIMESTAMPTZ,
+    creado_por     BIGINT REFERENCES usuario(id),
+    created_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX ix_usuario_rol ON usuario(rol_id);
+
+-- ---------------------------------------------------------------------
+-- 2. PERSONAS
+-- ---------------------------------------------------------------------
+CREATE TABLE persona (
+    id                BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    tipo_documento    VARCHAR(15) NOT NULL DEFAULT 'DNI'
+                      CHECK (tipo_documento IN ('DNI','CE','PASAPORTE')),
+    numero_documento  VARCHAR(20) NOT NULL,
+    nombres           VARCHAR(100) NOT NULL,
+    apellidos         VARCHAR(100) NOT NULL,
+    fecha_nacimiento  DATE,
+    sexo              CHAR(1) CHECK (sexo IN ('M','F')),
+    celular           VARCHAR(20),
+    correo            VARCHAR(120),
+    direccion         VARCHAR(200),
+    created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
+    UNIQUE (tipo_documento, numero_documento)
+);
+
+CREATE TABLE personal_administrativo (
+    id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    persona_id  BIGINT NOT NULL UNIQUE REFERENCES persona(id),
+    usuario_id  BIGINT NOT NULL UNIQUE REFERENCES usuario(id),
+    cargo       VARCHAR(80),
+    estado      VARCHAR(10) NOT NULL DEFAULT 'ACTIVO'
+                CHECK (estado IN ('ACTIVO','INACTIVO'))
+);
+
+CREATE TABLE docente (
+    id                     BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    persona_id             BIGINT NOT NULL UNIQUE REFERENCES persona(id),
+    usuario_id             BIGINT NOT NULL UNIQUE REFERENCES usuario(id),
+    titulo                 VARCHAR(120),
+    especialidad           VARCHAR(100),
+    fecha_inicio_contrato  DATE,
+    fecha_fin_contrato     DATE,
+    estado                 VARCHAR(10) NOT NULL DEFAULT 'ACTIVO'
+                           CHECK (estado IN ('ACTIVO','INACTIVO','LICENCIA')),
+    CHECK (fecha_fin_contrato IS NULL OR fecha_fin_contrato >= fecha_inicio_contrato)
+);
+
+CREATE TABLE estudiante (
+    id             BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    persona_id     BIGINT NOT NULL UNIQUE REFERENCES persona(id),
+    usuario_id     BIGINT NOT NULL UNIQUE REFERENCES usuario(id),
+    codigo         VARCHAR(30) NOT NULL UNIQUE,
+    fecha_ingreso  DATE,
+    estado         VARCHAR(15) NOT NULL DEFAULT 'ACTIVO'
+                   CHECK (estado IN ('ACTIVO','RETIRADO','TRASLADADO','EGRESADO'))
+);
+
+CREATE TABLE apoderado (
+    id             BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    estudiante_id  BIGINT NOT NULL REFERENCES estudiante(id) ON DELETE CASCADE,
+    nombres        VARCHAR(150) NOT NULL,
+    celular        VARCHAR(20),
+    parentesco     VARCHAR(40),
+    es_principal   BOOLEAN NOT NULL DEFAULT FALSE
+);
+-- Solo un apoderado principal por estudiante
+CREATE UNIQUE INDEX ux_apoderado_principal
+    ON apoderado(estudiante_id) WHERE es_principal;
+
+-- ---------------------------------------------------------------------
+-- 3. ESTRUCTURA ACADEMICA
+-- ---------------------------------------------------------------------
+CREATE TABLE periodo_academico (
+    id            BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    nombre        VARCHAR(60) NOT NULL UNIQUE,          -- ej. '2026'
+    fecha_inicio  DATE NOT NULL,
+    fecha_fin     DATE NOT NULL,
+    estado        VARCHAR(15) NOT NULL DEFAULT 'PLANIFICADO'
+                  CHECK (estado IN ('PLANIFICADO','EN_CURSO','CERRADO')),
+    CHECK (fecha_fin > fecha_inicio)
+);
+-- Solo un periodo EN_CURSO a la vez
+CREATE UNIQUE INDEX ux_periodo_en_curso
+    ON periodo_academico((TRUE)) WHERE estado = 'EN_CURSO';
+
+CREATE TABLE subperiodo (                               -- bimestres
+    id            BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    periodo_id    BIGINT NOT NULL REFERENCES periodo_academico(id) ON DELETE CASCADE,
+    numero        SMALLINT NOT NULL CHECK (numero BETWEEN 1 AND 4),
+    nombre        VARCHAR(40) NOT NULL,                 -- 'III Bimestre'
+    fecha_inicio  DATE NOT NULL,
+    fecha_fin     DATE NOT NULL,
+    UNIQUE (periodo_id, numero),
+    CHECK (fecha_fin > fecha_inicio)
+);
+
+CREATE TABLE grado (
+    id      BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    nivel   VARCHAR(15) NOT NULL
+            CHECK (nivel IN ('INICIAL','PRIMARIA','SECUNDARIA')),
+    nombre  VARCHAR(40) NOT NULL,                       -- 'Cuarto'
+    orden   SMALLINT NOT NULL,
+    UNIQUE (nivel, nombre)
+);
+
+CREATE TABLE seccion (
+    id      BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    nombre  VARCHAR(10) NOT NULL UNIQUE                 -- 'A'
+);
+
+CREATE TABLE aula (
+    id                BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    periodo_id        BIGINT NOT NULL REFERENCES periodo_academico(id),
+    grado_id          BIGINT NOT NULL REFERENCES grado(id),
+    seccion_id        BIGINT NOT NULL REFERENCES seccion(id),
+    tutor_docente_id  BIGINT REFERENCES docente(id),    -- 'Asesor(a)' de la boleta
+    capacidad         SMALLINT CHECK (capacidad > 0),
+    UNIQUE (periodo_id, grado_id, seccion_id),
+    UNIQUE (id, periodo_id)                             -- para FK compuesta
+);
+
+CREATE TABLE matricula (
+    id             BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    estudiante_id  BIGINT NOT NULL REFERENCES estudiante(id),
+    aula_id        BIGINT NOT NULL,
+    periodo_id     BIGINT NOT NULL,
+    fecha          DATE NOT NULL DEFAULT CURRENT_DATE,
+    estado         VARCHAR(10) NOT NULL DEFAULT 'ACTIVA'
+                   CHECK (estado IN ('ACTIVA','RETIRADA','ANULADA')),
+    created_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+    UNIQUE (estudiante_id, periodo_id),                 -- 1 matricula por año
+    -- garantiza que el periodo coincida con el del aula
+    FOREIGN KEY (aula_id, periodo_id) REFERENCES aula(id, periodo_id)
+);
+CREATE INDEX ix_matricula_aula ON matricula(aula_id);
+
+CREATE TABLE asignatura (
+    id               BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    codigo           VARCHAR(20) UNIQUE,
+    nombre           VARCHAR(100) NOT NULL,
+    horas_semanales  SMALLINT CHECK (horas_semanales > 0),
+    estado           VARCHAR(10) NOT NULL DEFAULT 'ACTIVO'
+                     CHECK (estado IN ('ACTIVO','INACTIVO'))
+);
+
+CREATE TABLE curso_aula (
+    id             BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    aula_id        BIGINT NOT NULL REFERENCES aula(id),
+    asignatura_id  BIGINT NOT NULL REFERENCES asignatura(id),
+    docente_id     BIGINT NOT NULL REFERENCES docente(id),
+    UNIQUE (aula_id, asignatura_id)
+);
+CREATE INDEX ix_curso_aula_docente ON curso_aula(docente_id);
+
+CREATE TABLE horario (
+    id             BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    curso_aula_id  BIGINT NOT NULL REFERENCES curso_aula(id) ON DELETE CASCADE,
+    dia_semana     SMALLINT NOT NULL CHECK (dia_semana BETWEEN 1 AND 7), -- 1=lunes
+    hora_inicio    TIME NOT NULL,
+    hora_fin       TIME NOT NULL,
+    ambiente       VARCHAR(40),
+    CHECK (hora_fin > hora_inicio)
+);
+
+-- ---------------------------------------------------------------------
+-- 4. SEGUIMIENTO ACADEMICO
+-- ---------------------------------------------------------------------
+CREATE TABLE tipo_evaluacion (
+    id      BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    nombre  VARCHAR(40) NOT NULL UNIQUE                 -- SEMANAL, PARCIAL
+);
+
+CREATE TABLE evaluacion (
+    id                  BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    curso_aula_id       BIGINT NOT NULL REFERENCES curso_aula(id),
+    subperiodo_id       BIGINT NOT NULL REFERENCES subperiodo(id),
+    tipo_evaluacion_id  BIGINT NOT NULL REFERENCES tipo_evaluacion(id),
+    orden               SMALLINT NOT NULL CHECK (orden BETWEEN 1 AND 8),
+    titulo              VARCHAR(150),
+    fecha               DATE,
+    fecha_limite        DATE,
+    peso                NUMERIC(5,2) NOT NULL DEFAULT 1 CHECK (peso > 0),
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
+    UNIQUE (curso_aula_id, subperiodo_id, orden)
+);
+CREATE INDEX ix_evaluacion_subperiodo ON evaluacion(subperiodo_id);
+
+CREATE TABLE nota_evaluacion (
+    id              BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    evaluacion_id   BIGINT NOT NULL REFERENCES evaluacion(id) ON DELETE CASCADE,
+    matricula_id    BIGINT NOT NULL REFERENCES matricula(id),
+    nota            NUMERIC(4,2) CHECK (nota IS NULL OR nota BETWEEN 0 AND 20), -- NULL = aun no rendida
+    estado_entrega  VARCHAR(15) NOT NULL DEFAULT 'PENDIENTE'
+                    CHECK (estado_entrega IN ('PENDIENTE','ENTREGADO','TARDIO','NO_ENTREGADO')),
+    observacion     VARCHAR(300),
+    updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+    UNIQUE (evaluacion_id, matricula_id)
+);
+CREATE INDEX ix_nota_matricula ON nota_evaluacion(matricula_id);
+
+CREATE TABLE calificacion_periodo (
+    id             BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    matricula_id   BIGINT NOT NULL REFERENCES matricula(id),
+    curso_aula_id  BIGINT NOT NULL REFERENCES curso_aula(id),
+    subperiodo_id  BIGINT NOT NULL REFERENCES subperiodo(id),
+    promedio       NUMERIC(4,2) CHECK (promedio IS NULL OR promedio BETWEEN 0 AND 20),
+    estado         VARCHAR(15) NOT NULL DEFAULT 'BORRADOR'
+                   CHECK (estado IN ('BORRADOR','PUBLICADA','CERRADA')),
+    updated_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+    UNIQUE (matricula_id, curso_aula_id, subperiodo_id)
+);
+
+CREATE TABLE sesion_clase (
+    id             BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    curso_aula_id  BIGINT NOT NULL REFERENCES curso_aula(id),
+    subperiodo_id  BIGINT NOT NULL REFERENCES subperiodo(id),
+    fecha          DATE NOT NULL,
+    tema           VARCHAR(200),
+    UNIQUE (curso_aula_id, fecha)
+);
+
+CREATE TABLE asistencia (
+    id               BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    sesion_clase_id  BIGINT NOT NULL REFERENCES sesion_clase(id) ON DELETE CASCADE,
+    matricula_id     BIGINT NOT NULL REFERENCES matricula(id),
+    estado           CHAR(1) NOT NULL CHECK (estado IN ('P','F','T','J')),
+    observacion      VARCHAR(300),
+    registrado_por   BIGINT REFERENCES usuario(id),
+    created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+    UNIQUE (sesion_clase_id, matricula_id)
+);
+CREATE INDEX ix_asistencia_matricula ON asistencia(matricula_id);
+
+CREATE TABLE tipo_incidencia (
+    id           BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    nombre       VARCHAR(60) NOT NULL UNIQUE,
+    descripcion  VARCHAR(250)
+);
+
+CREATE TABLE incidencia (
+    id                  BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    matricula_id        BIGINT NOT NULL REFERENCES matricula(id),
+    tipo_incidencia_id  BIGINT NOT NULL REFERENCES tipo_incidencia(id),
+    registrado_por      BIGINT NOT NULL REFERENCES usuario(id),
+    fecha               DATE NOT NULL DEFAULT CURRENT_DATE,
+    gravedad            VARCHAR(10) NOT NULL
+                        CHECK (gravedad IN ('LEVE','MODERADA','GRAVE')),
+    descripcion         VARCHAR(500),
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX ix_incidencia_matricula ON incidencia(matricula_id);
+
+-- ---------------------------------------------------------------------
+-- 5. IA Y ALERTAS
+-- ---------------------------------------------------------------------
+CREATE TABLE modelo_ml (
+    id                   BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    nombre               VARCHAR(80) NOT NULL,
+    version              VARCHAR(30) NOT NULL,
+    algoritmo            VARCHAR(60),
+    metricas             JSONB,
+    fecha_entrenamiento  TIMESTAMPTZ,
+    activo               BOOLEAN NOT NULL DEFAULT FALSE,
+    UNIQUE (nombre, version)
+);
+-- Solo un modelo activo
+CREATE UNIQUE INDEX ux_modelo_activo ON modelo_ml((TRUE)) WHERE activo;
+
+CREATE TABLE prediccion_riesgo (
+    id             BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    matricula_id   BIGINT NOT NULL REFERENCES matricula(id),
+    subperiodo_id  BIGINT NOT NULL REFERENCES subperiodo(id),
+    modelo_id      BIGINT NOT NULL REFERENCES modelo_ml(id),
+    fecha          TIMESTAMPTZ NOT NULL DEFAULT now(),
+    probabilidad   NUMERIC(5,4) NOT NULL CHECK (probabilidad BETWEEN 0 AND 1),
+    nivel_riesgo   VARCHAR(10) NOT NULL
+                   CHECK (nivel_riesgo IN ('BAJO','MEDIO','ALTO')),
+    features       JSONB NOT NULL,                      -- foto de lo que vio el modelo
+    resumen_texto  TEXT
+);
+CREATE INDEX ix_prediccion_matricula ON prediccion_riesgo(matricula_id, fecha DESC);
+CREATE INDEX ix_prediccion_nivel ON prediccion_riesgo(subperiodo_id, nivel_riesgo);
+
+CREATE TABLE factor_riesgo (
+    id             BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    prediccion_id  BIGINT NOT NULL REFERENCES prediccion_riesgo(id) ON DELETE CASCADE,
+    variable       VARCHAR(80) NOT NULL,
+    valor          VARCHAR(80),
+    contribucion   NUMERIC(8,4) NOT NULL,               -- + sube riesgo, - baja riesgo
+    descripcion    VARCHAR(300)
+);
+CREATE INDEX ix_factor_prediccion ON factor_riesgo(prediccion_id);
+
+CREATE TABLE recomendacion (
+    id             BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    prediccion_id  BIGINT NOT NULL REFERENCES prediccion_riesgo(id) ON DELETE CASCADE,
+    descripcion    VARCHAR(400) NOT NULL,
+    prioridad      SMALLINT NOT NULL DEFAULT 2 CHECK (prioridad BETWEEN 1 AND 3)
+);
+
+CREATE TABLE alerta_estudiantil (
+    id                     BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    prediccion_id          BIGINT NOT NULL UNIQUE REFERENCES prediccion_riesgo(id),
+    responsable_docente_id BIGINT NOT NULL REFERENCES docente(id),
+    estado                 VARCHAR(15) NOT NULL DEFAULT 'NUEVA'
+                           CHECK (estado IN ('NUEVA','EN_SEGUIMIENTO','CERRADA','DESCARTADA')),
+    justificacion_cambio   VARCHAR(400),
+    fecha_creacion         TIMESTAMPTZ NOT NULL DEFAULT now(),
+    fecha_cierre           TIMESTAMPTZ,
+    CHECK (fecha_cierre IS NULL OR fecha_cierre >= fecha_creacion)
+);
+CREATE INDEX ix_alerta_responsable ON alerta_estudiantil(responsable_docente_id, estado);
+
+CREATE TABLE intervencion (
+    id             BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    alerta_id      BIGINT NOT NULL REFERENCES alerta_estudiantil(id) ON DELETE CASCADE,
+    responsable_id BIGINT NOT NULL REFERENCES usuario(id),
+    tipo           VARCHAR(60) NOT NULL,
+    descripcion    VARCHAR(500),
+    fecha          DATE NOT NULL DEFAULT CURRENT_DATE,
+    resultado      VARCHAR(300),
+    created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE historial_alerta (
+    id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    alerta_id   BIGINT NOT NULL REFERENCES alerta_estudiantil(id) ON DELETE CASCADE,
+    accion      VARCHAR(30) NOT NULL
+                CHECK (accion IN ('GENERADA','ASIGNADA_DOCENTE_AULA','REASIGNADA',
+                                  'INTERVENCION','ESTADO_CAMBIADO','CERRADA')),
+    detalle     VARCHAR(400),
+    usuario_id  BIGINT REFERENCES usuario(id),          -- NULL = accion del sistema
+    fecha       TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX ix_historial_alerta ON historial_alerta(alerta_id, fecha);
+
+-- ---------------------------------------------------------------------
+-- 6. DATOS INICIALES
+-- ---------------------------------------------------------------------
+INSERT INTO rol (codigo, nombre) VALUES
+    ('ADMIN','Administrador'),
+    ('DOCENTE','Docente'),
+    ('ESTUDIANTE','Estudiante');
+
+INSERT INTO tipo_evaluacion (nombre) VALUES ('SEMANAL'), ('PARCIAL');
+
+INSERT INTO tipo_incidencia (nombre, descripcion) VALUES
+    ('Conducta',    'Faltas de disciplina o conducta en aula'),
+    ('Academica',   'Incumplimiento de tareas o trabajos'),
+    ('Puntualidad', 'Tardanzas reiteradas'),
+    ('Salud',       'Situaciones de salud del estudiante'),
+    ('Familiar',    'Situaciones familiares relevantes');
+
+INSERT INTO seccion (nombre) VALUES ('A'), ('B'), ('C');
+
+COMMIT;

@@ -1,0 +1,28 @@
+EduCloud AI – Plataforma Cloud para gestión académica y detección
+temprana de riesgo
+Descripción de la aplicación:
+EduCloud AI será una aplicación web orientada a instituciones educativas para
+administrar información académica y proporcionar mecanismos inteligentes de
+seguimiento del estudiante.
+Permitirá gestionar estudiantes, docentes, asignaturas, matrículas, evaluaciones,
+calificaciones, asistencia, incidencias y períodos académicos. A partir de esta
+información, incorporará un componente de IA que analizará el comportamiento
+académico y permitirá identificar estudiantes con diferentes niveles de riesgo
+académico.
+La plataforma presentará dashboards para docentes o responsables académicos,
+mostrando estudiantes que requieren atención, factores asociados al nivel de
+riesgo y recomendaciones de intervención.
+No se busca construir solamente un modelo predictivo; debe existir un sistema
+académico funcional que genere y administre la información utilizada por el
+componente inteligente.
+Usuarios principales:
+Administrador, coordinador académico, docente y estudiante.
+Módulos principales:
+Estudiantes, docentes, cursos, matrículas, asistencia, evaluaciones, calificaciones,
+incidencias, alertas, predicción de riesgo y dashboard.
+Enfoque de IA:
+Machine Learning + clasificación de riesgo + XAI/explicabilidad.
+Ejemplo:
+El sistema detecta que un estudiante presenta disminución progresiva de
+calificaciones, ausencias frecuentes y actividades pendientes, determina un nivel
+de riesgo y muestra al docente los factores que influyeron en la alerta.

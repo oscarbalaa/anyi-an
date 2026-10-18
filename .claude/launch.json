@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "vite-ayni",
+      "runtimeExecutable": "C:\\Users\\OSCARB\\AppData\\Local\\Temp\\claude\\C--Users-OSCARB-Documents-MIRKO-NUBE\\cc07fc66-974d-423a-a366-5d9962664a48\\scratchpad\\vite-ayni.cmd",
+      "runtimeArgs": [],
+      "port": 5174
+    }
+  ]
+}
