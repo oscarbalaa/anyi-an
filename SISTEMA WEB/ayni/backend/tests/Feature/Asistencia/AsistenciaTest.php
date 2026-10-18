@@ -38,10 +38,11 @@ beforeEach(function () {
     ]);
 
     $this->alumnos = [];
-    foreach (['Aranda Ruiz', 'Quispe Mendoza', 'Ramírez Torres'] as $apellidos) {
+    foreach (['Aranda Ruiz', 'Quispe Mendoza', 'Ramírez Torres'] as $i => $apellidos) {
+        $codigo = sprintf('E-2026-%03d', $i + 1);
         $persona = Fabrica::persona(['nombres' => 'Alumno', 'apellidos' => $apellidos]);
-        $usuario = Fabrica::usuario('ESTUDIANTE', ['username' => 'E-2026-'.substr((string) $persona, -3)]);
-        $estudiante = DB::table('estudiante')->insertGetId(['persona_id' => $persona, 'usuario_id' => $usuario, 'codigo' => sprintf('E-2026-%03d', $persona)]);
+        $usuario = Fabrica::usuario('ESTUDIANTE', ['username' => $codigo]);
+        $estudiante = DB::table('estudiante')->insertGetId(['persona_id' => $persona, 'usuario_id' => $usuario, 'codigo' => $codigo]);
         $this->alumnos[$apellidos] = ['matricula' => Fabrica::matricula($this->aula, $this->p, $estudiante), 'usuario' => $usuario];
     }
     $this->m = fn (string $apellidos) => $this->alumnos[$apellidos]['matricula'];
