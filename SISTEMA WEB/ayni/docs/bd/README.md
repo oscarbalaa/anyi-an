@@ -35,4 +35,4 @@ Los cuatro archivos se generan con `scripts/equipo/exportar-bd.ps1` a partir de 
 | `grado.nivel` con INICIAL | Solo PRIMARIA y SECUNDARIA (D6) |
 | `evaluacion.orden` (máximo 8) y `peso` decimal | Sin límite de evaluaciones; `peso` entero relativo 1-10 |
 | — | **Tablas nuevas:** `auditoria`, `recuperacion_password`, `captcha_desafio`, `institucion`, `escala_literal`, `coordinacion`, `archivo`, `evaluacion_material`, `entrega`, `alerta_administrativa`, `notificacion` |
-| — | **Columnas nuevas:** bloqueo y contraseña temporal en `usuario`; fecha de cierre y estado en `subperiodo`; motivo en `matricula`; estado en `sesion_clase`; publicación en `calificacion_periodo` |
+| — | **Columnas nuevas:** bloqueo y contraseña temporal en `usuario`; fecha de cierre y estado en `subperiodo`; motivo en `matricula`; estado en `sesion_clase`; publicación en `calificacion_periodo`; `requiere_entrega` en `evaluacion` (M9: un examen en clase no pide archivo) |

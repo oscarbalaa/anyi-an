@@ -239,7 +239,7 @@ Funciona en la web (hosting del curso) y en local (panel `AYNI.bat` / `AYNI.sh`)
 | RN-10 | Aprobado si el promedio es ≥ la nota aprobatoria (11 por defecto). |
 | RN-11 | **Equivalencia literal** por defecto: AD = 18–20, A = 14–17,99, B = 11–13,99, C = 0–10,99. Es configurable. |
 | RN-12 | Una entrega es **tardía** si se envía después de las 11:59 p. m. del día límite. Sin entrega al pasar la fecha límite = **no entregado**. |
-| RN-13 | Estados de la calificación: **BORRADOR → PUBLICADA → CERRADA**. El estudiante solo ve las publicadas o cerradas. Una calificación cerrada no se modifica. |
+| RN-13 | Estados de la calificación: **BORRADOR → PUBLICADA → CERRADA**. El estudiante solo ve las notas y el promedio de un curso cuando su calificación está publicada o cerrada; después de publicar ve los cambios que el docente guarde. Una calificación cerrada no se modifica. |
 | RN-14 | Al llegar la fecha de cierre (o al cerrar el admin), los promedios pendientes se calculan con 0 en lo que falte y pasan a **CERRADA**. Se verifica en cada uso del sistema, sin cron. |
 | RN-15 | Tras **5 intentos fallidos** se bloquea la cuenta. Estudiante/docente: hasta que el admin la desbloquee. Administrador: 15 minutos. |
 | RN-16 | **Contraseñas** — docente y administrador: ≥ 8 caracteres con mayúscula, minúscula, número y símbolo. Estudiante: ≥ 8 caracteres con letras y números. |
@@ -254,6 +254,7 @@ Funciona en la web (hosting del curso) y en local (panel `AYNI.bat` / `AYNI.sh`)
 | RN-25 | El enlace de recuperación de contraseña es de un solo uso y vence a los 30 minutos. La respuesta es la misma exista o no la cuenta. |
 | RN-26 | Los archivos de entrega son **PDF de hasta 10 MB** (o el límite menor del hosting); solo los ven el estudiante dueño, el docente del curso y el administrador. |
 | RN-27 | **% de asistencia** = (clases − faltas) ÷ clases × 100, con 1 decimal. Tardanzas (T) y faltas justificadas (J) no restan. Solo cuentan los registros **definitivos**; los borradores no los ve el estudiante. |
+| RN-28 | Una evaluación **en clase** (por defecto, el examen) no pide archivo; las demás aceptan **una entrega** por estudiante, que puede guardarse como borrador y, ya entregada, no se cambia (el docente corrige su estado si hace falta). |
 
 ---
 
@@ -429,7 +430,7 @@ Funciona en la web (hosting del curso) y en local (panel `AYNI.bat` / `AYNI.sh`)
 | RF-17 – RF-26 | M6 | Pest `Estructura/PeriodosTest` (RN-01, RN-02, cierre automático RN-14), `AulasTest` (RN-03, tutor, capacidad, coordinadores), `HorariosTest` (carga, cruces de aula y de docente RN-05), `CatalogosTest` (asignaturas, tipos de evaluación, colegio y escala RN-11, opciones), `CalendarioActualTest`; Vitest `estructura.test.tsx`, `validaciones.test.ts`; E2E `m6-estructura.spec.ts` (aula completa con cursos y horario; PC y celular) | ✅ Pasan (M6) |
 | RF-27 – RF-32 | M7 | Pest `Personas/DocentesTest` (usuario = DNI, RN-23, inactivo desactiva la cuenta), `EstudiantesTest` (código RN-22, apoderado principal RN-24), `MatriculasTest` (RN-04, edad RN-23, retiro y anulación), `ImportacionTest` (plantilla, revisión por fila, filas con error, importación en una transacción); Vitest `personas.test.tsx`, `validaciones.test.ts`; E2E `m7-personas.spec.ts` (importar un Excel con una fila errónea y matricular; PC y celular) | ✅ Pasan (M7) |
 | RF-33 – RF-37 | M8 | Pest `Asistencia/AsistenciaTest` (401/403 por rol y solo el docente del curso, todos presentes por defecto, excepciones, aviso de falta al estudiante, sin duplicados, borrador → definitivo, fechas RN-06, medianoche RN-07 y corrección del administrador, validaciones por campo, faltas de la semana RF-37, % RN-27, resumen por aula y clases sin registrar, borrado con motivo, retirados), `DatosDemostracionTest` (clase pendiente del docente demo); Vitest `asistencia.test.tsx` (registro, solo lectura, errores del servidor, mi asistencia, corrección); E2E `m8-asistencia.spec.ts` (el docente registra, la estudiante lo ve, el administrador justifica; PC y celular) | ✅ Pasan (M8) |
-| RF-38 – RF-48 | M9 | — | Pendiente |
+| RF-38 – RF-48 | M9 | Pest `Evaluacion/EvaluacionesTest` (permisos, validaciones por campo, fechas dentro del bimestre, edición con recálculo, borrado protegido, material: formatos, archivos disfrazados y 10 MB), `EntregasTest` (actividades asignadas con peso en %, borrador → entrega, tardía tras las 11:59 p. m. RN-12, solo PDF real RN-26, examen en clase, bimestre cerrado, retirado, descargas con permiso), `CalificacionesTest` (notas con coma y rechazo de 20,5 / -1 / abc / 15,555 RN-08, estado de entrega corregido, Excel, promedio ponderado a mano RN-09, sin nota = 0, literal RN-11, publicar con aviso RN-13, cierre automático y manual RN-14, horario), `DatosDemostracionTest`; Vitest `evaluaciones.test.tsx`; E2E `m9-evaluaciones.spec.ts` (evaluación → entrega → nota → publicar → el estudiante la ve; PC y celular) | ⏳ Escritas (falta la corrida completa) |
 | RF-49 – RF-51 | M10 | — | Pendiente |
 | RF-52 – RF-58 | M11 | — | Pendiente |
 | RF-59 – RF-64 | M12 | — | Pendiente |

@@ -145,7 +145,7 @@ export function PestanaPeriodos() {
                           onClick={() =>
                             confirmar({
                               titulo: `¿Cerrar el ${b.nombre}?`,
-                              texto: `Se cierra antes de su fecha de cierre (${fecha(b.fecha_cierre_notas)}). Los docentes ya no podrán registrar notas de este bimestre.`,
+                              texto: `Se cierra antes de su fecha de cierre (${fecha(b.fecha_cierre_notas)}). Lo que no tenga nota se calcula como 0, los promedios quedan cerrados y ya no se modifican notas, entregas ni asistencia de este bimestre.`,
                               textoConfirmar: 'Sí, cerrar',
                               peligro: true,
                               metodo: 'POST',

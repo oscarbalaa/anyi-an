@@ -71,7 +71,9 @@ Las pruebas automáticas de cada módulo recorren esta tabla con valores válido
 | Nota | De 0 a 20, hasta 2 decimales; acepta punto o coma; letras bloqueadas | 15, 15.5, 15,5 | 20,5, -1, abc, 15.555 |
 | Observación (nota / asistencia) | Hasta 300 caracteres | Entregó 26 sep | — |
 | Archivo de entrega | Solo PDF, verificado por su contenido real (no solo por la extensión); hasta 10 MB o el límite del hosting | tarea.pdf | tarea.exe renombrado a .pdf, 15 MB |
-| Material de apoyo | PDF, DOCX, PPTX, XLSX, JPG o PNG; hasta 10 MB | guia.pdf | script.php |
+| Material de apoyo | PDF, DOCX, PPTX, XLSX, JPG o PNG, verificado por su contenido; hasta 10 MB y 5 archivos por evaluación | guia.pdf | script.php, falso.pdf |
+| Estado de entrega | PENDIENTE, ENTREGADO, TARDIO o NO_ENTREGADO; se calcula solo y el docente lo corrige | TARDIO | PERDIDO |
+| Entrega | Solo si la evaluación pide archivo, el bimestre está abierto, la matrícula está activa y aún no se entregó | — | examen en clase, segunda entrega |
 | Archivo de importación | Solo `.xlsx`; hasta 5 MB y 1000 filas; las columnas deben coincidir con la plantilla | matricula_3B.xlsx | alumnos.csv, archivo sin encabezados |
 
 ## Asistencia, incidencias y alertas

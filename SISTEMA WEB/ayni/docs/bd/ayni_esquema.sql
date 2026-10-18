@@ -444,6 +444,7 @@ CREATE TABLE `evaluacion` (
   `fecha_asignacion` date NOT NULL,
   `fecha_limite` date NOT NULL COMMENT 'Se puede entregar hasta las 11:59 p. m. de este día',
   `peso` tinyint unsigned NOT NULL DEFAULT '1' COMMENT 'Peso relativo (1 a 10) en el promedio',
+  `requiere_entrega` tinyint(1) NOT NULL DEFAULT '1' COMMENT 'El estudiante sube un archivo',
   `creado_por` bigint unsigned DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de registro',
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Última modificación',
