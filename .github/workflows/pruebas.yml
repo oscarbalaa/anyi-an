@@ -41,6 +41,13 @@ jobs:
       - name: Pruebas punta a punta
         run: docker compose --profile pruebas run --rm pruebas-e2e
 
+      - name: Mostrar el detalle de las pruebas punta a punta que fallaron
+        if: failure()
+        run: |
+          for f in $(find e2e/test-results -name error-context.md 2>/dev/null); do echo "::group::$f"; cat "$f"; echo "::endgroup::"; done
+          docker compose logs --tail 80 app || true
+          tail -n 60 backend/storage/logs/*.log 2>/dev/null || true
+
       - name: Guardar reportes
         if: always()
         uses: actions/upload-artifact@v4
