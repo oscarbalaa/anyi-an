@@ -134,8 +134,8 @@ test.describe('pantallas de ingreso', () => {
 
 // "modulo": la pantalla aún muestra en qué módulo llega (null si ya está construida)
 const ROLES: { rol: RolE2E; base: string; etiqueta: string; opciones: number; pantalla: string; modulo: string | null; captura: string }[] = [
-  { rol: 'admin', base: '/admin', etiqueta: 'Administrativo', opciones: 9, pantalla: 'Panel de riesgo', modulo: 'Módulo 11', captura: '06-inicio-administracion' },
-  { rol: 'docente', base: '/docente', etiqueta: 'Docente', opciones: 8, pantalla: 'Alertas', modulo: 'Módulo 11', captura: '07-inicio-docente' },
+  { rol: 'admin', base: '/admin', etiqueta: 'Administrativo', opciones: 9, pantalla: 'Panel de riesgo', modulo: null, captura: '06-inicio-administracion' },
+  { rol: 'docente', base: '/docente', etiqueta: 'Docente', opciones: 9, pantalla: 'Mis estudiantes', modulo: 'Módulo 12', captura: '07-inicio-docente' },
   { rol: 'estudiante', base: '/estudiante', etiqueta: 'Estudiante', opciones: 6, pantalla: 'Notificaciones', modulo: null, captura: '08-inicio-estudiante' },
 ]
 
