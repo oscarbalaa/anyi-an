@@ -4,6 +4,7 @@ namespace App\Servicios\Evaluacion;
 
 use App\Exceptions\ErrorRegla;
 use App\Models\Usuario;
+use App\Servicios\Riesgo\Riesgo;
 use App\Support\Auditoria;
 use App\Support\Cursos;
 use App\Support\Excel;
@@ -84,6 +85,10 @@ class Notas
 
             return $cambios;
         });
+        // RF-52: y al registrar notas
+        if ($cambios) {
+            app(Riesgo::class)->recalcularAula($aulaId, $ev->subperiodo_id);
+        }
 
         return ['mensaje' => $cambios ? 'Notas guardadas.' : 'No había cambios por guardar.'] + $this->planilla($evaluacionId, $usuario);
     }

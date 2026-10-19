@@ -194,6 +194,47 @@ describe('patrones para el seguimiento', function () {
     });
 });
 
+describe('riesgo y alertas (M11)', function () {
+    it('calcula el riesgo de cada estudiante del bimestre en curso y del anterior, sin alertas en el cerrado', function () {
+        $vigente = Calendario::bimestreVigente(Calendario::bimestres(Calendario::periodoEnCurso()->id));
+        $activas = DB::table('matricula')->where('estado', 'ACTIVA')->count();
+
+        expect(DB::table('prediccion_riesgo')->where('subperiodo_id', $vigente->id)->distinct()->count('matricula_id'))->toBe($activas)
+            ->and(DB::table('prediccion_riesgo')->where('subperiodo_id', '!=', $vigente->id)->count())->toBeGreaterThan(0)
+            ->and(DB::table('alerta_estudiantil')->where('subperiodo_id', '!=', $vigente->id)->count())->toBe(0);
+    });
+
+    it('crea una alerta por cada estudiante en riesgo, asignada a su tutor y con su historial', function () {
+        $enRiesgo = DB::table('prediccion_riesgo')->whereIn('nivel_riesgo', ['ALTO', 'MEDIO'])
+            ->whereIn('id', DB::table('alerta_estudiantil')->select('prediccion_id'))->count();
+        $alertas = DB::table('alerta_estudiantil as al')->join('matricula as m', 'm.id', '=', 'al.matricula_id')->join('aula as a', 'a.id', '=', 'm.aula_id')
+            ->get(['al.id', 'al.responsable_docente_id', 'a.tutor_docente_id']);
+
+        expect($alertas->count())->toBeGreaterThanOrEqual(3)->toBe($enRiesgo)
+            ->and($alertas->every(fn ($a) => $a->responsable_docente_id === $a->tutor_docente_id))->toBeTrue()
+            ->and(DB::table('historial_alerta')->where('accion', 'GENERADA')->count())->toBe($alertas->count())
+            ->and(DB::table('notificacion')->where('tipo', 'ALERTA_ASIGNADA')->count())->toBe($alertas->count());
+    });
+
+    it('señala a Rodrigo Sáenz (faltas frecuentes) para su tutor del 3.º A', function () {
+        $alerta = DB::table('alerta_estudiantil as al')->join('prediccion_riesgo as p', 'p.id', '=', 'al.prediccion_id')
+            ->join('matricula as m', 'm.id', '=', 'al.matricula_id')->join('estudiante as e', 'e.id', '=', 'm.estudiante_id')->join('persona as pe', 'pe.id', '=', 'e.persona_id')
+            ->join('docente as d', 'd.id', '=', 'al.responsable_docente_id')->join('persona as dp', 'dp.id', '=', 'd.persona_id')
+            ->where('pe.apellidos', 'Sáenz Palacios')->sole(['p.id', 'p.nivel_riesgo', 'dp.apellidos']);
+
+        expect($alerta->nivel_riesgo)->toBeIn(['ALTO', 'MEDIO'])->and($alerta->apellidos)->toBe('Castillo Ramos')
+            ->and(DB::table('factor_riesgo')->where('prediccion_id', $alerta->id)->pluck('variable'))->toContain('asistencia')
+            ->and(DB::table('recomendacion')->where('prediccion_id', $alerta->id)->exists())->toBeTrue();
+    });
+
+    it('deja alertas administrativas abiertas: cuentas bloqueadas, estudiantes sin matrícula y asistencia sin registrar', function () {
+        $abiertas = DB::table('alerta_administrativa')->where('estado', 'ABIERTA')->pluck('tipo');
+
+        expect($abiertas->filter(fn ($t) => $t === 'USUARIO_BLOQUEADO'))->toHaveCount(2)
+            ->and($abiertas)->toContain('ESTUDIANTE_SIN_MATRICULA', 'DOCENTE_SIN_ASISTENCIA');
+    });
+});
+
 describe('usuarios de demostración', function () {
     it('crea los accesos del bloc de credenciales', function (string $usuario, string $rol, string $clave) {
         $u = DB::table('usuario')->join('rol', 'rol.id', '=', 'usuario.rol_id')->where('username', $usuario)->select('usuario.*', 'rol.codigo')->sole();
