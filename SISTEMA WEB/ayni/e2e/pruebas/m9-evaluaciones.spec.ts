@@ -58,7 +58,7 @@ test.describe('evaluación → entrega → nota → publicar → el estudiante l
     await editar.locator('input[type=file]').setInputFiles({ name: 'Guía de la práctica.pdf', mimeType: 'application/pdf', buffer: PDF })
     await expect(page.getByText('Material de apoyo agregado.')).toBeVisible()
     await expect(editar.getByText('Guía de la práctica.pdf')).toBeVisible()
-    await editar.getByRole('button', { name: 'Cerrar', exact: true }).click()
+    await editar.getByRole('button', { name: 'Listo' }).click()
     await expect(visible(page.getByText(titulo))).toBeVisible()
   })
 

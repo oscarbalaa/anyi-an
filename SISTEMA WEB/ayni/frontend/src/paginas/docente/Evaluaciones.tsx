@@ -324,7 +324,7 @@ function FormEvaluacion({
             </Button>
           )}
           <Button variante="secundario" onClick={onListo}>
-            {evaluacion ? 'Cerrar' : 'Cancelar'}
+            {evaluacion ? 'Listo' : 'Cancelar'}
           </Button>
           <Button type="submit" disabled={isSubmitting || !lista.editable}>
             {isSubmitting ? 'Guardando…' : evaluacion ? 'Guardar cambios' : 'Crear evaluación'}
