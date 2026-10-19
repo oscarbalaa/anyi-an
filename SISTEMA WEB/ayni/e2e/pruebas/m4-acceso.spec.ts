@@ -102,7 +102,7 @@ test.describe('rutas protegidas (RF-09)', () => {
 })
 
 test.describe('recuperación de contraseña (RF-06)', () => {
-  test('envía el enlace al correo y permite crear la contraseña', async ({ page, request, isMobile }) => {
+  test('envía el enlace al correo (llega a la bandeja de prueba, RF-68) y permite crear la contraseña', async ({ page, request, isMobile }) => {
     // Usa la cuenta "promero" para no cerrar las sesiones de las otras pruebas
     test.skip(isMobile, 'Una sola vez: el enlace llega al mismo buzón')
     const correo = 'patricia.romero@ayni.test'

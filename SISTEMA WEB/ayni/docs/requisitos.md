@@ -437,7 +437,7 @@ Funciona en la web (hosting del curso) y en local (panel `AYNI.bat` / `AYNI.sh`)
 | RF-65, RF-66, RF-68 | M1 | Pester `scripts/pruebas/ayni.Tests.ps1` (13); E2E `m1-esqueleto.spec.ts` (17 × PC y celular); Pest `SaludTest`, `ErroresJsonTest`, `PlataformaTest` (24) | ✅ Pasan (M1) |
 | RF-67 | M2 | Pest `DatosDemostracionTest` (29), `CalendarioDemoTest` (10), `RestriccionesTest` (32) | ✅ Pasan (M2) |
 
-En el M13 esta tabla se desglosa a una fila por RF, con el nombre de cada prueba.
+El desglose por requisito, con el nombre de cada prueba, está en [`trazabilidad.md`](trazabilidad.md) (se genera con `node scripts/pruebas/trazabilidad.mjs` y la CI revisa que esté al día y que ningún RF quede sin pruebas). Las pruebas transversales del M13 (seguridad, rendimiento, accesibilidad y el recorrido de un bimestre completo) están en la sección de seguridad y en `lista-de-verificacion.md`.
 
 ---
 

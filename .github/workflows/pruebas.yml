@@ -26,6 +26,9 @@ jobs:
       - name: Revisar el panel de Linux (ShellCheck)
         run: docker run --rm -v "$PWD:/w" koalaman/shellcheck:stable -S warning /w/scripts/ayni.sh "/w/1. INICIO/AYNI.sh"
 
+      - name: Matriz de trazabilidad (cada requisito con sus pruebas)
+        run: node scripts/pruebas/trazabilidad.mjs --revisar
+
       - name: Construir y encender AYNI
         run: |
           docker compose build app
@@ -40,6 +43,9 @@ jobs:
 
       - name: Pruebas punta a punta
         run: docker compose --profile pruebas run --rm pruebas-e2e
+
+      - name: Respaldo y restauración desde el panel (RF-66)
+        run: bash scripts/pruebas/respaldo.test.sh
 
       - name: Mostrar el detalle de las pruebas punta a punta que fallaron
         if: failure()
