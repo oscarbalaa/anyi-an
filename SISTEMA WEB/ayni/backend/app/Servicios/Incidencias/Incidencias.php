@@ -6,6 +6,7 @@ use App\Exceptions\ErrorRegla;
 use App\Models\Usuario;
 use App\Servicios\Notificaciones;
 use App\Support\Auditoria;
+use App\Support\AulasDelUsuario;
 use App\Support\Calendario;
 use App\Support\Cursos;
 use App\Support\PerfilUsuario;
@@ -24,7 +25,7 @@ class Incidencias
     public function listar(Usuario $usuario, array $f): array
     {
         $periodo = Calendario::periodoEnCurso();
-        $aulas = $periodo ? $this->aulasPermitidas($usuario, $periodo->id) : collect();
+        $aulas = $periodo ? AulasDelUsuario::permitidas($usuario, $periodo->id) : collect();
 
         $q = $this->consulta($aulas)
             ->when($f['tipo_id'] ?? null, fn ($q, $tipo) => $q->where('i.tipo_incidencia_id', $tipo))
@@ -73,7 +74,7 @@ class Incidencias
         }
         $q = DB::table('matricula as m')->join('estudiante as e', 'e.id', '=', 'm.estudiante_id')->join('persona as p', 'p.id', '=', 'e.persona_id')
             ->join('aula as a', 'a.id', '=', 'm.aula_id')->join('grado as g', 'g.id', '=', 'a.grado_id')->join('seccion as s', 's.id', '=', 'a.seccion_id')
-            ->where('m.estado', 'ACTIVA')->whereIn('m.aula_id', $this->aulasPermitidas($usuario, $periodo->id));
+            ->where('m.estado', 'ACTIVA')->whereIn('m.aula_id', AulasDelUsuario::permitidas($usuario, $periodo->id));
         if ($t = trim($buscar)) {
             $like = '%'.addcslashes($t, '%_\\').'%';
             $q->where(fn ($w) => $w->where('e.codigo', 'like', $like)
@@ -98,7 +99,7 @@ class Incidencias
             ->where('m.id', $d['matricula_id'])->where('m.periodo_id', $periodo->id)->where('m.estado', 'ACTIVA')
             ->first(['m.id', 'm.aula_id', 'e.usuario_id', 'p.nombres', 'p.apellidos'])
             ?? throw new ErrorRegla('Elige un estudiante con matrícula activa.', 'matricula_id');
-        abort_unless($this->aulasPermitidas($usuario, $periodo->id)->contains($m->aula_id), 403);
+        abort_unless(AulasDelUsuario::permitidas($usuario, $periodo->id)->contains($m->aula_id), 403);
         if ($d['fecha'] > today()->toDateString() || $d['fecha'] < $periodo->fecha_inicio) {
             throw new ErrorRegla('La fecha no puede ser futura ni anterior al inicio del periodo.', 'fecha');
         }
@@ -133,28 +134,6 @@ class Incidencias
     }
 
     /** Aulas del periodo que ve el usuario: todas (admin) o donde el docente dicta, es tutor o coordina */
-    public function aulasPermitidas(Usuario $usuario, int $periodoId): Collection
-    {
-        $aulas = DB::table('aula')->join('grado', 'grado.id', '=', 'aula.grado_id')->where('aula.periodo_id', $periodoId);
-        if ($usuario->rol->codigo === 'ADMIN') {
-            return $aulas->pluck('aula.id');
-        }
-        $docente = Cursos::docenteDe($usuario);
-        abort_unless($usuario->rol->codigo === 'DOCENTE' && $docente, 403);
-        $coordina = DB::table('coordinacion')->where('docente_id', $docente)->where('periodo_id', $periodoId)->get();
-        if ($coordina->contains('ambito', 'INSTITUCION')) {
-            return $aulas->pluck('aula.id');
-        }
-
-        return $aulas->where(fn (Builder $q) => $q
-            ->where('aula.tutor_docente_id', $docente)
-            ->orWhereExists(fn ($s) => $s->from('curso_aula')->whereColumn('curso_aula.aula_id', 'aula.id')->where('curso_aula.docente_id', $docente))
-            ->orWhereIn('aula.id', $coordina->where('ambito', 'AULA')->pluck('aula_id'))
-            ->orWhereIn('aula.grado_id', $coordina->where('ambito', 'GRADO')->pluck('grado_id'))
-            ->orWhereIn('grado.nivel', $coordina->where('ambito', 'NIVEL')->pluck('nivel')))
-            ->pluck('aula.id');
-    }
-
     private function consulta(Collection $aulas): Builder
     {
         return DB::table('incidencia as i')
