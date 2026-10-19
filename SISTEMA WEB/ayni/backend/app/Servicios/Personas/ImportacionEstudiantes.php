@@ -4,6 +4,7 @@ namespace App\Servicios\Personas;
 
 use App\Exceptions\ErrorRegla;
 use App\Support\Auditoria;
+use App\Support\Excel;
 use App\Support\PerfilUsuario;
 use App\Support\Reglas;
 use App\Support\ReglasPersona;
@@ -12,7 +13,6 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
-use OpenSpout\Common\Entity\Row;
 use OpenSpout\Common\Entity\Style\Style;
 use OpenSpout\Reader\XLSX\Reader;
 use OpenSpout\Writer\XLSX\Options as OpcionesEscritura;
@@ -318,7 +318,7 @@ class ImportacionEstudiantes
         $encabezado = (new Style)->setFontBold()->setBackgroundColor('F4EDE6');
         $texto = (new Style)->setFormat('@');
         foreach ($filas as $i => $fila) {
-            $escritor->addRow(Row::fromValues(array_map('strval', $fila), $i === 0 ? $encabezado : $texto));
+            $escritor->addRow(Excel::fila(array_map('strval', $fila), $i === 0 ? $encabezado : $texto));
         }
         $escritor->close();
 

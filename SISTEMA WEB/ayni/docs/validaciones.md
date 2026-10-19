@@ -26,7 +26,7 @@ Las pruebas automáticas de cada módulo recorren esta tabla con valores válido
 | Número — CE | 9 a 12 caracteres alfanuméricos, en mayúsculas | 001234567 | 12345, 00-123 |
 | Número — Pasaporte | 6 a 12 caracteres alfanuméricos, en mayúsculas | PE1234567 | 123, P#12345 |
 | Nombres / apellidos | 2 a 100 caracteres. Solo letras (incluye á é í ó ú ü ñ), espacios, apóstrofo y guion. Se guarda con mayúscula inicial | María José, D'Angelo, Pérez-Gómez | Juan2, @na, "J" |
-| Fecha de nacimiento | Fecha real en formato DD/MM/AAAA, no futura, con la edad coherente según RN-23 | 14/05/2012 | 31/02/2012, 01/01/2030 |
+| Fecha de nacimiento | Fecha real en formato DD/MM/AAAA, anterior a hoy (ni hoy ni futura, con la fecha de Lima), con la edad coherente según RN-23: el docente al registrarse; el estudiante al matricularse, según el nivel del aula | 14/05/2012 | 31/02/2012, 01/01/2030, hoy |
 | Sexo | M o F | M | X |
 | Correo | Formato usuario@dominio.ext, con @ y una extensión de 2 letras o más. Máximo 120. Se guarda en minúsculas. Único entre usuarios | dramirez@mail.com | dramirez@mail, dramirez.com, a@b.c |
 | Celular | 9 dígitos y empieza con 9 | 987654321 | 87654321, 98765432a |
@@ -51,7 +51,7 @@ Las pruebas automáticas de cada módulo recorren esta tabla con valores válido
 | Nombre del periodo | Año de 4 dígitos entre 2020 y 2100; único | 2026 | 26, 2026-I |
 | Fechas de periodo y bimestre | Inicio < fin; los bimestres dentro del periodo y sin cruzarse (RN-02) | 03/03/2026 – 08/05/2026 | fin antes del inicio |
 | Fecha de cierre de notas | Ni antes del inicio del bimestre ni después del fin del periodo (RN-02) | 15/05/2026 | anterior al inicio del bimestre |
-| Sección | "Única" o de 1 a 3 letras mayúsculas (RN-03) | Única, A, B | 1, a-b |
+| Sección | "Única" o de 1 a 3 letras mayúsculas (RN-03). La pantalla ofrece "Única" y de la A a la Z | Única, A, B | 1, a-b |
 | Capacidad del aula | Entero de 1 a 60 | 30 | 0, 100, 25.5 |
 | Código de asignatura | 2 a 20 caracteres: letras mayúsculas, números y guion; único | MAT-3 | mat 3, M |
 | Nombre de asignatura | 3 a 100 caracteres: letras, números y espacios | Ciencia y Tecnología | "Ma", C++ |
@@ -71,7 +71,7 @@ Las pruebas automáticas de cada módulo recorren esta tabla con valores válido
 | Nota | De 0 a 20, hasta 2 decimales; acepta punto o coma; letras bloqueadas | 15, 15.5, 15,5 | 20,5, -1, abc, 15.555 |
 | Observación (nota / asistencia) | Hasta 300 caracteres | Entregó 26 sep | — |
 | Archivo de entrega | Solo PDF, verificado por su contenido real (no solo por la extensión); hasta 10 MB o el límite del hosting | tarea.pdf | tarea.exe renombrado a .pdf, 15 MB |
-| Material de apoyo | PDF, DOCX, PPTX, XLSX, JPG o PNG, verificado por su contenido; hasta 10 MB y 5 archivos por evaluación | guia.pdf | script.php, falso.pdf |
+| Material de apoyo | PDF, DOCX, PPTX, XLSX, JPG o PNG, verificado por su contenido (un .docx/.pptx/.xlsx debe ser un documento de Office real, no un .zip renombrado); hasta 10 MB y 5 archivos por evaluación | guia.pdf | script.php, falso.pdf, archivo.zip renombrado a .docx |
 | Estado de entrega | PENDIENTE, ENTREGADO, TARDIO o NO_ENTREGADO; se calcula solo y el docente lo corrige | TARDIO | PERDIDO |
 | Entrega | Solo si la evaluación pide archivo, el bimestre está abierto, la matrícula está activa y aún no se entregó | — | examen en clase, segunda entrega |
 | Archivo de importación | Solo `.xlsx`; hasta 5 MB y 1000 filas; las columnas deben coincidir con la plantilla | matricula_3B.xlsx | alumnos.csv, archivo sin encabezados |
@@ -91,7 +91,8 @@ Las pruebas automáticas de cada módulo recorren esta tabla con valores válido
 | Estudiante de la incidencia | Con matrícula activa en una de las aulas del usuario | — | un retirado; uno de otra aula (403) |
 | Fecha de incidencia | Fecha real, no futura y no anterior al inicio del periodo | hoy | mañana, 31/02, una de un periodo anterior |
 | Descripción de incidencia | 10 a 500 caracteres (se quitan los espacios de más) | Interrumpe la clase de forma reiterada. | "mal", vacía |
-| Justificación (alerta o retiro) | 10 a 400 caracteres; obligatoria para cerrar, descartar o reasignar una alerta | Asistió a todas las clases desde la reunión. | "ok", vacía |
+| Justificación de una alerta | 10 a 400 caracteres; obligatoria para cerrar, descartar o reasignar una alerta | Asistió a todas las clases desde la reunión. | "ok", vacía |
+| Motivo de retiro o anulación de matrícula | 10 a 300 caracteres | Traslado a otro colegio por mudanza. | "ok", vacío |
 | Estado de una alerta | Nueva → En seguimiento o Descartada; En seguimiento → Cerrada o Descartada. Cerrar pide al menos una intervención | — | Nueva → Cerrada; reabrir una cerrada |
 | Intervención | Tipo de la lista (reunión con el apoderado, entrevista con el estudiante, reforzamiento académico, llamada telefónica, derivación a psicología, otro); descripción de 10 a 500 caracteres; resultado de hasta 300; fecha entre la creación de la alerta y hoy | Reunión con la madre sobre las faltas. | "ok", mañana |
 | Nuevo encargado de una alerta | Un docente activo del estudiante: su tutor, uno de sus profesores o la coordinación del aula | — | un docente de otra aula |
@@ -112,3 +113,44 @@ Las pruebas automáticas de cada módulo recorren esta tabla con valores válido
 | Nota aprobatoria | Número de 0 a 20 |
 | Umbrales de asistencia | Porcentaje de 0 a 100. El umbral ALTO debe ser menor que el MEDIO |
 | Equivalencia literal | Rangos de 0 a 20, sin huecos ni cruces, de C a AD |
+| Umbrales de promedio | Número de 0 a 20. El umbral ALTO no puede ser mayor que el MEDIO |
+| Entregas pendientes (riesgo alto) | Entero de 1 a 20 |
+| Días para el cierre del bimestre | Entero de 0 a 30 |
+| Nombre del colegio | 3 a 150 caracteres |
+| Código modular | 7 dígitos (opcional) |
+| UGEL | Hasta 80 caracteres (opcional) |
+| Teléfono | 6 a 9 dígitos (opcional) |
+| Correo y dirección | Como en Personas (opcionales) |
+
+## Otros formularios
+
+| Formulario | Campo | Regla |
+|---|---|---|
+| Cuenta administrativa | Cargo | 2 a 80 caracteres: letras, números, espacios y . , - |
+| Cuenta administrativa | Estado | ACTIVO o INACTIVO |
+| Tipo de evaluación | Nombre | 3 a 40 letras y espacios; único |
+| Asignatura / tipo de evaluación | Estado | ACTIVO o INACTIVO |
+| Docente | Estado | ACTIVO, INACTIVO o LICENCIA |
+| Docente | Coordina | Un aula del periodo en curso (opcional) |
+| Estudiante | Estado | ACTIVO, RETIRADO, TRASLADADO o EGRESADO |
+| Estudiante | Fecha de ingreso | No posterior a hoy |
+| Aula | Tutor / coordinador | Un docente activo (opcional) |
+| Bimestre | Número | 1 a 4, sin repetir en el periodo |
+| Coordinación | Ámbito | GRADO (con su grado), NIVEL (con su nivel) o INSTITUCION |
+| Curso de un aula | Asignatura y docente | Una asignatura activa, sin repetir en el aula, y un docente activo |
+| Matrícula | Estudiante, aula y fecha | Sin otra matrícula en el periodo, con cupo (RN-04), edad del nivel (RN-23); fecha no futura ni posterior al fin del periodo |
+| Ingreso y recuperación | Tipo de acceso | estudiante, docente o administracion (cualquier otro valor, o una lista, responde 422) |
+| Restablecer contraseña | Enlace | Token de 64 caracteres, de un solo uso y por 30 minutos (RN-25) |
+
+Los filtros de las listas (buscar, estado, nivel, aula, bimestre, página) se validan solo en el backend: un valor que no está en la lista o un texto donde va un número responde 422.
+
+## Auditoría del Módulo 13
+
+Se revisó cada campo de esta matriz contra los Form Requests y servicios del backend y los esquemas Zod del frontend. Se corrigió:
+
+- la fecha de "hoy" del frontend, que se calculaba en UTC (después de las 7 p. m. ya era mañana): ahora se usa la de Lima;
+- en el frontend faltaban el mínimo de 30 minutos por clase, que el bimestre esté dentro de su periodo, el cierre de notas antes del fin del periodo, que las fechas de una evaluación estén dentro de su bimestre y que la fecha de una incidencia o intervención no sea futura;
+- los desplegables con valores fijos ahora también tienen su mensaje en español;
+- un `.zip` renombrado a `.docx` ya no pasa como material de apoyo;
+- enviar el tipo de acceso como lista al ingresar respondía 500: ahora 422;
+- esta matriz: el motivo de retiro es de 10 a 300 caracteres, la fecha de nacimiento no puede ser de hoy y se agregaron los formularios que faltaban.

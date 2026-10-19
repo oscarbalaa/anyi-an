@@ -338,7 +338,7 @@ function FormBimestre({ periodo, bimestre, onListo }: { periodo: Periodo; bimest
     setError,
     formState: { errors, isSubmitting },
   } = useForm<DatosBimestre>({
-    resolver: zodResolver(esquemaBimestre),
+    resolver: zodResolver(esquemaBimestre(periodo)),
     defaultValues: {
       fecha_inicio: bimestre.fecha_inicio ?? '',
       fecha_fin: bimestre.fecha_fin ?? '',

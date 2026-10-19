@@ -4,6 +4,7 @@ namespace Tests\Soporte;
 
 use Illuminate\Testing\TestResponse;
 use OpenSpout\Reader\XLSX\Reader;
+use ZipArchive;
 
 /** Lee los archivos que descarga la API para revisar su contenido */
 final class Leer
@@ -23,6 +24,17 @@ final class Leer
         $lector->close();
 
         return $filas;
+    }
+
+    /** XML de la primera hoja del .xlsx (para revisar el tipo de cada celda) */
+    public static function xmlExcel(TestResponse $respuesta): string
+    {
+        $zip = new ZipArchive;
+        $zip->open($respuesta->baseResponse->getFile()->getPathname());
+        $xml = (string) $zip->getFromName('xl/worksheets/sheet1.xml');
+        $zip->close();
+
+        return $xml;
     }
 
     /** El PDF en el mismo texto que lleva dentro (Windows-1252) */
