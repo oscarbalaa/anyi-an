@@ -21,8 +21,8 @@ Cada módulo escribe aquí su parte. En el Módulo 15 se exportan a Word y PDF e
 | Acceso y navegación (inicio, ingreso, menú, elementos comunes) | `usuario-01-acceso-y-navegacion.md` | ✅ M3 |
 | 1. Requisitos de acceso | `usuario-02-inicio-de-sesion.md` | ✅ M4 |
 | 2. Inicio de sesión, captcha y recuperación de contraseña | `usuario-02-inicio-de-sesion.md` | ✅ M4 |
-| 3. Navegación principal (inicio de cada rol) | — | M12 |
-| 4. Funciones por rol | — | M5 – M12 |
+| 3. Navegación principal (inicio de cada rol) | `usuario-10-inicio-y-reportes.md` | ✅ M12 |
+| 4. Funciones por rol | (ver abajo) | M5 – M12 |
 | 4.1 Administrador → Usuarios; Mi perfil (todos) | `usuario-03-usuarios-y-perfil.md` | ✅ M5 |
 | 4.2 Administrador → Estructura académica | `usuario-04-estructura-academica.md` | ✅ M6 |
 | 4.3 Administrador → Docentes, Estudiantes (importación desde Excel) y Matrículas | `usuario-05-personas-y-matriculas.md` | ✅ M7 |
@@ -30,6 +30,7 @@ Cada módulo escribe aquí su parte. En el Módulo 15 se exportan a Word y PDF e
 | 4.5 Docente → Evaluaciones, Notas, Calificaciones; Estudiante → Mis notas, Actividades, Horario; Administrador → cierre de bimestre | `usuario-07-evaluaciones-y-notas.md` | ✅ M9 |
 | 4.6 Docente y Administrador → Incidencias; Notificaciones y campana (los 3 roles) | `usuario-08-incidencias-y-notificaciones.md` | ✅ M10 |
 | 4.7 Administrador → Panel de riesgo y Alertas (estudiantiles y administrativas); Docente → Alertas asignadas y Coordinación | `usuario-09-alertas-y-riesgo.md` | ✅ M11 |
+| 4.8 Docente → Mis estudiantes; Ficha 360° (docente y administrador); Administrador → Reportes; boleta en PDF (administrador y estudiante) | `usuario-10-inicio-y-reportes.md` | ✅ M12 |
 | 5. Cierre de sesión (a pedido y por inactividad) | `usuario-02-inicio-de-sesion.md` | ✅ M4 |
 | 6. Solución de problemas frecuentes | — | Cada módulo |
 

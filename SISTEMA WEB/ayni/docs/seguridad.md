@@ -86,3 +86,12 @@ En GCP sí se controla la versión de PHP. Allí conviene actualizar a Laravel 1
 - **Rastro:** cada cambio de estado, intervención y reasignación queda en `historial_alerta` con usuario y fecha, y en `auditoria`. Las acciones automáticas aparecen como «Sistema».
 - **Sin cron:** el cálculo diario se dispara en el primer ingreso del día; si fallara, el ingreso sigue funcionando (se registra en el log).
 
+
+## Inicio, ficha 360° y reportes (Módulo 12)
+- **Cada rol ve solo lo suyo:** `/admin/inicio`, `/docente/inicio` y `/estudiante/inicio` van con su `rol:`; el estudiante solo recibe sus propias notas publicadas, su asistencia y sus entregas.
+- **Ficha 360°:** la administración ve cualquiera; el docente, solo las de las aulas donde es tutor, dicta un curso o coordina (`AulasDelUsuario`, la misma regla de incidencias y alertas). Otra aula responde 403 y una matrícula que no existe, 404. El estudiante no tiene ficha.
+- **Mis estudiantes:** pedir un `curso_id` ajeno por la URL devuelve el primer curso propio; nunca lista a los estudiantes de otro docente.
+- **Boleta en PDF:** el estudiante solo descarga la suya (`/estudiante/boleta`, sin parámetros); la de cualquier estudiante es solo de la administración. Lleva únicamente promedios publicados o cerrados (RN-13), para no adelantar borradores.
+- **Excel:** el consolidado es solo de la administración; el docente exporta la asistencia únicamente de sus aulas (403 en otra). El aula se valida en el servidor (422 «Elige el aula.»).
+- **PDF propio:** se escribe con `App\Support\Pdf` (sin librerías); el texto se escapa (`\`, `(`, `)`) y se convierte a WinAnsi, así que un nombre con paréntesis o tildes no rompe ni inyecta contenido en el PDF.
+- **Sin N+1:** inicio, ficha y mis estudiantes tienen pruebas que cuentan las consultas al agregar más estudiantes, incidencias y apoderados.
