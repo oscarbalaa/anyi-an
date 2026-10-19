@@ -32,7 +32,7 @@ test.describe('incidencia + nota publicada → el estudiante ve las 2 notificaci
     await expect(form.getByText('Elige al estudiante.')).toBeVisible()
     await expect(form.getByText('Describe lo ocurrido.')).toBeVisible()
 
-    await form.getByLabel('Estudiante').fill('quispe')
+    await form.getByLabel('Estudiante', { exact: true }).fill('quispe')
     await form.getByRole('button', { name: 'Elegir a Quispe Mendoza, Valeria' }).click()
     await expect(form.getByTestId('estudiante-elegido')).toHaveText('Quispe Mendoza, Valeria')
     await form.getByLabel('Tipo').selectOption({ label: 'Conducta' })

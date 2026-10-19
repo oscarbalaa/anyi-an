@@ -36,7 +36,12 @@ async function limpiarPrueba(request: APIRequestContext) {
 /** La tabla trae su versión de PC y de celular: se usa la que está a la vista */
 const visible = (l: ReturnType<Page['getByText']>) => l.locator('visible=true').first()
 
-const pestana = (page: Page, nombre: string) => page.getByRole('tab', { name: nombre }).click()
+// La pestaña cambia la dirección dentro de una transición: se espera a que quede elegida
+async function pestana(page: Page, nombre: string) {
+  const tab = page.getByRole('tab', { name: nombre })
+  await tab.click()
+  await expect(tab).toHaveAttribute('aria-selected', 'true')
+}
 
 /** Elige la primera opción cuyo texto empieza con el indicado */
 async function elegir(lista: ReturnType<Page['getByLabel']>, texto: string) {
