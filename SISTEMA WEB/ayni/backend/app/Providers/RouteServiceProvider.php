@@ -34,8 +34,12 @@ class RouteServiceProvider extends ServiceProvider
         RateLimiter::for('recuperacion', $porUsuario('recuperacion', 5));
         RateLimiter::for('captcha', fn (Request $request) => Limit::perMinute(120)->by('captcha|'.$request->ip()));
 
+        // Por cuenta (el token Bearer se lee con el guard de Sanctum: el de "web" no lo ve).
+        // Sin sesión, por IP con margen para un aula que sale por la misma IP.
         RateLimiter::for('api', function (Request $request) {
-            return Limit::perMinute(120)->by($request->user()?->id ?: $request->ip());
+            $usuario = $request->user('sanctum');
+
+            return $usuario ? Limit::perMinute(120)->by("api|{$usuario->id}") : Limit::perMinute(300)->by('api|'.$request->ip());
         });
 
         $this->routes(function () {

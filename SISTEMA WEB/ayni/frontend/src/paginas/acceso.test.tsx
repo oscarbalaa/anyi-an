@@ -164,6 +164,21 @@ describe('rutas protegidas (RF-09)', () => {
     expect(token.leer()).toBeNull()
   })
 
+  it('si el servidor responde 429 o falla, reintenta y conserva la sesión', async () => {
+    const usuario = conSesion('docente')
+    let respuestas = 0
+    const fetch = simularApi({
+      '/auth/yo': () => (++respuestas === 1 ? [429, { mensaje: 'Demasiadas solicitudes.' }] : [200, { usuario }]),
+      '/calendario/actual': [200, calendario],
+      '/notificaciones/resumen': [200, { pendientes: 0, recientes: [] }],
+    })
+    renderizarEn('/docente')
+
+    expect(await screen.findByTestId('nombre-usuario', {}, { timeout: 3000 })).toHaveTextContent('Ana Torres')
+    expect(llamadas(fetch, '/auth/yo')).toBe(2)
+    expect(token.leer()).not.toBeNull()
+  })
+
   it('tras 1 hora sin actividad no reutiliza el token guardado (RF-08)', async () => {
     conSesion('docente')
     localStorage.setItem('ayni.actividad', String(Date.now() - 61 * 60 * 1000))

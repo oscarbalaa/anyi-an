@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useAvisos } from '@/components/ui/avisos-contexto'
-import { enviar, pedir } from './api'
+import { enviar, pedir, type ErrorApi } from './api'
 import { EVENTO_EXPIRADA, token, type Usuario } from './sesion'
 import { ContextoSesion, type Sesion } from './sesion-contexto'
+
+const REINTENTOS = [1000, 3000, 6000]
 
 const EXPIRADA = 'Tu sesión se cerró por inactividad. Vuelve a ingresar.'
 
@@ -18,13 +20,31 @@ export function ProveedorSesion({ children }: { children: ReactNode }) {
     conSesion.current = usuario !== null
   }, [usuario])
 
-  // Al abrir la app se confirma el token guardado
+  // Al abrir la app se confirma el token guardado. Solo un 401 cierra la sesión:
+  // ante un corte o demasiadas peticiones (429) se reintenta antes de pedir ingresar.
   useEffect(() => {
     if (!token.leer()) return
-    pedir<{ usuario: Usuario }>('/auth/yo')
-      .then((r) => setUsuario(r.usuario))
-      .catch(() => setUsuario(null))
-      .finally(() => setVerificando(false))
+    let vigente = true
+    const esperar = (ms: number) => new Promise((listo) => window.setTimeout(listo, ms))
+    ;(async () => {
+      for (let intento = 0; vigente; intento++) {
+        try {
+          const r = await pedir<{ usuario: Usuario }>('/auth/yo')
+          if (vigente) setUsuario(r.usuario)
+          break
+        } catch (e) {
+          if ((e as ErrorApi).estado === 401 || intento >= REINTENTOS.length) {
+            if (vigente) setUsuario(null)
+            break
+          }
+          await esperar(REINTENTOS[intento])
+        }
+      }
+      if (vigente) setVerificando(false)
+    })()
+    return () => {
+      vigente = false
+    }
   }, [])
 
   // El servidor rechazó el token o pasó una hora sin actividad
