@@ -86,10 +86,11 @@ Las pruebas automáticas de cada módulo recorren esta tabla con valores válido
 | Tema de la clase | Opcional, hasta 200 caracteres | Ecuaciones lineales | — |
 | Lista de la clase | Solo estudiantes matriculados en el aula, sin repetir; hasta 60 | — | un estudiante de otra aula |
 | Motivo para eliminar una clase | 10 a 300 caracteres | No hubo clase por simulacro de sismo | "feriado" |
-| Tipo de incidencia | Uno de la lista | Conducta | — |
-| Gravedad | LEVE, MODERADA o GRAVE | LEVE | — |
-| Fecha de incidencia | No futura y dentro del periodo | — | — |
-| Descripción de incidencia | 10 a 500 caracteres | — | "mal" |
+| Tipo de incidencia | Uno de la lista | Conducta | un id que no existe |
+| Gravedad | LEVE, MODERADA o GRAVE | LEVE | MEDIA |
+| Estudiante de la incidencia | Con matrícula activa en una de las aulas del usuario | — | un retirado; uno de otra aula (403) |
+| Fecha de incidencia | Fecha real, no futura y no anterior al inicio del periodo | hoy | mañana, 31/02, una de un periodo anterior |
+| Descripción de incidencia | 10 a 500 caracteres (se quitan los espacios de más) | Interrumpe la clase de forma reiterada. | "mal", vacía |
 | Justificación (alerta o retiro) | 10 a 400 caracteres | — | "ok" |
 | Intervención | Tipo de una lista; descripción de 10 a 500 caracteres; resultado de hasta 300 | — | — |
 
