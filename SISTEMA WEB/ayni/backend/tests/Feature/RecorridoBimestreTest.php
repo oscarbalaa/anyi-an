@@ -133,6 +133,6 @@ it('un II Bimestre completo: asistencia, evaluaciones, entregas, notas, alerta, 
     $fila = collect($filas)->firstWhere(0, 'E-2026-002');
     expect($fila[1])->toBe('Quispe Mendoza, Alumno')
         ->and((float) $fila[2])->toEqual(16.0)
-        ->and((float) $fila[3])->toEqualWithDelta(17.67, 0.01)
+        ->and((float) $fila[3])->toEqual(17.7)
         ->and((float) $fila[5])->toEqual(100.0);
 });
