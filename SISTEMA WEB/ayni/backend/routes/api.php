@@ -21,9 +21,11 @@ use App\Http\Controllers\Api\V1\Docente\EvaluacionController;
 use App\Http\Controllers\Api\V1\Estudiante\AsistenciaController as MiAsistenciaController;
 use App\Http\Controllers\Api\V1\Estudiante\EvaluacionController as MisEvaluacionesController;
 use App\Http\Controllers\Api\V1\IncidenciaController;
+use App\Http\Controllers\Api\V1\InicioController;
 use App\Http\Controllers\Api\V1\NotificacionController;
 use App\Http\Controllers\Api\V1\PanelRiesgoController;
 use App\Http\Controllers\Api\V1\PerfilController;
+use App\Http\Controllers\Api\V1\ReporteController;
 use App\Http\Controllers\Api\V1\SaludController;
 use Illuminate\Support\Facades\Route;
 
@@ -114,6 +116,28 @@ Route::prefix('v1')->group(function () {
                 });
             }
             Route::get('admin/alertas-administrativas', [AlertaAdministrativaController::class, 'index'])->middleware('rol:ADMIN')->name('admin.alertas-administrativas');
+
+            // Inicio, ficha 360°, mis estudiantes y reportes (M12)
+            foreach (['docente' => 'rol:DOCENTE', 'admin' => 'rol:ADMIN'] as $prefijo => $rol) {
+                Route::middleware($rol)->prefix($prefijo)->name("{$prefijo}.")->group(function () {
+                    Route::get('fichas/{matricula}', [InicioController::class, 'ficha'])->whereNumber('matricula')->name('fichas.show');
+                    Route::get('reportes/opciones', [ReporteController::class, 'opciones'])->name('reportes.opciones');
+                    Route::get('reportes/asistencia', [ReporteController::class, 'asistencia'])->name('reportes.asistencia');
+                });
+            }
+            Route::middleware('rol:ADMIN')->prefix('admin')->name('admin.')->group(function () {
+                Route::get('inicio', [InicioController::class, 'admin'])->name('inicio');
+                Route::get('fichas/{matricula}/boleta', [ReporteController::class, 'boleta'])->whereNumber('matricula')->name('fichas.boleta');
+                Route::get('reportes/consolidado', [ReporteController::class, 'consolidado'])->name('reportes.consolidado');
+            });
+            Route::middleware('rol:DOCENTE')->prefix('docente')->name('docente.')->group(function () {
+                Route::get('inicio', [InicioController::class, 'docente'])->name('inicio');
+                Route::get('estudiantes', [InicioController::class, 'misEstudiantes'])->name('estudiantes');
+            });
+            Route::middleware('rol:ESTUDIANTE')->prefix('estudiante')->name('estudiante.')->group(function () {
+                Route::get('inicio', [InicioController::class, 'estudiante'])->name('inicio');
+                Route::get('boleta', [ReporteController::class, 'miBoleta'])->name('boleta');
+            });
 
             // Administración de usuarios (M5)
             Route::middleware('rol:ADMIN')->prefix('admin')->name('admin.')->group(function () use ($fecha) {
