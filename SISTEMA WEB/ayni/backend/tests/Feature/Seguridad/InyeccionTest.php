@@ -107,8 +107,7 @@ it('los nombres de personas no aceptan etiquetas ni símbolos de código', funct
 });
 
 it('un texto que empieza con "=" va a Excel como texto, no como fórmula', function () {
-    $formula = '=HYPERLINK("http://malo.example","Clic aquí")';
-    Fabrica::evaluacion($this->e->mat, $this->e->b2, ['titulo' => $formula, 'fecha_asignacion' => '2026-06-01', 'fecha_limite' => '2026-06-05']);
+    Fabrica::evaluacion($this->e->mat, $this->e->b2, ['titulo' => '=HYPERLINK("http://malo.example","Clic aquí")', 'fecha_asignacion' => '2026-06-01', 'fecha_limite' => '2026-06-05']);
 
     Fabrica::como($this->e->profe);
     $r = $this->get("/api/v1/docente/cursos/{$this->e->mat}/calificaciones/excel")->assertOk();
@@ -116,7 +115,7 @@ it('un texto que empieza con "=" va a Excel como texto, no como fórmula', funct
 
     expect($xml)->toContain('HYPERLINK')
         ->and($xml)->not->toContain('<f>')
-        ->and(Leer::excel($r)[0])->toContain($formula);
+        ->and(collect(Leer::excel($r))->flatten()->contains(fn ($v) => str_contains((string) $v, '=HYPERLINK(')))->toBeTrue();
 });
 
 it('el PDF escapa los paréntesis y la barra invertida: un texto no puede cerrar la cadena e inyectar comandos', function () {

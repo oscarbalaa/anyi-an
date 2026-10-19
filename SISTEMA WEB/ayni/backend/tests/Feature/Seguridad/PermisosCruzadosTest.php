@@ -43,9 +43,9 @@ function accionesDelCurso(object $e, int $practica, int $matricula): array
         ['GET', "/api/v1/docente/evaluaciones/{$practica}/notas", []],
         ['PUT', "/api/v1/docente/evaluaciones/{$practica}/notas", $notas],
         ['GET', "/api/v1/docente/evaluaciones/{$practica}/notas/excel", []],
-        ['GET', "/api/v1/docente/cursos/{$e->mat}/calificaciones", []],
-        ['POST', "/api/v1/docente/cursos/{$e->mat}/calificaciones/publicar", []],
-        ['GET', "/api/v1/docente/cursos/{$e->mat}/calificaciones/excel", []],
+        ['GET', "/api/v1/docente/cursos/{$e->mat}/calificaciones?bimestre_id={$e->b2}", []],
+        ['POST', "/api/v1/docente/cursos/{$e->mat}/calificaciones/publicar", ['bimestre_id' => $e->b2]],
+        ['GET', "/api/v1/docente/cursos/{$e->mat}/calificaciones/excel?bimestre_id={$e->b2}", []],
     ];
 }
 

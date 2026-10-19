@@ -27,7 +27,7 @@ class RouteServiceProvider extends ServiceProvider
         // Límites del ingreso y la recuperación (además del bloqueo por cuenta).
         // Por IP el margen es amplio: en el colegio toda un aula sale por la misma IP.
         $porUsuario = fn (string $nombre, int $limite) => fn (Request $request) => [
-            Limit::perMinute($limite)->by("{$nombre}|".$request->ip().'|'.mb_strtolower((string) $request->input('usuario'))),
+            Limit::perMinute($limite)->by("{$nombre}|".$request->ip().'|'.mb_strtolower(is_string($request->input('usuario')) ? $request->input('usuario') : '')),
             Limit::perMinute($limite * 6)->by("{$nombre}|".$request->ip()),
         ];
         RateLimiter::for('ingreso', $porUsuario('ingreso', 10));
