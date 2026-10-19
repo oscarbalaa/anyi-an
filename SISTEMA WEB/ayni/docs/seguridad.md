@@ -25,6 +25,7 @@ El hosting del curso usa **PHP 8.1.34**, y Laravel 11 y 12 exigen PHP 8.2 o supe
 - **Fuerza bruta:**
   - bloqueo de la cuenta tras 5 intentos fallidos (RN-15), con auditoría, alerta para la administración y correo al usuario;
   - límite de 10 intentos por minuto por usuario e IP, y de 60 por IP (el colegio comparte una IP pública; con un límite menor un aula no podría ingresar a la vez). La recuperación tiene la mitad.
+- **Límite de la API:** 120 peticiones por minuto **por cuenta** (se identifica por el token de Sanctum, no por la IP, para que un aula entera no comparta el cupo) y 300 por IP sin sesión. Si el servidor responde 429 o falla al confirmar la sesión, la app reintenta antes de pedir ingresar: solo un 401 la cierra.
 - **Mensajes genéricos:** "Usuario o contraseña incorrectos" tanto si el usuario no existe como si la clave está mal. La recuperación responde lo mismo exista o no la cuenta.
 - **Recuperación:** token aleatorio de 64 caracteres; en la BD solo su SHA-256. Un solo uso y 30 minutos (RN-25). No se usan URLs firmadas de Laravel (ver tabla de arriba).
 - **Secreto E2E (`AYNI_SECRETO_E2E`):** las pruebas automáticas envían la cabecera `X-Ayni-E2E` para no tener que leer el captcha.
