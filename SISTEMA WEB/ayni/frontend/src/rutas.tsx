@@ -14,18 +14,21 @@ import {
   Estructura,
   Estudiantes,
   Evaluaciones,
+  Ficha360,
   Incidencias,
+  Inicio,
   Ingreso,
   LayoutRol,
   MiAsistencia,
   MiHorario,
+  MisEstudiantes,
   MisNotas,
   Notas,
   Notificaciones,
   PanelRiesgo,
   Perfil,
-  Proximamente,
   Recuperar,
+  Reportes,
   Restablecer,
   SelectorIngreso,
   Usuarios,
@@ -36,9 +39,13 @@ import Landing from '@/paginas/publicas/Landing'
 
 const cargar = (elemento: ReactNode) => <Suspense fallback={<Cargando />}>{elemento}</Suspense>
 
-/** Pantallas ya construidas; las demás muestran en qué módulo llegan */
+/** La pantalla de cada ruta del menú; lo que no corresponde al rol es 404 */
 const pantalla = (rol: Rol, ruta: string): ReactNode => {
   if (ruta === 'perfil') return <Perfil rol={rol} />
+  if (ruta === 'diseno') return <VistaPrevia rol={rol} />
+  if (ruta === 'ficha') return rol === 'estudiante' ? <PaginaError codigo={404} /> : <Ficha360 rol={rol} />
+  if (rol === 'docente' && ruta === 'estudiantes') return <MisEstudiantes />
+  if (rol === 'admin' && ruta === 'reportes') return <Reportes />
   if (ruta === 'notificaciones') return <Notificaciones rol={rol} />
   if (rol !== 'estudiante' && ruta === 'incidencias') return <Incidencias rol={rol} />
   if (rol !== 'estudiante' && ruta === 'alertas') return <Alertas rol={rol} />
@@ -57,7 +64,7 @@ const pantalla = (rol: Rol, ruta: string): ReactNode => {
   if (rol === 'estudiante' && ruta === 'notas') return <MisNotas />
   if (rol === 'estudiante' && ruta === 'actividades') return <Actividades />
   if (rol === 'estudiante' && ruta === 'horario') return <MiHorario />
-  return <Proximamente rol={rol} />
+  return <PaginaError codigo={404} />
 }
 
 const rutasDeRol = (rol: Rol): RouteObject => {
@@ -66,7 +73,7 @@ const rutasDeRol = (rol: Rol): RouteObject => {
     path: ROLES[rol].base,
     element: cargar(<LayoutRol rol={rol} />),
     children: [
-      { index: true, element: cargar(<VistaPrevia rol={rol} />) },
+      { index: true, element: cargar(<Inicio rol={rol} />) },
       ...[...pantallas].map((ruta) => ({ path: ruta, element: cargar(pantalla(rol, ruta)) })),
       { path: '*', element: <PaginaError codigo={404} /> },
     ],

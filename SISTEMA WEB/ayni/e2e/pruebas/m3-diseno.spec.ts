@@ -134,17 +134,20 @@ test.describe('pantallas de ingreso', () => {
 
 // "modulo": la pantalla aún muestra en qué módulo llega (null si ya está construida)
 const ROLES: { rol: RolE2E; base: string; etiqueta: string; opciones: number; pantalla: string; modulo: string | null; captura: string }[] = [
-  { rol: 'admin', base: '/admin', etiqueta: 'Administrativo', opciones: 9, pantalla: 'Panel de riesgo', modulo: null, captura: '06-inicio-administracion' },
-  { rol: 'docente', base: '/docente', etiqueta: 'Docente', opciones: 9, pantalla: 'Mis estudiantes', modulo: 'Módulo 12', captura: '07-inicio-docente' },
+  { rol: 'admin', base: '/admin', etiqueta: 'Administrativo', opciones: 10, pantalla: 'Reportes', modulo: null, captura: '06-inicio-administracion' },
+  { rol: 'docente', base: '/docente', etiqueta: 'Docente', opciones: 9, pantalla: 'Mis estudiantes', modulo: null, captura: '07-inicio-docente' },
   { rol: 'estudiante', base: '/estudiante', etiqueta: 'Estudiante', opciones: 6, pantalla: 'Notificaciones', modulo: null, captura: '08-inicio-estudiante' },
 ]
+
+const SALUDO = /^(Buenos días|Buenas tardes|Buenas noches|Hola), /
 
 test.describe('layouts por rol', () => {
   for (const r of ROLES) {
     test(`${r.base} tiene su menú, sus colores y el bimestre actual`, async ({ page, isMobile }) => {
       await conSesion(page, r.rol)
       await page.goto(r.base)
-      await expect(page.getByText(`Vista previa del diseño · ${r.etiqueta}`)).toBeVisible()
+      // Desde M12 la portada de cada rol es su inicio; el catálogo del diseño queda en /diseno
+      await expect(page.getByRole('heading', { level: 1, name: SALUDO })).toBeVisible()
       await expect(page.getByTestId('periodo-actual')).toContainText(/Periodo \d{4}/)
       await expect(page.getByTestId('periodo-actual')).toContainText(/Bimestre/)
       await sinDesbordeHorizontal(page)
@@ -178,7 +181,7 @@ test.describe('layouts por rol', () => {
 
   test('la tabla busca sin importar tildes y pagina los resultados', async ({ page }) => {
     await conSesion(page, 'docente')
-    await page.goto('/docente')
+    await page.goto('/docente/diseno')
     const tabla = page.getByRole('table', { name: 'Estudiantes de ejemplo' }).or(page.getByRole('list', { name: 'Estudiantes de ejemplo' }))
     await expect(page.getByText('Página 1 de 3')).toBeVisible()
 
@@ -189,7 +192,7 @@ test.describe('layouts por rol', () => {
 
   test('el diálogo de confirmación se abre, se cancela y se confirma', async ({ page }) => {
     await conSesion(page, 'admin')
-    await page.goto('/admin')
+    await page.goto('/admin/diseno')
     await page.getByRole('button', { name: 'Eliminar…' }).click()
     const dialogo = page.getByRole('dialog', { name: '¿Eliminar el registro?' })
     await expect(dialogo).toBeVisible()
@@ -203,7 +206,7 @@ test.describe('layouts por rol', () => {
 
   test('el formulario de ejemplo no deja escribir letras en el DNI', async ({ page }) => {
     await conSesion(page, 'estudiante')
-    await page.goto('/estudiante')
+    await page.goto('/estudiante/diseno')
     await page.getByLabel('DNI').pressSequentially('12ab34')
     await expect(page.getByLabel('DNI')).toHaveValue('1234')
     await page.getByRole('button', { name: 'Validar' }).click()
@@ -228,7 +231,7 @@ test.describe('errores y accesibilidad', () => {
   test('permite saltar al contenido con el teclado', async ({ page, isMobile }) => {
     test.skip(isMobile, 'Prueba de teclado')
     await conSesion(page, 'admin')
-    await page.goto('/admin')
+    await page.goto('/admin/diseno')
     await expect(page.getByText('Vista previa del diseño · Administrativo')).toBeVisible()
     await page.keyboard.press('Tab')
     await expect(page.getByRole('link', { name: 'Saltar al contenido' })).toBeFocused()

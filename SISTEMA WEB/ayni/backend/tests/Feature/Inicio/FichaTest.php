@@ -76,6 +76,8 @@ describe('ficha 360° (RF-60)', function () {
 
             return count(DB::getQueryLog());
         };
+        // La primera petición calienta la sesión; se mide desde la segunda
+        $contar();
         $antes = $contar();
         $estudiante = DB::table('matricula')->where('id', $this->kevin)->value('estudiante_id');
         for ($i = 0; $i < 5; $i++) {

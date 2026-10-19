@@ -143,7 +143,7 @@ describe('rutas protegidas (RF-09)', () => {
     expect(await screen.findByRole('heading', { name: 'Bienvenido de nuevo' })).toBeInTheDocument()
     expect(router.state.location.pathname).toBe('/ingresar/docente')
     await llenarIngreso('41234567')
-    expect(await screen.findByRole('heading', { level: 1, name: 'Mis estudiantes' })).toBeInTheDocument()
+    await waitFor(() => expect(router.state.location.pathname).toBe('/docente/estudiantes'))
   })
 
   it('un rol no puede entrar a la sección de otro', async () => {
