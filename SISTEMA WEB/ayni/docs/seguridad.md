@@ -70,3 +70,9 @@ En GCP sí se controla la versión de PHP. Allí conviene actualizar a Laravel 1
 - **Notas:** de 0 a 20 con hasta 2 decimales en el servidor (expresión regular + rango), aunque la pantalla también lo bloquee. Cada guardado queda en `auditoria` con las notas antes y después.
 - **El estudiante no ve borradores (RN-13):** sus notas y su promedio de un curso solo se devuelven si la calificación está PUBLICADA o CERRADA. Todo se busca por su sesión, nunca por un id de estudiante que llegue en la petición.
 - **Cierre (RN-14):** con el bimestre cerrado el servidor rechaza crear o editar evaluaciones, subir material, entregar, guardar notas y publicar.
+
+## Incidencias y notificaciones (Módulo 10)
+- **Quién ve una incidencia:** el administrador, todas; el docente, solo las de las aulas donde es tutor, dicta algún curso o coordina (aula, grado, nivel o colegio). La lista, el buscador de estudiantes y el registro usan la misma regla en el servidor: registrar una incidencia de otra aula responde 403. El estudiante no tiene acceso (`rol:DOCENTE` / `rol:ADMIN`).
+- **Sin datos ajenos en la campana:** las notificaciones se buscan siempre por el usuario de la sesión; marcar como leída la de otro responde 404 y no la cambia.
+- **Sin cron:** los avisos por fecha (actividad por vencer, cierre próximo) se crean al abrir la campana y se revisa que no existan antes, para no repetirlos.
+- **Auditoría:** cada incidencia guarda quién la registró (`registrado_por`) y queda en `auditoria`. No se editan ni se eliminan.
