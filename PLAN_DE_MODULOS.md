@@ -779,7 +779,7 @@ No se trabaja hasta que lo indiques. Cuando lo retomes, ya tendremos los insumos
 | M8 | Asistencia por clase | ✅ aprobado |
 | M9 | Evaluaciones, entregas y notas ★ | ✅ aprobado |
 | M10 | Incidencias y notificaciones | ✅ aprobado |
-| M11 | Alertas por reglas (sin IA) | ⬜ |
+| M11 | Alertas por reglas (sin IA) | 🔍 en revisión |
 | M12 | Dashboards, ficha 360° y reportes | ⬜ |
 | M13 | Calidad y seguridad final | ⬜ |
 | M14 | Publicación en el hosting (web + descarga) | ⬜ |

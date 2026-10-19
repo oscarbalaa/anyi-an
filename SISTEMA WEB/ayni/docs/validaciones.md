@@ -91,8 +91,10 @@ Las pruebas automáticas de cada módulo recorren esta tabla con valores válido
 | Estudiante de la incidencia | Con matrícula activa en una de las aulas del usuario | — | un retirado; uno de otra aula (403) |
 | Fecha de incidencia | Fecha real, no futura y no anterior al inicio del periodo | hoy | mañana, 31/02, una de un periodo anterior |
 | Descripción de incidencia | 10 a 500 caracteres (se quitan los espacios de más) | Interrumpe la clase de forma reiterada. | "mal", vacía |
-| Justificación (alerta o retiro) | 10 a 400 caracteres | — | "ok" |
-| Intervención | Tipo de una lista; descripción de 10 a 500 caracteres; resultado de hasta 300 | — | — |
+| Justificación (alerta o retiro) | 10 a 400 caracteres; obligatoria para cerrar, descartar o reasignar una alerta | Asistió a todas las clases desde la reunión. | "ok", vacía |
+| Estado de una alerta | Nueva → En seguimiento o Descartada; En seguimiento → Cerrada o Descartada. Cerrar pide al menos una intervención | — | Nueva → Cerrada; reabrir una cerrada |
+| Intervención | Tipo de la lista (reunión con el apoderado, entrevista con el estudiante, reforzamiento académico, llamada telefónica, derivación a psicología, otro); descripción de 10 a 500 caracteres; resultado de hasta 300; fecha entre la creación de la alerta y hoy | Reunión con la madre sobre las faltas. | "ok", mañana |
+| Nuevo encargado de una alerta | Un docente activo del estudiante: su tutor, uno de sus profesores o la coordinación del aula | — | un docente de otra aula |
 
 ## Apoderados y docentes
 
