@@ -4,6 +4,7 @@ namespace App\Servicios\Asistencia;
 
 use App\Exceptions\ErrorRegla;
 use App\Models\Usuario;
+use App\Servicios\Notificaciones;
 use App\Support\Auditoria;
 use App\Support\Calendario;
 use App\Support\Cursos;
@@ -373,13 +374,7 @@ class Asistencias
         $usuarios = DB::table('matricula')->join('estudiante', 'estudiante.id', '=', 'matricula.estudiante_id')
             ->whereIn('matricula.id', $matriculas)->whereNotNull('estudiante.usuario_id')->pluck('estudiante.usuario_id');
 
-        DB::table('notificacion')->insert($usuarios->map(fn ($u) => [
-            'usuario_id' => $u,
-            'tipo' => 'FALTA_REGISTRADA',
-            'titulo' => 'Falta registrada',
-            'mensaje' => "Se registró una falta en {$curso->asignatura} el {$dia}.",
-            'enlace' => '/estudiante/asistencia',
-        ])->all());
+        Notificaciones::enviar($usuarios, 'FALTA_REGISTRADA', 'Falta registrada', "Se registró una falta en {$curso->asignatura} el {$dia}.", '/estudiante/asistencia');
     }
 
     /** Fechas (Y-m-d) de $desde a $hasta, ambas incluidas */

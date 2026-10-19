@@ -109,6 +109,7 @@ class DemostracionSeeder extends Seeder
             $this->historial();
             $this->claseSinRegistrar();
             $this->incidencias();
+            $this->notificaciones();
             $this->casosParaAlertas();
         });
     }
@@ -762,6 +763,26 @@ class DemostracionSeeder extends Seeder
             }
         }
         DB::table('incidencia')->insert($filas);
+    }
+
+    /** Avisos ya leídos del último bimestre cerrado, para que la campana no empiece vacía (M10) */
+    private function notificaciones(): void
+    {
+        $cerrado = collect($this->cal->bimestres)->filter(fn ($b, $n) => $this->cal->cerrado($n))->keys()->last();
+        if (! $cerrado) {
+            return;
+        }
+        $b = $this->cal->bimestres[$cerrado];
+        $filas = array_map(fn ($e) => [
+            'usuario_id' => $e['usuario'],
+            'tipo' => 'NOTA_PUBLICADA',
+            'titulo' => 'Notas cerradas',
+            'mensaje' => "Ya puedes ver tus promedios finales del {$b['nombre']}.",
+            'enlace' => "/estudiante/notas?bimestre={$this->bimestreId[$cerrado]}",
+            'leida_en' => $b['cierre']->addDays(2)->setTime(19, 0),
+            'created_at' => $b['cierre']->addDay()->setTime(7, 0),
+        ], array_values($this->estudiantes));
+        DB::table('notificacion')->insert($filas);
     }
 
     /** Situaciones que el administrador debe atender (alertas del M11) */
