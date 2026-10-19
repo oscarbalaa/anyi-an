@@ -132,10 +132,11 @@ test.describe('pantallas de ingreso', () => {
   })
 })
 
-const ROLES: { rol: RolE2E; base: string; etiqueta: string; opciones: number; pantalla: string; modulo: string; captura: string }[] = [
-  { rol: 'admin', base: '/admin', etiqueta: 'Administrativo', opciones: 9, pantalla: 'Incidencias', modulo: 'Módulo 10', captura: '06-inicio-administracion' },
-  { rol: 'docente', base: '/docente', etiqueta: 'Docente', opciones: 7, pantalla: 'Alertas', modulo: 'Módulo 11', captura: '07-inicio-docente' },
-  { rol: 'estudiante', base: '/estudiante', etiqueta: 'Estudiante', opciones: 6, pantalla: 'Notificaciones', modulo: 'Módulo 10', captura: '08-inicio-estudiante' },
+// "modulo": la pantalla aún muestra en qué módulo llega (null si ya está construida)
+const ROLES: { rol: RolE2E; base: string; etiqueta: string; opciones: number; pantalla: string; modulo: string | null; captura: string }[] = [
+  { rol: 'admin', base: '/admin', etiqueta: 'Administrativo', opciones: 9, pantalla: 'Panel de riesgo', modulo: 'Módulo 11', captura: '06-inicio-administracion' },
+  { rol: 'docente', base: '/docente', etiqueta: 'Docente', opciones: 8, pantalla: 'Alertas', modulo: 'Módulo 11', captura: '07-inicio-docente' },
+  { rol: 'estudiante', base: '/estudiante', etiqueta: 'Estudiante', opciones: 6, pantalla: 'Notificaciones', modulo: null, captura: '08-inicio-estudiante' },
 ]
 
 test.describe('layouts por rol', () => {
@@ -159,7 +160,7 @@ test.describe('layouts por rol', () => {
 
       await menu.getByRole('link', { name: r.pantalla }).click()
       await expect(page.getByRole('heading', { level: 1, name: r.pantalla })).toBeVisible()
-      await expect(page.getByText(r.modulo)).toBeVisible()
+      if (r.modulo) await expect(page.getByText(r.modulo)).toBeVisible()
       if (isMobile) await expect(page.locator('#menu-lateral')).toBeHidden()
     })
   }

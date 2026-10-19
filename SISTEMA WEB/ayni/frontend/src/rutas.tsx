@@ -13,12 +13,14 @@ import {
   Estructura,
   Estudiantes,
   Evaluaciones,
+  Incidencias,
   Ingreso,
   LayoutRol,
   MiAsistencia,
   MiHorario,
   MisNotas,
   Notas,
+  Notificaciones,
   Perfil,
   Proximamente,
   Recuperar,
@@ -35,6 +37,8 @@ const cargar = (elemento: ReactNode) => <Suspense fallback={<Cargando />}>{eleme
 /** Pantallas ya construidas; las demás muestran en qué módulo llegan */
 const pantalla = (rol: Rol, ruta: string): ReactNode => {
   if (ruta === 'perfil') return <Perfil rol={rol} />
+  if (ruta === 'notificaciones') return <Notificaciones rol={rol} />
+  if (rol !== 'estudiante' && ruta === 'incidencias') return <Incidencias rol={rol} />
   if (rol === 'admin' && ruta === 'usuarios') return <Usuarios />
   if (rol === 'admin' && ruta === 'estructura') return <Estructura />
   if (rol === 'admin' && ruta === 'docentes') return <Docentes />

@@ -1,4 +1,4 @@
-import { Bell, CalendarDays, ChevronDown, Clock, LogOut, Menu, UserRound, X } from 'lucide-react'
+import { CalendarDays, ChevronDown, Clock, LogOut, Menu, UserRound, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Link, Navigate, NavLink, Outlet, useLocation, useNavigate } from 'react-router'
 import { useAvisos } from '@/components/ui/avisos-contexto'
@@ -8,6 +8,7 @@ import { ProveedorDatos } from '@/lib/datos'
 import type { Usuario } from '@/lib/sesion'
 import { useSesion } from '@/lib/sesion-contexto'
 import { cn } from '@/lib/utils'
+import { Campana } from './Campana'
 import { ROLES, type Rol } from './roles'
 
 // RF-09: cada rol solo entra a su propia sección
@@ -64,13 +65,7 @@ function Estructura({ rol, usuario }: { rol: Rol; usuario: Usuario }) {
           </span>
         </Link>
         <div className="ml-auto flex items-center gap-1 sm:gap-3">
-          <Link
-            to={`${config.base}/notificaciones`}
-            className="relative grid size-10 place-items-center rounded-lg hover:bg-primario-suave"
-            aria-label="Notificaciones"
-          >
-            <Bell className="size-6" aria-hidden />
-          </Link>
+          <Campana base={config.base} />
           <MenuUsuario rol={rol} usuario={usuario} />
         </div>
       </header>

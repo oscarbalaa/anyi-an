@@ -557,3 +557,21 @@ export function errorNota(valor: string): string | null {
   if (!/^\d{1,2}([.,]\d{1,2})?$/.test(v)) return 'La nota debe ser un número de 0 a 20, con hasta 2 decimales.'
   return Number(v.replace(',', '.')) > 20 ? 'La nota debe estar entre 0 y 20.' : null
 }
+
+/** Incidencia de un estudiante (RF-49) */
+export const esquemaIncidencia = z.object({
+  matricula_id: z.string().min(1, 'Elige al estudiante.'),
+  tipo_incidencia_id: z.string().min(1, 'Elige el tipo de incidencia.'),
+  gravedad: z.enum(['LEVE', 'MODERADA', 'GRAVE'], 'Elige la gravedad: leve, moderada o grave.'),
+  fecha: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Ingresa una fecha válida.'),
+  descripcion: z
+    .string()
+    .transform(limpio)
+    .refine((v) => v.length > 0, 'Describe lo ocurrido.')
+    .refine(
+      (v) => v.length === 0 || (v.length >= 10 && v.length <= 500),
+      'Describe lo ocurrido en 10 a 500 caracteres.',
+    ),
+})
+
+export type DatosIncidencia = z.input<typeof esquemaIncidencia>

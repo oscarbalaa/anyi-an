@@ -113,7 +113,7 @@ describe('historial y filtros (RF-50)', function () {
         $salud = DB::table('tipo_incidencia')->where('nombre', 'Salud')->value('id');
         registrarIncidencia();
         registrarIncidencia(['gravedad' => 'GRAVE', 'fecha' => '2026-06-08']);
-        registrarIncidencia(['matricula_id' => $this->e->alumnos['Aranda Ruiz']->matricula, 'tipo_incidencia_id' => $salud, 'descripcion' => 'Se retiró temprano por malestar.']);
+        registrarIncidencia(['matricula_id' => $this->e->alumnos['Aranda Ruiz']->matricula, 'tipo_incidencia_id' => $salud, 'fecha' => '2026-06-05', 'descripcion' => 'Se retiró temprano por malestar.']);
 
         $r = $this->getJson('/api/v1/docente/incidencias')->assertOk();
         expect($r->json('total'))->toBe(3)
