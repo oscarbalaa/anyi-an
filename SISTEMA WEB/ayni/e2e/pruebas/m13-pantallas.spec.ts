@@ -43,8 +43,9 @@ for (const { rol, base } of ROLES) {
       problemas.push(...(await problemasDeAccesibilidad(page)).map((p) => `${ruta}: ${p}`))
     }
 
-    expect(errores, errores.join('\n')).toEqual([])
-    expect(problemas, problemas.join('\n')).toEqual([])
+    // Se revisan juntos para ver en una sola corrida todo lo que falla
+    const todo = [...errores, ...problemas]
+    expect(todo, todo.join('\n')).toEqual([])
   })
 }
 
