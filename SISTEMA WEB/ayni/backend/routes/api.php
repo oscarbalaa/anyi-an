@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\V1\Admin\AlertaAdministrativaController;
 use App\Http\Controllers\Api\V1\Admin\AsistenciaController as AsistenciaAdminController;
 use App\Http\Controllers\Api\V1\Admin\AulaController;
 use App\Http\Controllers\Api\V1\Admin\CargaController;
@@ -11,6 +12,7 @@ use App\Http\Controllers\Api\V1\Admin\MatriculaController;
 use App\Http\Controllers\Api\V1\Admin\OpcionesController;
 use App\Http\Controllers\Api\V1\Admin\PeriodoController;
 use App\Http\Controllers\Api\V1\Admin\UsuarioController;
+use App\Http\Controllers\Api\V1\AlertaController;
 use App\Http\Controllers\Api\V1\ArchivoController;
 use App\Http\Controllers\Api\V1\AsistenciaController;
 use App\Http\Controllers\Api\V1\AuthController;
@@ -20,6 +22,7 @@ use App\Http\Controllers\Api\V1\Estudiante\AsistenciaController as MiAsistenciaC
 use App\Http\Controllers\Api\V1\Estudiante\EvaluacionController as MisEvaluacionesController;
 use App\Http\Controllers\Api\V1\IncidenciaController;
 use App\Http\Controllers\Api\V1\NotificacionController;
+use App\Http\Controllers\Api\V1\PanelRiesgoController;
 use App\Http\Controllers\Api\V1\PerfilController;
 use App\Http\Controllers\Api\V1\SaludController;
 use Illuminate\Support\Facades\Route;
@@ -96,6 +99,21 @@ Route::prefix('v1')->group(function () {
                     Route::post('incidencias', [IncidenciaController::class, 'store'])->name('incidencias.store');
                 });
             }
+
+            // Alertas de riesgo y paneles (M11): el docente, de sus aulas (panel solo si coordina); el administrador, todo
+            foreach (['docente' => 'rol:DOCENTE', 'admin' => 'rol:ADMIN'] as $prefijo => $rol) {
+                Route::middleware($rol)->prefix($prefijo)->name("{$prefijo}.")->group(function () use ($prefijo) {
+                    Route::get('alertas', [AlertaController::class, 'index'])->name('alertas.index');
+                    Route::get('alertas/{alerta}', [AlertaController::class, 'show'])->whereNumber('alerta')->name('alertas.show');
+                    Route::post('alertas/{alerta}/estado', [AlertaController::class, 'estado'])->whereNumber('alerta')->name('alertas.estado');
+                    Route::post('alertas/{alerta}/intervenciones', [AlertaController::class, 'intervencion'])->whereNumber('alerta')->name('alertas.intervenciones');
+                    Route::post('alertas/{alerta}/responsable', [AlertaController::class, 'responsable'])->whereNumber('alerta')->name('alertas.responsable');
+                    $panel = $prefijo === 'admin' ? 'riesgo' : 'coordinacion';
+                    Route::get($panel, [PanelRiesgoController::class, 'show'])->name("{$panel}.show");
+                    Route::post("{$panel}/recalcular", [PanelRiesgoController::class, 'recalcular'])->name("{$panel}.recalcular");
+                });
+            }
+            Route::get('admin/alertas-administrativas', [AlertaAdministrativaController::class, 'index'])->middleware('rol:ADMIN')->name('admin.alertas-administrativas');
 
             // Administración de usuarios (M5)
             Route::middleware('rol:ADMIN')->prefix('admin')->name('admin.')->group(function () use ($fecha) {

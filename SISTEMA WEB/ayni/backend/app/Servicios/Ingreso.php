@@ -5,6 +5,7 @@ namespace App\Servicios;
 use App\Exceptions\ErrorAcceso;
 use App\Mail\CorreoAyni;
 use App\Models\Usuario;
+use App\Servicios\Riesgo\Riesgo;
 use App\Support\Acceso;
 use App\Support\Auditoria;
 use App\Support\PerfilUsuario;
@@ -52,6 +53,12 @@ class Ingreso
             'ultimo_acceso' => now(),
         ])->save();
         Auditoria::registrar('INGRESO', 'usuario', $usuario->id, [], $usuario->id);
+        // El primer ingreso del día recalcula el riesgo del colegio (sin cron); si falla, igual se ingresa
+        try {
+            app(Riesgo::class)->diario();
+        } catch (Throwable $e) {
+            Log::warning('No se pudo recalcular el riesgo del día: '.$e->getMessage());
+        }
 
         return [
             'token' => $usuario->createToken('web', [$acceso])->plainTextToken,

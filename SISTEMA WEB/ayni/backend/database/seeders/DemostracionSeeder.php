@@ -3,6 +3,8 @@
 namespace Database\Seeders;
 
 use App\Servicios\Evaluacion\Calificaciones;
+use App\Servicios\Riesgo\AlertasAdministrativas;
+use App\Servicios\Riesgo\Riesgo;
 use Carbon\CarbonImmutable;
 use Database\Seeders\Demo\Azar;
 use Database\Seeders\Demo\Calendario;
@@ -112,6 +114,7 @@ class DemostracionSeeder extends Seeder
             $this->notificaciones();
             $this->casosParaAlertas();
         });
+        $this->riesgo();
     }
 
     // ------------------------------------------------------------ personas
@@ -783,6 +786,18 @@ class DemostracionSeeder extends Seeder
             'created_at' => $b['cierre']->addDay()->setTime(7, 0),
         ], array_values($this->estudiantes));
         DB::table('notificacion')->insert($filas);
+    }
+
+    /** M11: riesgo del último bimestre cerrado (para comparar) y del bimestre en curso, con sus alertas */
+    private function riesgo(): void
+    {
+        $riesgo = app(Riesgo::class);
+        $cerrado = DB::table('subperiodo')->where('periodo_id', $this->periodoId)->where('estado', 'CERRADO')->orderByDesc('numero')->value('id');
+        if ($cerrado) {
+            $riesgo->recalcular(null, $cerrado);
+        }
+        $riesgo->recalcular();
+        app(AlertasAdministrativas::class)->sincronizar();
     }
 
     /** Situaciones que el administrador debe atender (alertas del M11) */

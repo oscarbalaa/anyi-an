@@ -5,6 +5,7 @@ namespace App\Servicios\Asistencia;
 use App\Exceptions\ErrorRegla;
 use App\Models\Usuario;
 use App\Servicios\Notificaciones;
+use App\Servicios\Riesgo\Riesgo;
 use App\Support\Auditoria;
 use App\Support\Calendario;
 use App\Support\Cursos;
@@ -221,6 +222,10 @@ class Asistencias
 
             return $cambios;
         }, 3);
+        // RF-52: el riesgo se recalcula al registrar asistencia
+        if ($estado === 'DEFINITIVO') {
+            app(Riesgo::class)->recalcularAula($curso->aula_id, $bimestre->id);
+        }
 
         $mensaje = match (true) {
             $estado === 'BORRADOR' => 'Borrador guardado. Aún no lo ven los estudiantes.',
