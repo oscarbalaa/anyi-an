@@ -575,3 +575,37 @@ export const esquemaIncidencia = z.object({
 })
 
 export type DatosIncidencia = z.input<typeof esquemaIncidencia>
+
+/** Intervención de una alerta (RF-55) */
+export const esquemaIntervencion = z.object({
+  tipo: z.string().min(1, 'Elige el tipo de intervención.'),
+  descripcion: z
+    .string()
+    .transform(limpio)
+    .refine((v) => v.length > 0, 'Describe la intervención.')
+    .refine(
+      (v) => v.length === 0 || (v.length >= 10 && v.length <= 500),
+      'Describe la intervención en 10 a 500 caracteres.',
+    ),
+  fecha: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Ingresa una fecha válida.'),
+  resultado: z
+    .string()
+    .transform(limpio)
+    .refine((v) => v.length <= 300, 'El resultado no debe tener más de 300 caracteres.'),
+})
+
+export type DatosIntervencion = z.input<typeof esquemaIntervencion>
+
+/** Justificación para cerrar, descartar o reasignar una alerta */
+export const esquemaJustificacion = z.object({
+  justificacion: z
+    .string()
+    .transform(limpio)
+    .refine((v) => v.length > 0, 'Escribe la justificación.')
+    .refine(
+      (v) => v.length === 0 || (v.length >= 10 && v.length <= 400),
+      'La justificación debe tener de 10 a 400 caracteres.',
+    ),
+})
+
+export type DatosJustificacion = z.input<typeof esquemaJustificacion>
