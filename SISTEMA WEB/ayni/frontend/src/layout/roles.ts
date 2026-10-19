@@ -56,6 +56,7 @@ export const ROLES: Record<Rol, ConfigRol> = {
       { ruta: 'calificaciones', texto: 'Calificaciones', icono: Sheet, modulo: 'M9' },
       { ruta: 'incidencias', texto: 'Incidencias', icono: BookOpenCheck, modulo: 'M10' },
       { ruta: 'alertas', texto: 'Alertas', icono: TriangleAlert, modulo: 'M11' },
+      { ruta: 'coordinacion', texto: 'Coordinación', icono: ChartColumn, modulo: 'M11' },
     ],
   },
   admin: {

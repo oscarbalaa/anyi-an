@@ -4,6 +4,7 @@ import { Cargando } from '@/components/ui/estados'
 import { EXTRAS, ROLES, type Rol } from '@/layout/roles'
 import {
   Actividades,
+  Alertas,
   Asistencia,
   AsistenciaAdmin,
   Calificaciones,
@@ -21,6 +22,7 @@ import {
   MisNotas,
   Notas,
   Notificaciones,
+  PanelRiesgo,
   Perfil,
   Proximamente,
   Recuperar,
@@ -39,6 +41,9 @@ const pantalla = (rol: Rol, ruta: string): ReactNode => {
   if (ruta === 'perfil') return <Perfil rol={rol} />
   if (ruta === 'notificaciones') return <Notificaciones rol={rol} />
   if (rol !== 'estudiante' && ruta === 'incidencias') return <Incidencias rol={rol} />
+  if (rol !== 'estudiante' && ruta === 'alertas') return <Alertas rol={rol} />
+  if ((rol === 'admin' && ruta === 'riesgo') || (rol === 'docente' && ruta === 'coordinacion'))
+    return <PanelRiesgo rol={rol} />
   if (rol === 'admin' && ruta === 'usuarios') return <Usuarios />
   if (rol === 'admin' && ruta === 'estructura') return <Estructura />
   if (rol === 'admin' && ruta === 'docentes') return <Docentes />

@@ -23,6 +23,10 @@ class MotorReglas
 
     private const BASE = 0.1;
 
+    private const APODERADO_FALTAS = 'Contactar al apoderado para conversar sobre las faltas y acordar apoyos.';
+
+    private const MOTIVOS_FALTAS = 'Conversar con el estudiante sobre los motivos de sus inasistencias.';
+
     /**
      * @param  array{asistencia: ?float, clases: int, faltas: int, promedio: ?float, curso_bajo: ?array{nombre: string, promedio: float}, pendientes: int, descenso: ?array{curso: string, notas: list<float>}}  $f
      * @param  object  $u  umbrales de `institucion`
@@ -74,13 +78,10 @@ class MotorReglas
         $lista = [];
         foreach ($factores as $x) {
             $nuevas = match ($x['variable']) {
-                'asistencia' => $x['nivel'] === 'ALTO'
-                    ? [[1, 'Contactar al apoderado para conversar sobre las faltas y acordar apoyos.'], [2, 'Conversar con el estudiante sobre los motivos de sus inasistencias.']]
-                    : [[2, 'Conversar con el estudiante sobre los motivos de sus inasistencias.']], 'promedio_y_pendientes' => array_filter([
-                    [1, "Acordar con el estudiante un plan para ponerse al día con sus {$f['pendientes']} entregas pendientes."],
-                    $curso ? [1, "Coordinar reforzamiento en {$curso} con su docente."] : null,
-                    [2, 'Informar al apoderado sobre las tareas pendientes.'],
-                ]), 'promedio' => [[2, $curso ? "Coordinar reforzamiento en {$curso} con su docente." : 'Coordinar reforzamiento en los cursos con nota baja.']], 'descenso' => [[2, "Conversar con el docente de {$f['descenso']['curso']} sobre la baja de sus notas."]],
+                'asistencia' => $x['nivel'] === 'ALTO' ? [[1, self::APODERADO_FALTAS], [2, self::MOTIVOS_FALTAS]] : [[2, self::MOTIVOS_FALTAS]],
+                'promedio_y_pendientes' => array_filter([[1, "Acordar con el estudiante un plan para ponerse al día con sus {$f['pendientes']} entregas pendientes."], $curso ? [1, "Coordinar reforzamiento en {$curso} con su docente."] : null, [2, 'Informar al apoderado sobre las tareas pendientes.']]),
+                'promedio' => [[2, $curso ? "Coordinar reforzamiento en {$curso} con su docente." : 'Coordinar reforzamiento en los cursos con nota baja.']],
+                'descenso' => [[2, "Conversar con el docente de {$f['descenso']['curso']} sobre la baja de sus notas."]],
             };
             foreach ($nuevas as [$prioridad, $texto]) {
                 $lista[$texto] = min($prioridad, $lista[$texto] ?? 3);
