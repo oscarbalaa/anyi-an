@@ -778,7 +778,7 @@ No se trabaja hasta que lo indiques. Cuando lo retomes, ya tendremos los insumos
 | M7 | Personas, importación Excel y matrículas | ✅ aprobado |
 | M8 | Asistencia por clase | ✅ aprobado |
 | M9 | Evaluaciones, entregas y notas ★ | ✅ aprobado |
-| M10 | Incidencias y notificaciones | 🔍 en revisión |
+| M10 | Incidencias y notificaciones | ✅ aprobado |
 | M11 | Alertas por reglas (sin IA) | ⬜ |
 | M12 | Dashboards, ficha 360° y reportes | ⬜ |
 | M13 | Calidad y seguridad final | ⬜ |
