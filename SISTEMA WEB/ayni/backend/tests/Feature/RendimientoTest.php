@@ -79,7 +79,7 @@ it('las pantallas del estudiante responden en menos de 300 ms', function () {
 
 it('las búsquedas y filtros usan índices: ninguna tabla grande se recorre entera', function () {
     // Índices que usan las consultas más frecuentes (asistencia, notas, matrículas, alertas, notificaciones)
-    $indices = collect(DB::select("SELECT DISTINCT TABLE_NAME AS tabla, COLUMN_NAME AS columna FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND SEQ_IN_INDEX = 1"))
+    $indices = collect(DB::select('SELECT DISTINCT TABLE_NAME AS tabla, COLUMN_NAME AS columna FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND SEQ_IN_INDEX = 1'))
         ->map(fn ($i) => "{$i->tabla}.{$i->columna}");
 
     foreach ([
