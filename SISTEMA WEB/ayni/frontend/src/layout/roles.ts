@@ -54,6 +54,7 @@ export const ROLES: Record<Rol, ConfigRol> = {
       { ruta: 'evaluaciones', texto: 'Evaluaciones', icono: ClipboardList, modulo: 'M9' },
       { ruta: 'notas', texto: 'Notas', icono: NotebookPen, modulo: 'M9' },
       { ruta: 'calificaciones', texto: 'Calificaciones', icono: Sheet, modulo: 'M9' },
+      { ruta: 'incidencias', texto: 'Incidencias', icono: BookOpenCheck, modulo: 'M10' },
       { ruta: 'alertas', texto: 'Alertas', icono: TriangleAlert, modulo: 'M11' },
     ],
   },

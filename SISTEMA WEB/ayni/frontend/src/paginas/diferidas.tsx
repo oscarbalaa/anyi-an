@@ -24,3 +24,5 @@ export const Calificaciones = lazy(() => import('@/paginas/docente/Calificacione
 export const MisNotas = lazy(() => import('@/paginas/estudiante/MisNotas'))
 export const Actividades = lazy(() => import('@/paginas/estudiante/Actividades'))
 export const MiHorario = lazy(() => import('@/paginas/estudiante/MiHorario'))
+export const Notificaciones = lazy(() => import('@/paginas/rol/Notificaciones'))
+export const Incidencias = lazy(() => import('@/paginas/incidencias/Incidencias'))
