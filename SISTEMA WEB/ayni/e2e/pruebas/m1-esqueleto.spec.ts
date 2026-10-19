@@ -83,5 +83,18 @@ test.describe('archivos internos ocultos (igual que en el hosting)', () => {
     expect(respuesta.headers()['x-content-type-options']).toBe('nosniff')
     expect(respuesta.headers()['x-frame-options']).toBe('SAMEORIGIN')
     expect(respuesta.headers()['server'] ?? '').not.toMatch(/\d/)
+    // M13: React solo carga lo propio (sin scripts de otros sitios ni eval)
+    expect(respuesta.headers()['content-security-policy']).toContain("script-src 'self'")
+    expect(respuesta.headers()['content-security-policy']).toContain("object-src 'none'")
+  })
+
+  test('la API envía cada cabecera de seguridad una sola vez y sin CORS para otros sitios', async ({ request }) => {
+    const respuesta = await request.get('/api/v1/health', { headers: { Origin: 'https://malo.example' } })
+
+    // Si Apache y Laravel la enviaran los dos, llegaría repetida ("DENY, SAMEORIGIN")
+    expect(respuesta.headers()['x-frame-options']).toBe('DENY')
+    expect(respuesta.headers()['x-content-type-options']).toBe('nosniff')
+    expect(respuesta.headers()['content-security-policy']).toBe("default-src 'none'; frame-ancestors 'none'")
+    expect(respuesta.headers()['access-control-allow-origin']).toBeUndefined()
   })
 })

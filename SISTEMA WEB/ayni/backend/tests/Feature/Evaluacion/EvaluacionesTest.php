@@ -119,8 +119,7 @@ describe('material de apoyo (RF-39)', function () {
             ->and(Storage::disk('local')->exists($fila->ruta))->toBeTrue();
         expect($this->getJson("/api/v1/docente/cursos/{$this->e->mat}/evaluaciones")->json('evaluaciones.0.material.0.nombre'))->toBe('Guía de inecuaciones.pdf');
 
-        $docx = UploadedFile::fake()->createWithContent('guia.docx', "PK\x03\x04".str_repeat('x', 100));
-        $this->post("/api/v1/docente/evaluaciones/{$id}/material", ['archivo' => $docx], ['Accept' => 'application/json'])->assertCreated();
+        $this->post("/api/v1/docente/evaluaciones/{$id}/material", ['archivo' => Fabrica::office('guia.docx')], ['Accept' => 'application/json'])->assertCreated();
 
         $this->deleteJson("/api/v1/docente/evaluaciones/{$id}/material/{$archivo}")->assertOk();
         expect(Storage::disk('local')->exists($fila->ruta))->toBeFalse()->and(DB::table('archivo')->where('id', $archivo)->exists())->toBeFalse();
@@ -132,6 +131,9 @@ describe('material de apoyo (RF-39)', function () {
 
         $subir(UploadedFile::fake()->createWithContent('script.php', '<?php echo 1;'))->assertStatus(422)->assertJsonPath('errores.archivo.0', 'Sube un PDF, Word, PowerPoint, Excel, JPG o PNG.');
         $subir(UploadedFile::fake()->createWithContent('falso.pdf', 'MZ ejecutable'))->assertStatus(422)->assertJsonPath('errores.archivo.0', 'Sube un PDF, Word, PowerPoint, Excel, JPG o PNG.');
+        // Un .zip renombrado a .docx tiene la firma de un zip, pero no es un documento de Word
+        $subir(UploadedFile::fake()->createWithContent('guia.docx', "PK\x03\x04".str_repeat('x', 100)))->assertStatus(422);
+        $subir(Fabrica::office('hoja.xlsx', 'word/'))->assertStatus(422);
         $subir(UploadedFile::fake()->create('pesado.pdf', 11 * 1024))->assertStatus(422)->assertJsonPath('errores.archivo.0', 'El archivo pesa más de 10 MB.');
         $subir(null)->assertStatus(422)->assertJsonPath('errores.archivo.0', 'Elige el archivo.');
         expect(DB::table('archivo')->count())->toBe(0);

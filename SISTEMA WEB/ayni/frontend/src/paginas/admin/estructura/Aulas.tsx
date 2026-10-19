@@ -23,6 +23,9 @@ const NIVELES = [
   { valor: 'SECUNDARIA', texto: 'Secundaria' },
 ]
 
+// «Única» o una letra; la API acepta además secciones de 2 o 3 letras
+const SECCIONES = ['Única', ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ']
+
 const DE_QUIEN: Record<string, string> = { GRADO: 'del grado', NIVEL: 'del nivel', INSTITUCION: 'del colegio' }
 
 // RF-19, RF-20, RF-24 (mockup admin 06)
@@ -261,7 +264,7 @@ function FormAula({
           <div className="flex flex-col gap-1.5">
             <Selector
               etiqueta="Sección"
-              opciones={['Única', 'A', 'B', 'C', 'D', 'E', 'F'].map((s) => ({ valor: s, texto: s }))}
+              opciones={SECCIONES.map((s) => ({ valor: s, texto: s }))}
               aria-describedby={errors.seccion ? 'error-seccion' : undefined}
               {...register('seccion')}
             />

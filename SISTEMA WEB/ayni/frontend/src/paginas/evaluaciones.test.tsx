@@ -408,8 +408,17 @@ describe('validaciones del M9', () => {
       indicaciones: '',
       requiere_entrega: true,
     }
-    expect(esquemaEvaluacion.safeParse(base).success).toBe(true)
-    expect(esquemaEvaluacion.safeParse({ ...base, peso: '11' }).success).toBe(false)
-    expect(esquemaEvaluacion.safeParse({ ...base, fecha_limite: '2026-10-18' }).success).toBe(false)
+    expect(esquemaEvaluacion().safeParse(base).success).toBe(true)
+    expect(esquemaEvaluacion().safeParse({ ...base, peso: '11' }).success).toBe(false)
+    expect(esquemaEvaluacion().safeParse({ ...base, fecha_limite: '2026-10-18' }).success).toBe(false)
+
+    // Con el bimestre elegido, las fechas deben caer dentro de él (como en el servidor)
+    const iv = [{ id: 4, nombre: 'IV Bimestre', fecha_inicio: '2026-10-05', fecha_fin: '2026-10-21' }]
+    const r = esquemaEvaluacion(iv).safeParse(base)
+    expect(r.success).toBe(false)
+    expect(r.error?.issues[0]).toMatchObject({
+      path: ['fecha_limite'],
+      message: 'Las fechas deben estar dentro del IV Bimestre (05/10 – 21/10).',
+    })
   })
 })

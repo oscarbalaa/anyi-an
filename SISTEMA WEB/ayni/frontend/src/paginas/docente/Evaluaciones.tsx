@@ -209,7 +209,7 @@ function FormEvaluacion({
     setValue,
     formState: { errors, isSubmitting },
   } = useForm<DatosEvaluacion>({
-    resolver: zodResolver(esquemaEvaluacion),
+    resolver: zodResolver(esquemaEvaluacion(bimestres)),
     defaultValues: {
       titulo: evaluacion?.titulo ?? '',
       tipo_evaluacion_id: String(
