@@ -84,11 +84,10 @@ describe('layout por rol', () => {
     expect(boton).toHaveAttribute('aria-expanded', 'false')
   })
 
-  it('las pantallas pendientes indican su módulo', async () => {
-    entrarComo('docente', '/docente/estudiantes')
+  it('el catálogo de componentes del diseño queda en /diseno', async () => {
+    entrarComo('docente', '/docente/diseno')
 
-    expect(await screen.findByRole('heading', { level: 1, name: 'Mis estudiantes' })).toBeInTheDocument()
-    expect(screen.getByText('Módulo 12')).toBeInTheDocument()
+    expect(await screen.findByText('Vista previa del diseño · Docente')).toBeInTheDocument()
   })
 
   it('si la API no responde, el menú sigue funcionando', async () => {

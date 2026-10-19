@@ -1,5 +1,6 @@
 import { Pencil } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
+import { Link } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { EstadoVacio, Esqueleto } from '@/components/ui/estados'
@@ -64,6 +65,14 @@ export function FichaEstudiante({ id }: { id: number }) {
                     Desde el {fechaCorta(m.fecha)}
                     {m.motivo && ` · ${m.motivo}`}
                   </p>
+                  {m.en_curso && (
+                    <Link
+                      to={`/admin/ficha?matricula=${m.id}`}
+                      className="text-sm font-bold text-accion hover:underline"
+                    >
+                      Ver ficha 360° y boleta
+                    </Link>
+                  )}
                 </div>
                 <EstadoMatriculaInsignia estado={m.estado} />
               </li>
