@@ -4,6 +4,7 @@ namespace App\Servicios\Evaluacion;
 
 use App\Exceptions\ErrorRegla;
 use App\Models\Usuario;
+use App\Servicios\Notificaciones;
 use App\Support\Auditoria;
 use App\Support\Calendario;
 use App\Support\Cursos;
@@ -158,13 +159,7 @@ class Calificaciones
         // Cada estudiante se entera la primera vez que se publican sus notas del curso
         $usuarios = DB::table('matricula')->join('estudiante', 'estudiante.id', '=', 'matricula.estudiante_id')
             ->whereIn('matricula.id', $nuevas)->whereNotNull('estudiante.usuario_id')->pluck('estudiante.usuario_id');
-        DB::table('notificacion')->insert($usuarios->map(fn ($u) => [
-            'usuario_id' => $u,
-            'tipo' => 'NOTA_PUBLICADA',
-            'titulo' => 'Notas publicadas',
-            'mensaje' => "Se publicaron tus notas de {$curso->asignatura} del {$bimestre->nombre}.",
-            'enlace' => '/estudiante/notas',
-        ])->all());
+        Notificaciones::enviar($usuarios, 'NOTA_PUBLICADA', 'Notas publicadas', "Se publicaron tus notas de {$curso->asignatura} del {$bimestre->nombre}.", "/estudiante/notas?curso={$curso->id}&bimestre={$bimestre->id}");
 
         return ['mensaje' => 'Promedios publicados. Los estudiantes ya pueden ver sus notas.'] + $this->vista($cursoId, $bimestreId, $usuario);
     }

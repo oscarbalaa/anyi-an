@@ -18,6 +18,8 @@ use App\Http\Controllers\Api\V1\CalendarioController;
 use App\Http\Controllers\Api\V1\Docente\EvaluacionController;
 use App\Http\Controllers\Api\V1\Estudiante\AsistenciaController as MiAsistenciaController;
 use App\Http\Controllers\Api\V1\Estudiante\EvaluacionController as MisEvaluacionesController;
+use App\Http\Controllers\Api\V1\IncidenciaController;
+use App\Http\Controllers\Api\V1\NotificacionController;
 use App\Http\Controllers\Api\V1\PerfilController;
 use App\Http\Controllers\Api\V1\SaludController;
 use Illuminate\Support\Facades\Route;
@@ -79,6 +81,21 @@ Route::prefix('v1')->group(function () {
 
             // Entregas y material de apoyo: cada rol descarga solo lo que le corresponde (M9)
             Route::get('archivos/{archivo}', ArchivoController::class)->whereNumber('archivo')->name('archivos.show');
+
+            // Notificaciones de la campana (M10): todos los roles, cada uno las suyas
+            Route::get('notificaciones', [NotificacionController::class, 'index'])->name('notificaciones.index');
+            Route::get('notificaciones/resumen', [NotificacionController::class, 'resumen'])->name('notificaciones.resumen');
+            Route::post('notificaciones/leer-todas', [NotificacionController::class, 'leerTodas'])->name('notificaciones.leer-todas');
+            Route::post('notificaciones/{notificacion}/leer', [NotificacionController::class, 'leer'])->whereNumber('notificacion')->name('notificaciones.leer');
+
+            // Incidencias (M10): el docente, de sus estudiantes; el administrador, de todos
+            foreach (['docente' => 'rol:DOCENTE', 'admin' => 'rol:ADMIN'] as $prefijo => $rol) {
+                Route::middleware($rol)->prefix($prefijo)->name("{$prefijo}.")->group(function () {
+                    Route::get('incidencias', [IncidenciaController::class, 'index'])->name('incidencias.index');
+                    Route::get('incidencias/estudiantes', [IncidenciaController::class, 'estudiantes'])->name('incidencias.estudiantes');
+                    Route::post('incidencias', [IncidenciaController::class, 'store'])->name('incidencias.store');
+                });
+            }
 
             // Administración de usuarios (M5)
             Route::middleware('rol:ADMIN')->prefix('admin')->name('admin.')->group(function () use ($fecha) {
