@@ -77,3 +77,12 @@ En GCP sí se controla la versión de PHP. Allí conviene actualizar a Laravel 1
 - **Sin datos ajenos en la campana:** las notificaciones se buscan siempre por el usuario de la sesión; marcar como leída la de otro responde 404 y no la cambia.
 - **Sin cron:** los avisos por fecha (actividad por vencer, cierre próximo) se crean al abrir la campana y se revisa que no existan antes, para no repetirlos.
 - **Auditoría:** cada incidencia guarda quién la registró (`registrado_por`) y queda en `auditoria`. No se editan ni se eliminan.
+
+## Alertas y riesgo (Módulo 11)
+- **Quién ve una alerta:** la administración, todas; el docente, las de las aulas donde es tutor, dicta un curso o coordina (la misma regla que las incidencias, en `AulasDelUsuario`). Otra aula responde 403; una alerta que no existe, 404.
+- **Quién la gestiona:** cambiar su estado y registrar intervenciones, el encargado, el tutor, la coordinación del aula y la administración. Cambiar de encargado, solo la coordinación y la administración, y solo a un docente activo del estudiante. Todo se revisa en el servidor, aunque la pantalla oculte los botones.
+- **Paneles:** el de riesgo es solo de la administración (`rol:ADMIN`); el de coordinación muestra únicamente las aulas que el docente coordina: pedir otra aula por la URL no amplía el ámbito. «Recalcular» del coordinador solo recalcula su ámbito.
+- **Sin duplicados:** una alerta activa por estudiante y bimestre está garantizada por el índice único `ux_alerta_activa`; las administrativas, por `ux_alerta_admin_abierta`.
+- **Rastro:** cada cambio de estado, intervención y reasignación queda en `historial_alerta` con usuario y fecha, y en `auditoria`. Las acciones automáticas aparecen como «Sistema».
+- **Sin cron:** el cálculo diario se dispara en el primer ingreso del día; si fallara, el ingreso sigue funcionando (se registra en el log).
+

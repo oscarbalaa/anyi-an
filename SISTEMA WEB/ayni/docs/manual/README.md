@@ -29,6 +29,7 @@ Cada módulo escribe aquí su parte. En el Módulo 15 se exportan a Word y PDF e
 | 4.4 Docente → Asistencia; Estudiante → Mi asistencia; Administrador → corrección de asistencia | `usuario-06-asistencia.md` | ✅ M8 |
 | 4.5 Docente → Evaluaciones, Notas, Calificaciones; Estudiante → Mis notas, Actividades, Horario; Administrador → cierre de bimestre | `usuario-07-evaluaciones-y-notas.md` | ✅ M9 |
 | 4.6 Docente y Administrador → Incidencias; Notificaciones y campana (los 3 roles) | `usuario-08-incidencias-y-notificaciones.md` | ✅ M10 |
+| 4.7 Administrador → Panel de riesgo y Alertas (estudiantiles y administrativas); Docente → Alertas asignadas y Coordinación | `usuario-09-alertas-y-riesgo.md` | ✅ M11 |
 | 5. Cierre de sesión (a pedido y por inactividad) | `usuario-02-inicio-de-sesion.md` | ✅ M4 |
 | 6. Solución de problemas frecuentes | — | Cada módulo |
 
