@@ -44,10 +44,11 @@ beforeEach(function () {
 
 it('las pantallas de la administración responden en menos de 300 ms', function () {
     $aula = DB::table('aula')->value('id');
+    $periodo = DB::table('periodo_academico')->where('estado', 'EN_CURSO')->value('id');
     foreach ([
         '/api/v1/admin/inicio', '/api/v1/admin/riesgo', '/api/v1/admin/alertas', '/api/v1/admin/alertas-administrativas',
-        '/api/v1/admin/usuarios', '/api/v1/admin/estudiantes', '/api/v1/admin/docentes', '/api/v1/admin/matriculas',
-        '/api/v1/admin/asistencia/resumen', '/api/v1/admin/incidencias', '/api/v1/admin/aulas', "/api/v1/admin/aulas/{$aula}/carga",
+        '/api/v1/admin/usuarios', '/api/v1/admin/estudiantes', '/api/v1/admin/docentes', "/api/v1/admin/matriculas?periodo_id={$periodo}",
+        '/api/v1/admin/asistencia/resumen', '/api/v1/admin/incidencias', "/api/v1/admin/aulas?periodo_id={$periodo}", "/api/v1/admin/aulas/{$aula}/carga",
         '/api/v1/admin/periodos', '/api/v1/admin/estructura/opciones', '/api/v1/admin/reportes/opciones',
     ] as $ruta) {
         expect(milisegundos('cmedina', $ruta))->toBeLessThan(LIMITE_MS, $ruta);
