@@ -22,6 +22,15 @@ beforeEach(function () {
 
 afterEach(fn () => Carbon::setTestNow());
 
+/** Archivo subido de verdad: el tipo se detecta por su contenido (los de UploadedFile::fake() lo toman del nombre) */
+function archivoReal(string $nombre, string $contenido): UploadedFile
+{
+    $ruta = tempnam(sys_get_temp_dir(), 'subida');
+    file_put_contents($ruta, $contenido);
+
+    return new UploadedFile($ruta, $nombre, null, null, true);
+}
+
 function entregarArchivo(int $evaluacion, UploadedFile $archivo)
 {
     return test()->post("/api/v1/estudiante/actividades/{$evaluacion}/entrega", ['archivo' => $archivo, 'accion' => 'ENTREGAR'], ['Accept' => 'application/json']);
@@ -35,7 +44,7 @@ it('rechaza páginas web, scripts y ejecutables aunque se llamen .pdf', function
         'informe.pdf' => "MZ\x90\x00 ejecutable de Windows",
         'dibujo.pdf' => '<svg xmlns="http://www.w3.org/2000/svg" onload="alert(1)"/>',
     ] as $nombre => $contenido) {
-        entregarArchivo($this->practica, UploadedFile::fake()->createWithContent($nombre, $contenido))
+        entregarArchivo($this->practica, archivoReal($nombre, $contenido))
             ->assertStatus(422)->assertJsonPath('errores.archivo.0', 'El archivo debe ser un PDF. Guarda tu trabajo como PDF y vuelve a subirlo.');
     }
     expect(DB::table('archivo')->count())->toBe(0);
@@ -44,7 +53,7 @@ it('rechaza páginas web, scripts y ejecutables aunque se llamen .pdf', function
 it('un PDF con código PHP dentro y extensión .php se guarda como .bin, fuera de lo público, y se descarga como adjunto', function () {
     Fabrica::como($this->e->alumnos['Aranda Ruiz']->usuario);
     $pdf = Fabrica::pdf();
-    $polyglota = UploadedFile::fake()->createWithContent('../../public/shell.php', file_get_contents($pdf->getRealPath()).'<?php system($_GET["c"]); ?>');
+    $polyglota = archivoReal('../../public/shell.php', file_get_contents($pdf->getRealPath()).'<?php system($_GET["c"]); ?>');
     entregarArchivo($this->practica, $polyglota)->assertOk();
 
     $archivo = DB::table('archivo')->first();
@@ -63,10 +72,10 @@ it('el material de apoyo no acepta HTML, SVG ni un .zip disfrazado de Word', fun
     Fabrica::como($this->e->profe);
     $subir = fn (UploadedFile $a) => $this->post("/api/v1/docente/evaluaciones/{$this->practica}/material", ['archivo' => $a], ['Accept' => 'application/json']);
 
-    $subir(UploadedFile::fake()->createWithContent('guia.html', '<script>alert(1)</script>'))->assertStatus(422);
-    $subir(UploadedFile::fake()->createWithContent('guia.svg', '<svg onload="alert(1)"/>'))->assertStatus(422);
-    $subir(UploadedFile::fake()->createWithContent('foto.png', '<?php echo 1; ?>'))->assertStatus(422);
-    $subir(UploadedFile::fake()->createWithContent('guia.docx', "PK\x03\x04 zip cualquiera"))->assertStatus(422);
+    $subir(archivoReal('guia.html', '<script>alert(1)</script>'))->assertStatus(422);
+    $subir(archivoReal('guia.svg', '<svg onload="alert(1)"/>'))->assertStatus(422);
+    $subir(archivoReal('foto.png', '<?php echo 1; ?>'))->assertStatus(422);
+    $subir(archivoReal('guia.docx', "PK\x03\x04 zip cualquiera"))->assertStatus(422);
     $subir(Fabrica::office('guia.docx'))->assertCreated();
 
     expect(DB::table('archivo')->count())->toBe(1);
@@ -75,9 +84,9 @@ it('el material de apoyo no acepta HTML, SVG ni un .zip disfrazado de Word', fun
 it('el importador rechaza lo que no es un Excel real', function () {
     Fabrica::como($this->e->admin);
     foreach ([
-        UploadedFile::fake()->createWithContent('estudiantes.xlsx', '<?php system("id"); ?>'),
-        UploadedFile::fake()->createWithContent('estudiantes.xlsx', "PK\x03\x04 dañado"),
-        UploadedFile::fake()->createWithContent('estudiantes.csv', "nombres,apellidos\n=cmd|' /C calc'!A0,x"),
+        archivoReal('estudiantes.xlsx', '<?php system("id"); ?>'),
+        archivoReal('estudiantes.xlsx', "PK\x03\x04 dañado"),
+        archivoReal('estudiantes.csv', "nombres,apellidos\n=cmd|' /C calc'!A0,x"),
     ] as $archivo) {
         $this->post('/api/v1/admin/estudiantes/importar/revisar', ['archivo' => $archivo, 'matricular' => '1'], ['Accept' => 'application/json'])
             ->assertStatus(422);

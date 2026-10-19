@@ -121,7 +121,7 @@ function Estructura({ rol, usuario }: { rol: Rol; usuario: Usuario }) {
           <PeriodoActual />
         </aside>
 
-        <main id="contenido" className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+        <main id="contenido" tabIndex={-1} className="min-w-0 flex-1 px-4 py-6 outline-none sm:px-6 lg:px-8 lg:py-8">
           {rol === 'docente' && <AvisoCierre />}
           <Outlet />
         </main>

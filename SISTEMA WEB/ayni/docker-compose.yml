@@ -117,7 +117,7 @@ services:
     profiles: ["pruebas"]
     image: node:22-alpine
     working_dir: /app
-    command: ["sh", "-c", "npm ci --no-audit --no-fund && npm run lint && npm run formato:revisar && npx tsc -b && npx vitest run --reporter=default --reporter=junit --outputFile.junit=/reportes/frontend.xml"]
+    command: ["sh", "-c", "npm ci --no-audit --no-fund && npm run lint && npm run formato:revisar && npx tsc -b && npx vitest run --reporter=default --reporter=junit --outputFile.junit=/reportes/frontend.xml && npm run presupuesto"]
     volumes:
       - ./frontend:/app
       - ayni-frontend-modulos:/app/node_modules
