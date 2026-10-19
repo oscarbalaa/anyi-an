@@ -39,7 +39,9 @@ class RouteServiceProvider extends ServiceProvider
         RateLimiter::for('api', function (Request $request) {
             $usuario = $request->user('sanctum');
 
-            return $usuario ? Limit::perMinute(120)->by("api|{$usuario->id}") : Limit::perMinute(300)->by('api|'.$request->ip());
+            return $usuario
+                ? Limit::perMinute(config('ayni.limite_api.cuenta'))->by("api|{$usuario->id}")
+                : Limit::perMinute(config('ayni.limite_api.ip'))->by('api|'.$request->ip());
         });
 
         $this->routes(function () {
