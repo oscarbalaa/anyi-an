@@ -148,7 +148,7 @@ test.describe('armar un aula completa (E2E del plan)', () => {
 
     // Aula de sección única (RN-03)
     await pestana(page, 'Grados y aulas')
-    await page.getByLabel('Periodo').selectOption({ label: PRUEBA })
+    await page.getByLabel('Periodo', { exact: true }).selectOption({ label: PRUEBA })
     await page.getByRole('button', { name: 'Nueva aula' }).click()
     ventana = page.getByRole('dialog', { name: 'Nueva aula' })
     await ventana.getByLabel('Grado').selectOption({ label: '1.º secundaria' })
