@@ -20,7 +20,7 @@ usuarios_antes="$(sql 'SELECT COUNT(*) FROM usuario;')"
 antes="$(ls respaldos/*.sql 2>/dev/null | wc -l)"
 
 crea_respaldo() {
-    ./scripts/ayni.sh respaldo >/dev/null && [ "$(ls respaldos/*.sql | wc -l)" -gt "$antes" ] && grep -q 'CREATE TABLE `usuario`' "$(ls -1t respaldos/*.sql | head -1)"
+    bash scripts/ayni.sh respaldo >/dev/null && [ "$(ls respaldos/*.sql | wc -l)" -gt "$antes" ] && grep -q 'CREATE TABLE `usuario`' "$(ls -1t respaldos/*.sql | head -1)"
 }
 prueba 'RF-66: crea un respaldo .sql con fecha y toda la estructura' crea_respaldo
 
@@ -28,7 +28,7 @@ prueba 'RF-66: crea un respaldo .sql con fecha y toda la estructura' crea_respal
 sql 'CREATE TABLE IF NOT EXISTS prueba_respaldo (id INT);' >/dev/null
 
 restaura() {
-    ./scripts/ayni.sh restaurar >/dev/null \
+    bash scripts/ayni.sh restaurar >/dev/null \
         && [ -z "$(sql "SHOW TABLES LIKE 'prueba_respaldo';")" ] \
         && [ "$(sql 'SELECT COUNT(*) FROM usuario;')" = "$usuarios_antes" ]
 }
@@ -37,10 +37,14 @@ prueba 'RF-66: restaura el último respaldo y deja los datos como estaban' resta
 sin_respaldos() {
     local carpeta
     carpeta="$(mktemp -d)"
-    mv respaldos/*.sql "$carpeta"/
-    ./scripts/ayni.sh restaurar >/dev/null 2>&1
+    shopt -s nullglob
+    local archivos=(respaldos/*.sql)
+    [ ${#archivos[@]} -gt 0 ] && mv "${archivos[@]}" "$carpeta"/
+    bash scripts/ayni.sh restaurar >/dev/null 2>&1
     local estado=$?
-    mv "$carpeta"/*.sql respaldos/
+    archivos=("$carpeta"/*.sql)
+    [ ${#archivos[@]} -gt 0 ] && mv "${archivos[@]}" respaldos/
+    shopt -u nullglob
     rmdir "$carpeta"
     [ "$estado" -ne 0 ]
 }
