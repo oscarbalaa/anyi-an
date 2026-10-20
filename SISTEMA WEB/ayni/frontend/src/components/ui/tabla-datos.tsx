@@ -95,7 +95,12 @@ export function TablaDatos<T>({
         />
       ) : (
         <>
-          <div className="hidden overflow-x-auto rounded-2xl border border-borde md:block">
+          <div
+            className="hidden overflow-x-auto rounded-2xl border border-borde md:block"
+            tabIndex={0}
+            role="region"
+            aria-label={descripcion}
+          >
             <table className="w-full text-left">
               <caption className="sr-only">{descripcion}</caption>
               <thead className="bg-primario-suave/60 text-sm">

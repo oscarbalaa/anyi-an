@@ -247,7 +247,7 @@ function Grilla({
 
   return (
     <>
-      <div className="hidden overflow-x-auto md:block">
+      <div className="hidden overflow-x-auto md:block" tabIndex={0} role="region" aria-label="Horario semanal">
         <table className="w-full table-fixed border-separate border-spacing-1">
           <caption className="sr-only">Horario semanal de {carga.aula.nombre}</caption>
           <thead>
