@@ -105,7 +105,12 @@ export default function MiHorario() {
       ) : (
         <>
           {/* PC: cuadrícula por hora y día */}
-          <Card className="hidden overflow-x-auto p-0 sm:p-0 md:block">
+          <Card
+            className="hidden overflow-x-auto p-0 sm:p-0 md:block"
+            tabIndex={0}
+            role="region"
+            aria-label="Horario semanal"
+          >
             <table className="w-full table-fixed text-left">
               <caption className="sr-only">Horario semanal de {data.aula}</caption>
               <thead>

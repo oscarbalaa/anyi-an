@@ -124,7 +124,7 @@ export default function Ficha360({ rol }: { rol: 'admin' | 'docente' }) {
       <Alerta data={data} rol={rol} />
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
-        <Card className="flex flex-col gap-3 overflow-x-auto" aria-labelledby="titulo-notas">
+        <Card className="flex flex-col gap-3 overflow-x-auto" aria-labelledby="titulo-notas" tabIndex={0}>
           <CardTitulo id="titulo-notas">Promedio por curso</CardTitulo>
           <table className="w-full text-left" aria-labelledby="titulo-notas">
             <thead>
