@@ -35,3 +35,7 @@ Cada módulo escribe aquí su parte. En el Módulo 15 se exportan a Word y PDF e
 | 6. Solución de problemas frecuentes | — | Cada módulo |
 
 Las capturas de `capturas/` se generan con las pruebas E2E (`scripts/equipo/capturas.ps1`), en PC y celular, para que siempre coincidan con el sistema real.
+
+## Lista de verificación final (M13)
+
+`../lista-de-verificacion.md`: el recorrido que imita la revisión del profesor (instalación, cada rol, seguridad, celular y accesibilidad). En el Módulo 15 se copia a `1. INICIO/`.
