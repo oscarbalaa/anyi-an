@@ -45,8 +45,8 @@ Todas las pantallas internas comparten la misma estructura:
 
 | Rol | Opciones del menú |
 |---|---|
-| Administrativo | Inicio, Panel de riesgo, Alertas, Estudiantes, Docentes, Usuarios, Estructura académica, Incidencias |
-| Docente | Inicio, Mis estudiantes, Asistencia, Evaluaciones, Notas, Calificaciones, Alertas |
+| Administrativo | Inicio, Panel de riesgo, Alertas, Estudiantes, Docentes, Asistencia, Usuarios, Estructura académica, Incidencias, Reportes |
+| Docente | Inicio, Mis estudiantes, Asistencia, Evaluaciones, Notas, Calificaciones, Incidencias, Alertas, Coordinación |
 | Estudiante | Inicio, Mis notas, Mi asistencia, Mi horario, Actividades, Notificaciones |
 
 ![Inicio administrativo](capturas/pc/06-inicio-administracion.png)

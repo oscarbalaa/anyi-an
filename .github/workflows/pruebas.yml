@@ -14,6 +14,9 @@ jobs:
   pruebas:
     runs-on: ubuntu-24.04
     timeout-minutes: 60
+    # Para devolver a la rama las capturas y manuales (solo commits con [manuales])
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -41,8 +44,13 @@ jobs:
       - name: Pruebas del frontend
         run: docker compose --profile pruebas run --rm pruebas-frontend
 
-      - name: Pruebas punta a punta
+      - name: Pruebas punta a punta (y capturas del manual en PC y celular)
+        env:
+          AYNI_CAPTURAS: /capturas
         run: docker compose --profile pruebas run --rm pruebas-e2e
+
+      - name: Manuales de usuario e instalación en Word y PDF
+        run: docker compose --profile pruebas run --rm --no-deps manuales
 
       - name: Respaldo y restauración desde el panel (RF-66)
         run: bash scripts/pruebas/respaldo.test.sh
@@ -83,3 +91,22 @@ jobs:
         with:
           name: reportes-de-pruebas
           path: SISTEMA WEB/ayni/reportes/actual
+
+      - name: Guardar manuales
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: manuales
+          path: SISTEMA WEB/ayni/1. INICIO/MANUAL/*.*
+          if-no-files-found: ignore
+
+      - name: Devolver capturas y manuales a la rama (commits con [manuales])
+        if: success() && github.event_name == 'push' && contains(github.event.head_commit.message, '[manuales]')
+        run: |
+          sudo chown -R "$(id -u):$(id -g)" docs/manual/capturas "1. INICIO/MANUAL"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/manual/capturas "1. INICIO/MANUAL"
+          git diff --cached --quiet && exit 0
+          git commit -m 'M15: capturas y manuales generados por la CI'
+          git push origin "HEAD:$GITHUB_REF_NAME"

@@ -75,4 +75,4 @@ Cuentas: las de `1. INICIO/CREDENCIALES.txt` (`cmedina` / `Ayni#2026`, `41234567
 ## 9. Documentación
 
 - [ ] `docs/requisitos.md`, `docs/validaciones.md`, `docs/seguridad.md` y `docs/trazabilidad.md` están al día (la CI revisa la matriz de trazabilidad).
-- [ ] El manual de usuario (`docs/manual/`) tiene una sección por módulo con capturas de PC y celular.
+- [ ] `1. INICIO/MANUAL` tiene el manual de usuario y el de instalación en Word y PDF (opción `8` del panel), con capturas de PC y celular.

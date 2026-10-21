@@ -48,7 +48,7 @@ Elige **`1`**. Si falta Docker, el panel ofrece instalarlo con el instalador ofi
 | 5 | Reiniciar |
 | 6 | Abrir AYNI en el navegador |
 | 7 | Ver credenciales |
-| 8 | Abrir el manual de usuario |
+| 8 | Abrir los manuales de usuario e instalación (carpeta `MANUAL`) |
 | 9 | Abrir phpMyAdmin para ver la base de datos |
 | 10 | Ejecutar todas las pruebas automáticas y abrir el reporte |
 | 11 | Ver el estado de los servicios |

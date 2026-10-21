@@ -12,7 +12,15 @@ La versión local usa el mismo código y las mismas reglas de seguridad que la v
 ### Uso en la web
 
 1. Abre https://aplicacionenlanube.cetivirgendelapuerta.com/grupo02/ en cualquier navegador, también desde el celular con datos móviles. Siempre se abre con **HTTPS** (candado): si escribes `http://`, el servidor te lleva a la versión segura.
-2. Pulsa **Ingresar** y elige tu acceso (estudiante o docente) o **Administración**. Los usuarios son los mismos de la demostración (`1. INICIO/CREDENCIALES.txt`).
+2. Pulsa **Ingresar** y elige tu acceso (estudiante o docente) o **Administración**. Los usuarios son los mismos de la demostración (`1. INICIO/CREDENCIALES.txt`):
+
+   | Rol | Usuario | Contraseña | Entra por |
+   |---|---|---|---|
+   | Administrador | `cmedina` | `Ayni#2026` | Administración |
+   | Docente que coordina el 3.º A | `41234567` | `Ayni#2026` | Ingresar → Docente |
+   | Docente, tutora del 3.º B | `42345678` | `Ayni#2026` | Ingresar → Docente |
+   | Estudiante (3.º B) | `E-2026-001` | `piki2026` | Ingresar → Estudiante |
+
 3. En la web los correos de recuperación **sí llegan** a la bandeja real del usuario (desde la cuenta Gmail del proyecto).
 
 Por seguridad, desde el navegador solo se ve el sistema: el código, la configuración (`.env`), `vendor/`, `storage/`, `1. INICIO/` y los manuales responden **403 Prohibido**. Esos archivos solo se descargan por FTP.
@@ -78,7 +86,7 @@ bash "1. INICIO/AYNI.sh" encender
 | 5 | Reiniciar | Reinicia todos los servicios |
 | 6 | Abrir AYNI en el navegador | Abre http://localhost:5173 |
 | 7 | Ver credenciales | Abre `CREDENCIALES.txt` en el Bloc de notas |
-| 8 | Abrir manual de usuario | Abre el manual en PDF |
+| 8 | Abrir los manuales | Abre el manual de usuario y el de instalación en PDF (carpeta `1. INICIO/MANUAL`) |
 | 9 | Abrir phpMyAdmin | Abre la base de datos en http://localhost:8080 (usuario y clave en la opción 7) |
 | 10 | Ejecutar todas las pruebas | Corre las pruebas automáticas (backend, frontend, navegador en PC y celular, y panel) y abre un reporte HTML |
 | 11 | Ver estado de los servicios | Lista los servicios y si están en marcha |
@@ -116,7 +124,48 @@ La opción `14` vuelve a cargar estos datos desde cero, con las fechas de ese d�
 - **Restaurar:** opción `16`. Muestra la lista de respaldos (el más reciente primero), pide el número y confirmación.
 - **Usar un respaldo de otra PC:** copia el `.sql` dentro de la carpeta `respaldos` y usa la opción `16`.
 
-## 8. Publicar en el hosting (solo el equipo)
+## 8. Alternativa sin Docker (solo documentada)
+
+El panel y las pruebas usan Docker: es la forma recomendada y la única que el equipo prueba en cada cambio. Si una PC no puede usar Docker (por ejemplo, sin virtualización), AYNI también funciona con los programas instalados a mano, igual que en el hosting.
+
+**Programas:**
+
+| Programa | Versión |
+|---|---|
+| PHP | 8.1 con las extensiones `pdo_mysql`, `mbstring`, `zip`, `xmlreader`, `gd`, `intl`, `bcmath`, `exif`, `fileinfo` y `openssl` |
+| Composer | 2 |
+| MySQL o MariaDB | MySQL 8 o MariaDB 10.6 o superior |
+| Node.js | 22 (solo para compilar la parte visual) |
+| Servidor web | Apache 2.4 con `mod_rewrite` y `mod_headers` (por ejemplo, XAMPP con PHP 8.1) |
+
+**Pasos** (desde la carpeta del proyecto):
+
+1. Crea una base de datos vacía con `utf8mb4` y un usuario con permisos sobre ella.
+2. Instala las dependencias de Laravel:
+   ```bash
+   cd backend
+   composer install --no-dev --optimize-autoloader
+   ```
+3. Copia `backend/.env.example` como `backend/.env` y completa `APP_URL` (la dirección donde se abrirá) y `DB_DATABASE`, `DB_USERNAME` y `DB_PASSWORD`. Para ver los correos sin un servidor de correo, deja `MAIL_MAILER=log`: quedan en `backend/storage/logs`. Deja `APP_DEBUG=false`.
+4. Genera la clave y prepara la base de datos con los datos de demostración:
+   ```bash
+   php artisan key:generate
+   php artisan ayni:preparar-bd
+   ```
+5. Compila la parte visual y cópiala a `backend/public`. Si el sistema no estará en la raíz del servidor, indica su carpeta en `AYNI_BASE`:
+   ```bash
+   cd ../frontend
+   npm ci
+   AYNI_BASE=/ npm run build
+   cp -r dist/. ../backend/public/
+   ```
+   En Windows (PowerShell): `$env:AYNI_BASE='/'; npm run build; Copy-Item dist\* ..\backend\public -Recurse -Force`.
+6. Apunta Apache a la **carpeta del proyecto** (la que tiene el `.htaccess` de la raíz), con `AllowOverride All`. El `.htaccess` envía todo a `backend/public` y bloquea lo privado, igual que en el hosting.
+7. Da permiso de escritura al servidor web sobre `backend/storage` y `backend/bootstrap/cache`.
+
+Sin Docker no están el panel, phpMyAdmin ni la bandeja de correos de prueba: los respaldos se hacen con `mysqldump` o con el phpMyAdmin que traiga tu servidor.
+
+## 9. Publicar en el hosting (solo el equipo)
 
 `scripts\equipo\publicar-hosting.ps1` prepara y sube AYNI a la carpeta `grupo02` del FTP del curso. **Nunca sube nada sin tu OK.**
 
@@ -147,7 +196,7 @@ Opciones: `-SoloPreparar` (arma la copia sin subir), `-SinHumo` (no ejecuta la p
 
 **El captcha en la prueba de humo:** el script deja en el servidor, solo durante la prueba, un secreto aleatorio que vence en 30 minutos, y lo quita al terminar (aunque la prueba falle). Ver `docs/seguridad.md`.
 
-## 9. Problemas frecuentes
+## 10. Problemas frecuentes
 
 | Problema | Solución |
 |---|---|
@@ -162,7 +211,36 @@ Opciones: `-SoloPreparar` (arma la copia sin subir), `-SinHumo` (no ejecuta la p
 | "Memoria RAM: … irá lento" | Funciona, pero cierra otros programas pesados mientras usas AYNI |
 | Una cuenta de demostración quedó bloqueada (5 intentos fallidos) | Las de administración se liberan solas en 15 minutos. Para las demás, opción `14` (reinicia la BD con los datos de demostración) |
 | No llega el correo de recuperación de contraseña | En la instalación local los correos no salen a internet: ábrelos con la opción `13` (Correos de prueba) |
-| Publicar: "The remote certificate is invalid…" | El certificado del FTP no coincide con su nombre: completa `FTP_HUELLA_CERTIFICADO` (sección 8) |
+| Publicar: "The remote certificate is invalid…" | El certificado del FTP no coincide con su nombre: completa `FTP_HUELLA_CERTIFICADO` (sección 9) |
 | Publicar: "(530) Not logged in" | Revisa `FTP_USUARIO` y `FTP_CLAVE` en `CREDENCIALES_PRIVADAS.txt` |
 | La web muestra "No se pudo cargar…" en todas las pantallas | La base de datos del hosting no está importada o sus datos en `CREDENCIALES_PRIVADAS.txt` no coinciden: revisa `https://…/grupo02/api/v1/health` y vuelve a publicar |
 | Recargar una pantalla en la web da 404 | El servidor no está leyendo el `.htaccess`: confirma que `grupo02/.htaccess` se subió (es un archivo oculto) |
+
+## 11. Preguntas frecuentes
+
+**¿Necesito internet para usar AYNI en local?**
+Solo la primera vez, para descargar Docker y las imágenes (~2 GB). Después funciona sin conexión.
+
+**¿Puedo abrir AYNI desde el celular?**
+Sí. En la web, con la dirección pública. En local, con el celular en la misma red Wi-Fi que la PC, usando la dirección "Desde un celular (Wi-Fi)" de `CREDENCIALES.txt`. Si no abre, permite a Docker Desktop en el firewall de Windows (redes privadas).
+
+**¿Se pierden los datos al apagar la PC o al pausar AYNI?**
+No. Los datos quedan guardados en Docker; solo se borran con la opción `14` (que pide confirmar) o al desinstalar Docker. Para guardarlos fuera de la PC, usa la opción `15` y copia el `.sql` de la carpeta `respaldos`.
+
+**¿Qué diferencia hay entre la versión web y la local?**
+Es el mismo sistema con las mismas reglas. En la web los correos de recuperación llegan a la bandeja real; en local llegan a **Correos de prueba** (opción `13`), y además están phpMyAdmin y las pruebas automáticas.
+
+**¿Cómo vuelvo a los datos de demostración?**
+Opción `14` del panel. Borra lo que hayas creado y vuelve a cargar el colegio de demostración con las fechas de ese día.
+
+**¿Puedo cambiar la carpeta de lugar o ponerla en una ruta con espacios o tildes?**
+Sí. Pausa AYNI (opción `4`), mueve la carpeta y vuelve a encenderlo (opción `3`) desde su nueva ubicación.
+
+**¿Cómo veo la base de datos?**
+Opción `9` (phpMyAdmin). El usuario y la contraseña están en `CREDENCIALES.txt` (opción `7`). Desde HeidiSQL o MySQL Workbench: `127.0.0.1`, puerto `3307`.
+
+**¿Cómo compruebo que todo funciona?**
+Opción `10`: ejecuta todas las pruebas automáticas (backend, frontend, recorridos en PC y celular, accesibilidad y Lighthouse) y abre el reporte.
+
+**¿Cómo desinstalo AYNI?**
+Pausa AYNI (opción `4`) y borra la carpeta. Para liberar también el espacio de Docker, en Docker Desktop borra los contenedores, imágenes y volúmenes que empiezan con `ayni`.

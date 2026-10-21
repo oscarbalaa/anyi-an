@@ -358,7 +358,7 @@ DIRECCIONES
   phpMyAdmin (ver la BD) ... http://localhost:$($p.AYNI_PUERTO_PMA)
   Correos de prueba ........ http://localhost:$($p.AYNI_PUERTO_CORREO)
   Versión web (hosting) .... $script:UrlHosting
-                             (se publica en el Módulo 14)
+                             (los mismos usuarios de demostración)
 
 BASE DE DATOS LOCAL (para phpMyAdmin)
   Usuario .......... $usuarioBd
@@ -561,10 +561,14 @@ function Accion-Credenciales {
 
 function Accion-Manual {
     $carpeta = Join-Path $script:Inicio 'MANUAL'
-    $pdf = Get-ChildItem -LiteralPath $carpeta -Filter 'Manual de usuario*.pdf' -ErrorAction SilentlyContinue | Select-Object -First 1
-    if ($pdf) { Start-Process $pdf.FullName; return }
-    Escribir-Aviso 'El manual completo se publica en el Módulo 15.'
-    Escribir-Info 'Por ahora se abre el avance en docs\manual.'
+    $pdfs = @('Manual de usuario.pdf', 'Manual de instalación.pdf') | ForEach-Object { Join-Path $carpeta $_ } | Where-Object { Test-Path -LiteralPath $_ }
+    if ($pdfs) {
+        foreach ($pdf in $pdfs) { Start-Process $pdf }
+        Escribir-Info "Los manuales (Word y PDF) están en $carpeta"
+        return
+    }
+    Escribir-Aviso 'Esta copia no trae los manuales en PDF.'
+    Escribir-Info 'Se abre su texto en docs\manual.'
     Start-Process explorer.exe -ArgumentList "`"$(Join-Path $script:Raiz 'docs\manual')`""
 }
 
@@ -813,7 +817,7 @@ function Mostrar-Menu {
     Write-Host '  [5]  Reiniciar'
     Write-Host '  [6]  Abrir AYNI en el navegador'
     Write-Host '  [7]  Ver credenciales (Bloc de notas)'
-    Write-Host '  [8]  Abrir manual de usuario'
+    Write-Host '  [8]  Abrir los manuales (usuario e instalación)'
     Write-Host ' REVISIÓN' -ForegroundColor Cyan
     Write-Host '  [9]  Abrir phpMyAdmin (ver la base de datos)'
     Write-Host '  [10] Ejecutar TODAS las pruebas + abrir reporte'
