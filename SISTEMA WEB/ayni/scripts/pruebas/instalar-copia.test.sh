@@ -34,7 +34,8 @@ prueba 'el panel creó su configuración local (.env con clave propia)' local_en
 
 ignora_hosting() {
     # La configuración del hosting (backend/.env de producción) no entra a la imagen local
-    ! (cd "$copia" && docker compose exec -T app grep -q 'APP_ENV=production' backend/.env)
+    (cd "$copia" && docker compose exec -T app test -f backend/.env) \
+        && ! (cd "$copia" && docker compose exec -T app grep -q 'APP_ENV=production' backend/.env)
 }
 prueba 'ignora la configuración del hosting que vino en la copia' ignora_hosting
 
