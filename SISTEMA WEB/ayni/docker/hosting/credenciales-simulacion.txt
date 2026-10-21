@@ -1,0 +1,9 @@
+# Hosting simulado de la CI (docker compose --profile hosting): Apache + PHP 8.1 + MariaDB 10.6 en /grupo02/.
+# No son credenciales reales: la base de datos solo existe dentro de la CI.
+URL=http://hosting-web/grupo02/
+BD_HOST=hosting-bd
+BD_PUERTO=3306
+BD_NOMBRE=grupo02
+BD_USUARIO=grupo02
+BD_CLAVE=Grupo02Simulacion
+APP_KEY=base64:c2ltdWxhY2lvbi1kZWwtaG9zdGluZy1zb2xvLWNpISE=

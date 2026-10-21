@@ -13,6 +13,7 @@ const CARPETAS = [
   ['Pest', 'backend/tests', /\.php$/],
   ['Vitest', 'frontend/src', /\.test\.tsx?$/],
   ['Playwright', 'e2e/pruebas', /\.spec\.ts$/],
+  ['Humo (hosting)', 'e2e/humo', /\.spec\.ts$/],
   ['Panel', 'scripts/pruebas', /(\.Tests\.ps1|\.test\.sh)$/],
 ]
 

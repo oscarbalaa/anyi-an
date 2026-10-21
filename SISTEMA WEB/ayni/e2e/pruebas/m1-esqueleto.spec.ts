@@ -77,6 +77,18 @@ test.describe('archivos internos ocultos (igual que en el hosting)', () => {
     })
   }
 
+  // M14: lo que existe en el servidor fuera de backend/public responde 403 (no la pantalla de React)
+  for (const ruta of ['/.env', '/.htaccess', '/backend/', '/backend/app/', '/backend/.env', '/backend/composer.json', '/backend/artisan', '/vendor/autoload.php', '/storage/app/']) {
+    test(`prohíbe ${ruta} (403)`, async ({ request }) => {
+      expect((await request.get(ruta)).status()).toBe(403)
+    })
+  }
+
+  test('las pantallas de React y la API siguen respondiendo', async ({ request }) => {
+    for (const ruta of ['/', '/ingresar', '/admin/usuarios', '/robots.txt']) expect((await request.get(ruta)).status(), ruta).toBe(200)
+    expect((await request.get('/api/v1/health')).status()).toBe(200)
+  })
+
   test('envía cabeceras básicas de seguridad', async ({ request }) => {
     const respuesta = await request.get('/')
 

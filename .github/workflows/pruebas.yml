@@ -13,7 +13,7 @@ defaults:
 jobs:
   pruebas:
     runs-on: ubuntu-24.04
-    timeout-minutes: 40
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
 
@@ -46,6 +46,26 @@ jobs:
 
       - name: Respaldo y restauración desde el panel (RF-66)
         run: bash scripts/pruebas/respaldo.test.sh
+
+      - name: "Hosting simulado: armar la copia de grupo02 con publicar-hosting.ps1"
+        run: pwsh -NoProfile -File scripts/equipo/publicar-hosting.ps1 -SoloPreparar -BaseDeDatos -Credenciales docker/hosting/credenciales-simulacion.txt
+
+      - name: "Hosting simulado: Apache + PHP 8.1 + MariaDB 10.6 en /grupo02/"
+        run: |
+          chmod -R a+rwX dist-hosting/grupo02/backend/storage dist-hosting/grupo02/backend/bootstrap/cache
+          # Igual que la prueba de humo del script: un secreto que vence en una hora
+          secreto="$(head -c 24 /dev/urandom | od -An -tx1 | tr -d ' \n')"
+          echo "AYNI_SECRETO_HUMO=$secreto" >> "$GITHUB_ENV"
+          printf 'AYNI_SECRETO_E2E=%s\nAYNI_SECRETO_E2E_HASTA=%s\n' "$secreto" "$(( $(date +%s) + 3600 ))" >> dist-hosting/grupo02/backend/.env
+          docker compose --profile hosting up -d --build --wait hosting-bd hosting-web
+
+      - name: "Prueba de humo contra el hosting simulado (solo lectura)"
+        run: docker compose --profile pruebas run --rm --no-deps -e AYNI_URL=http://hosting-web/grupo02/ -e AYNI_SECRETO_E2E="$AYNI_SECRETO_HUMO" pruebas-e2e sh -c 'npm ci --no-audit --no-fund && npx playwright test -c playwright.humo.config.ts'
+
+      - name: "Descargar la copia del FTP en una carpeta nueva e instalar con el panel"
+        run: |
+          docker compose --profile hosting down
+          bash scripts/pruebas/instalar-copia.test.sh
 
       - name: Mostrar el detalle de las pruebas punta a punta que fallaron
         if: failure()
