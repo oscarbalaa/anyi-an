@@ -59,6 +59,9 @@ jobs:
       - name: "Descargar la copia del FTP en una carpeta nueva e instalar con el panel"
         run: |
           docker compose --profile hosting down
+          # El panel pide 8 GB libres: se borran herramientas del servidor de la CI que AYNI no usa
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/share/swift
+          df -h . | tail -1
           bash scripts/pruebas/instalar-copia.test.sh
 
       - name: Guardar reportes
