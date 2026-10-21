@@ -6,7 +6,9 @@ Cada módulo escribe aquí su parte. En el Módulo 15 se exportan a Word y PDF e
 
 | Sección | Archivo | Estado |
 |---|---|---|
-| Uso en la web | — | Módulo 14 |
+| Uso en la web | `instalacion.md` | ✅ M14 |
+| Uso en local descargando desde el FTP | `instalacion.md` | ✅ M14 |
+| Publicar en el hosting (equipo) | `instalacion.md` | ✅ M14 |
 | Instalación local en Windows | `instalacion.md` | ✅ M1 |
 | Instalación local en Linux | `instalacion.md` | ✅ M1 |
 | El panel de control, opción por opción | `instalacion.md` | ✅ M1 |

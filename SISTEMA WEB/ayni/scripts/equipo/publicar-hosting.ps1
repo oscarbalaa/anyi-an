@@ -65,6 +65,11 @@ function Leer-Credenciales([string]$ruta) {
     return $datos
 }
 
+# Valor entre comillas para el .env: escapa \ " y $ (una contraseña puede tenerlos)
+function Comillas([string]$valor) {
+    return '"' + (($valor -replace '\\', '\\') -replace '"', '\"' -replace '\$', '\$$') + '"'
+}
+
 function Env-Hosting($c, [string]$secreto = '', [long]$hasta = 0) {
     $v = { param($clave, $porDefecto) if ($c[$clave]) { $c[$clave] } else { $porDefecto } }
     $lineas = @(
@@ -81,7 +86,7 @@ function Env-Hosting($c, [string]$secreto = '', [long]$hasta = 0) {
         "DB_PORT=$(& $v 'BD_PUERTO' '3306')"
         "DB_DATABASE=$($c['BD_NOMBRE'])"
         "DB_USERNAME=$($c['BD_USUARIO'])"
-        "DB_PASSWORD=`"$($c['BD_CLAVE'])`""
+        "DB_PASSWORD=$(Comillas $c['BD_CLAVE'])"
         'CACHE_DRIVER=file'
         'FILESYSTEM_DISK=local'
         'QUEUE_CONNECTION=sync'
@@ -91,7 +96,7 @@ function Env-Hosting($c, [string]$secreto = '', [long]$hasta = 0) {
         "MAIL_HOST=$(& $v 'CORREO_SERVIDOR' 'smtp.gmail.com')"
         "MAIL_PORT=$(& $v 'CORREO_PUERTO' '587')"
         "MAIL_USERNAME=$($c['CORREO_USUARIO'])"
-        "MAIL_PASSWORD=`"$($c['CORREO_CLAVE'])`""
+        "MAIL_PASSWORD=$(Comillas $c['CORREO_CLAVE'])"
         'MAIL_ENCRYPTION=tls'
         "MAIL_FROM_ADDRESS=$(& $v 'CORREO_REMITENTE' $c['CORREO_USUARIO'])"
         'MAIL_FROM_NAME=AYNI'
@@ -183,10 +188,10 @@ function Comparar($actual) {
 }
 
 # ---------- 3. FTPS ----------
-function Ftp-Solicitud($c, [string]$ruta, [string]$metodo) {
-    $base = "ftp://$($c['FTP_HOST'])/$($c['FTP_CARPETA'].Trim('/'))"
-    $partes = ($ruta -split '/' | ForEach-Object { [Uri]::EscapeDataString($_) }) -join '/'
-    $solicitud = [Net.FtpWebRequest]::Create("$base/$partes")
+function Ftp-Solicitud($c, [string]$ruta, [string]$metodo, [switch]$DesdeLaRaiz) {
+    $completa = if ($DesdeLaRaiz) { $ruta } else { "$($c['FTP_CARPETA'].Trim('/'))/$ruta" }
+    $partes = ($completa.Trim('/') -split '/' | ForEach-Object { [Uri]::EscapeDataString($_) }) -join '/'
+    $solicitud = [Net.FtpWebRequest]::Create("ftp://$($c['FTP_HOST'])/$partes")
     $solicitud.Method = $metodo
     $solicitud.Credentials = New-Object Net.NetworkCredential($c['FTP_USUARIO'], $c['FTP_CLAVE'])
     $solicitud.EnableSsl = $true
@@ -234,6 +239,12 @@ function Ftp-Configurar($c) {
 function Subir($c, $cambios, $actual) {
     Ftp-Configurar $c
     $creadas = New-Object 'System.Collections.Generic.HashSet[string]'
+    # La carpeta del grupo (por si aún no existe)
+    $acumulada = ''
+    foreach ($parte in ($c['FTP_CARPETA'].Trim('/') -split '/')) {
+        $acumulada = "$acumulada/$parte"
+        try { (Ftp-Solicitud $c $acumulada ([Net.WebRequestMethods+Ftp]::MakeDirectory) -DesdeLaRaiz).GetResponse().Close() } catch { }
+    }
     $lista = @($cambios.nuevos) + @($cambios.cambiados)
     # El .htaccess y el .env van al final: así la web no queda a medias con reglas nuevas
     $ultimos = @($lista | Where-Object { $_ -match '(^|/)\.(htaccess|env)$' })
