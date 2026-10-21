@@ -41,8 +41,9 @@ return [
         'ip' => (int) env('AYNI_LIMITE_API_IP', 600),
     ],
 
-    // Solo en local: las pruebas E2E envían este secreto para no tener que leer el captcha.
-    // En el hosting no se define y el captcha siempre se exige.
+    // Las pruebas E2E envían este secreto para no tener que leer el captcha. En el hosting solo
+    // existe mientras corre la prueba de humo, con vencimiento (marca de tiempo Unix, máximo 2 horas).
     'secreto_e2e' => env('AYNI_SECRETO_E2E'),
+    'secreto_e2e_hasta' => env('AYNI_SECRETO_E2E_HASTA'),
 
 ];

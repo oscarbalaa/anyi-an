@@ -50,15 +50,29 @@ class Captcha
         return hash_equals($desafio->respuesta_hash, $this->huella($respuesta));
     }
 
-    /** Las pruebas E2E locales envían un secreto en vez de resolver la imagen */
+    /** Las pruebas E2E envían un secreto en vez de resolver la imagen */
     public function verificarSolicitud(Request $request): bool
     {
-        $secreto = config('ayni.secreto_e2e');
-        if ($secreto && ! app()->isProduction() && hash_equals((string) $secreto, (string) $request->header('X-Ayni-E2E'))) {
+        $secreto = (string) config('ayni.secreto_e2e');
+        if ($secreto !== '' && $this->secretoVigente($secreto) && hash_equals($secreto, (string) $request->header('X-Ayni-E2E'))) {
             return true;
         }
 
         return $this->verificar($request->input('captcha_id'), $request->input('captcha'));
+    }
+
+    /**
+     * En local siempre. En el hosting solo durante la prueba de humo de publicar-hosting.ps1:
+     * un secreto largo con vencimiento (AYNI_SECRETO_E2E_HASTA) de como máximo 2 horas.
+     */
+    private function secretoVigente(string $secreto): bool
+    {
+        if (! app()->isProduction()) {
+            return true;
+        }
+        $hasta = (int) config('ayni.secreto_e2e_hasta');
+
+        return strlen($secreto) >= 32 && $hasta > time() && $hasta - time() <= 7200;
     }
 
     private function texto(): string
