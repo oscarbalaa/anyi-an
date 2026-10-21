@@ -81,7 +81,7 @@ bash "1. INICIO/AYNI.sh" encender
 |---|---|---|
 | 1 | Instalar lo necesario | Instalación completa (sección 3). Se puede repetir sin perder datos |
 | 2 | Verificar requisitos y dependencias | Revisa PC, Docker, puertos, servicios, API, base de datos y web. Cada punto sale con `[OK]` o `[X]` y la forma de arreglarlo |
-| 3 | Encender AYNI | Abre Docker Desktop si está cerrado, enciende los servicios, espera a que respondan y abre el navegador |
+| 3 | Encender AYNI | Abre Docker Desktop si está cerrado, reconstruye AYNI si la carpeta se actualizó, enciende los servicios, espera a que respondan y abre el navegador |
 | 4 | Pausar | Detiene AYNI sin borrar datos |
 | 5 | Reiniciar | Reinicia todos los servicios |
 | 6 | Abrir AYNI en el navegador | Abre http://localhost:5173 |
@@ -207,6 +207,7 @@ Opciones: `-SoloPreparar` (arma la copia sin subir), `-SinHumo` (no ejecuta la p
 | "El puerto … lo está usando …" | Acepta el puerto alternativo que propone el panel |
 | La instalación se corta descargando | Revisa la conexión y vuelve a elegir `1`: continúa donde se quedó |
 | La página no carga | Opción `2` para ver qué falla, luego la opción `12` para ver los registros |
+| Actualicé la carpeta de AYNI y sigo viendo la versión anterior (por ejemplo, "Vista previa del diseño" en el inicio) | Opción `3`: al encender, el panel reconstruye AYNI si el código cambió (la primera vez tarda unos minutos). Si aún se ve igual, recarga con **Ctrl + F5** |
 | Después de actualizar AYNI a una versión nueva, faltan datos o hay errores | Opción `1` (actualiza AYNI) y luego la opción `14` (reinicia la BD con datos por defecto) |
 | "Memoria RAM: … irá lento" | Funciona, pero cierra otros programas pesados mientras usas AYNI |
 | Una cuenta de demostración quedó bloqueada (5 intentos fallidos) | Las de administración se liberan solas en 15 minutos. Para las demás, opción `14` (reinicia la BD con los datos de demostración) |

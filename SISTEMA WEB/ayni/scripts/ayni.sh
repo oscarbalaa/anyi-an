@@ -346,8 +346,12 @@ accion_encender() {
     fi
     revisar_puertos || return 1
     paso 'Encendiendo AYNI'
+    # Si la carpeta se actualizó a una versión nueva, se reconstruye; sin cambios Docker reutiliza lo construido
+    compose build app || aviso 'No se pudo actualizar AYNI (¿sin internet?): se enciende la versión ya instalada.'
     compose up -d mysql app phpmyadmin mailpit
     esperar_api || { error 'AYNI no respondió a tiempo. Revisa los registros con la opción [12].'; return 1; }
+    # Aplica las tablas nuevas de una versión más reciente (no borra datos)
+    artisan ayni:preparar-bd >/dev/null || aviso 'No se pudo actualizar la base de datos: usa la opción [14].'
     actualizar_credenciales
     ok "AYNI encendido en $(url_web)"
     abrir "$(url_web)"

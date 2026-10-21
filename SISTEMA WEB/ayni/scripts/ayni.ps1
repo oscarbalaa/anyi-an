@@ -519,8 +519,14 @@ function Accion-Encender {
     }
     if (-not (Revisar-Puertos)) { return $false }
     Escribir-Paso 'Encendiendo AYNI'
+    # Si la carpeta se actualizó a una versión nueva, se reconstruye; sin cambios Docker reutiliza lo construido
+    Compose build app
+    if ($LASTEXITCODE -ne 0) { Escribir-Aviso 'No se pudo actualizar AYNI (¿sin internet?): se enciende la versión ya instalada.' }
     Compose up -d mysql app phpmyadmin mailpit
     if (-not (Esperar-Api)) { Escribir-Error 'AYNI no respondió a tiempo. Revisa los registros con la opción [12].'; return $false }
+    # Aplica las tablas nuevas de una versión más reciente (no borra datos)
+    Artisan ayni:preparar-bd | Out-Null
+    if ($LASTEXITCODE -ne 0) { Escribir-Aviso 'No se pudo actualizar la base de datos: usa la opción [14].' }
     Actualizar-Credenciales
     Escribir-Ok "AYNI encendido en $(Url-Web)"
     Start-Process (Url-Web)
