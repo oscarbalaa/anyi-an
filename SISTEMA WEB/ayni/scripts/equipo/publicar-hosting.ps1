@@ -149,7 +149,8 @@ set -e
 mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -e "DROP DATABASE IF EXISTS ayni_publicar; CREATE DATABASE ayni_publicar CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; GRANT ALL ON ayni_publicar.* TO '$MYSQL_USER'@'%';" 2>/dev/null
 '@
     Ejecutar docker @('compose', 'up', '-d', '--wait', 'mysql')
-    Ejecutar docker @('compose', 'exec', '-T', 'mysql', 'sh', '-c', $tarea)
+    # El .ps1 se guarda con fin de línea de Windows: el sh del contenedor no acepta los \r
+    Ejecutar docker @('compose', 'exec', '-T', 'mysql', 'sh', '-c', ($tarea -replace "`r", ''))
     # Los PDF de ejemplo de la demo también viajan (storage/app/demo)
     $archivosDemo = Join-Path $destino 'backend/storage/app'
     Ejecutar docker @('compose', 'run', '--rm', '--no-deps', '-e', 'DB_DATABASE=ayni_publicar', '-v', "${archivosDemo}:/salida", 'app', 'sh', '-c', 'php backend/artisan migrate:fresh --seed --force && mkdir -p /salida/demo && cp backend/storage/app/demo/*.pdf /salida/demo/')
