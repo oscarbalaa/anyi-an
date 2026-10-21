@@ -781,7 +781,7 @@ No se trabaja hasta que lo indiques. Cuando lo retomes, ya tendremos los insumos
 | M10 | Incidencias y notificaciones | ✅ aprobado |
 | M11 | Alertas por reglas (sin IA) | ✅ aprobado |
 | M12 | Dashboards, ficha 360° y reportes | ✅ aprobado |
-| M13 | Calidad y seguridad final | 🔍 en revisión |
+| M13 | Calidad y seguridad final | ✅ aprobado |
 | M14 | Publicación en el hosting (web + descarga) | ⬜ |
 | M15 | Manuales (usuario e instalación) | ⬜ |
 | — | Informe | ⏸ en pausa |
