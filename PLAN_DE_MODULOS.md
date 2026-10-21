@@ -783,5 +783,5 @@ No se trabaja hasta que lo indiques. Cuando lo retomes, ya tendremos los insumos
 | M12 | Dashboards, ficha 360° y reportes | ✅ aprobado |
 | M13 | Calidad y seguridad final | ✅ aprobado |
 | M14 | Publicación en el hosting (web + descarga) | ✅ aprobado |
-| M15 | Manuales (usuario e instalación) | ⬜ |
+| M15 | Manuales (usuario e instalación) | 🔍 en revisión |
 | — | Informe | ⏸ en pausa |
