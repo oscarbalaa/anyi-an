@@ -153,7 +153,7 @@ mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -e "DROP DATABASE IF EXISTS ayni_publicar;
     Ejecutar docker @('compose', 'exec', '-T', 'mysql', 'sh', '-c', ($tarea -replace "`r", ''))
     # Los PDF de ejemplo de la demo también viajan (storage/app/demo)
     $archivosDemo = Join-Path $destino 'backend/storage/app'
-    Ejecutar docker @('compose', 'run', '--rm', '--no-deps', '-e', 'DB_DATABASE=ayni_publicar', '-v', "${archivosDemo}:/salida", 'app', 'sh', '-c', 'php backend/artisan migrate:fresh --seed --force && mkdir -p /salida/demo && cp backend/storage/app/demo/*.pdf /salida/demo/')
+    Ejecutar docker @('compose', 'run', '--rm', '--no-deps', '-e', 'DB_DATABASE=ayni_publicar', '-v', "${archivosDemo}:/salida", 'app', 'sh', '-c', 'php backend/artisan migrate:fresh --seed --force && mkdir -p /salida/demo && cp backend/storage/app/demo/*.pdf /salida/demo/ && chmod -R a+rwX /salida/demo')
     $archivo = Join-Path $salida 'ayni_hosting.sql'
     $dump = & docker compose exec -T mysql sh -c 'mysqldump -uroot -p"$MYSQL_ROOT_PASSWORD" --single-transaction --routines --triggers --default-character-set=utf8mb4 --skip-dump-date --no-tablespaces ayni_publicar 2>/dev/null'
     if ($LASTEXITCODE -ne 0 -or -not $dump) { Fallo 'No se pudo exportar la base de datos.' }
