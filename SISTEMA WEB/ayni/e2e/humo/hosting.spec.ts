@@ -81,11 +81,13 @@ async function ingresar(page: Page, rol: RolE2E) {
 }
 
 for (const rol of Object.keys(CUENTAS) as RolE2E[]) {
-  test(`${rol}: ingresa, recorre su menú (solo lectura) y sale`, async ({ page }) => {
+  test(`${rol}: ingresa, recorre su menú (solo lectura) y sale`, async ({ page, isMobile }) => {
     test.setTimeout(240_000)
     const errores: string[] = []
     page.on('pageerror', (e) => errores.push(`${page.url()}: ${e.message}`))
     await ingresar(page, rol)
+    // En el celular el menú lateral se dibuja al abrirlo
+    if (isMobile) await page.getByRole('button', { name: 'Abrir menú' }).click()
 
     const rutas = await page.locator('#menu-lateral nav a').evaluateAll((enlaces) => enlaces.map((a) => new URL((a as HTMLAnchorElement).href).pathname))
     expect(rutas.length).toBeGreaterThan(4)
