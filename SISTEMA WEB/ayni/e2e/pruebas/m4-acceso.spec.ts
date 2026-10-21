@@ -11,7 +11,15 @@ async function capturar(page: Page, nombre: string) {
   if (!CAPTURAS) return
   await page.evaluate(() => document.fonts.ready)
   // La captura de página completa redibuja: se espera a que todas las imágenes estén listas
-  await page.evaluate(() => Promise.all([...document.images].map((i) => i.decode().catch(() => null))))
+  // Las ilustraciones fuera de la vista son diferidas (loading=lazy): se piden ya y no se espera más de 5 s
+  await page.evaluate(() =>
+    Promise.all(
+      [...document.images].map((i) => {
+        i.loading = 'eager'
+        return Promise.race([i.decode().catch(() => null), new Promise((listo) => setTimeout(listo, 5000))])
+      }),
+    ),
+  )
   await page.screenshot({ path: `${CAPTURAS}/${test.info().project.name}/${nombre}.png`, fullPage: true, animations: 'disabled' })
 }
 
