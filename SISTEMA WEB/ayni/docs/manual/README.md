@@ -1,6 +1,6 @@
 # Manuales de AYNI (fuente)
 
-Cada módulo escribe aquí su parte. En el Módulo 15 se exportan a Word y PDF en `1. INICIO/MANUAL/`.
+Cada módulo escribe aquí su parte. `e2e/manuales.mjs` (Módulo 15) los arma en Word y PDF en `1. INICIO/MANUAL/`, junto con la lista de verificación. El panel los abre con la opción `8`.
 
 ## Manual de instalación
 
@@ -13,8 +13,9 @@ Cada módulo escribe aquí su parte. En el Módulo 15 se exportan a Word y PDF e
 | Instalación local en Linux | `instalacion.md` | ✅ M1 |
 | El panel de control, opción por opción | `instalacion.md` | ✅ M1 |
 | Respaldo y restauración | `instalacion.md` | ✅ M1 |
-| Alternativa sin Docker | — | Módulo 15 |
+| Alternativa sin Docker (solo documentada) | `instalacion.md` | ✅ M15 |
 | Problemas frecuentes | `instalacion.md` | ✅ M1 (se amplía en cada módulo) |
+| Preguntas frecuentes | `instalacion.md` | ✅ M15 |
 
 ## Manual de usuario
 
@@ -34,10 +35,20 @@ Cada módulo escribe aquí su parte. En el Módulo 15 se exportan a Word y PDF e
 | 4.7 Administrador → Panel de riesgo y Alertas (estudiantiles y administrativas); Docente → Alertas asignadas y Coordinación | `usuario-09-alertas-y-riesgo.md` | ✅ M11 |
 | 4.8 Docente → Mis estudiantes; Ficha 360° (docente y administrador); Administrador → Reportes; boleta en PDF (administrador y estudiante) | `usuario-10-inicio-y-reportes.md` | ✅ M12 |
 | 5. Cierre de sesión (a pedido y por inactividad) | `usuario-02-inicio-de-sesion.md` | ✅ M4 |
-| 6. Solución de problemas frecuentes | — | Cada módulo |
+| 6. Solución de problemas frecuentes | La sección "Problemas frecuentes" de cada archivo | ✅ M15 (se juntan al armar el manual) |
 
 Las capturas de `capturas/` se generan con las pruebas E2E (`scripts/equipo/capturas.ps1`), en PC y celular, para que siempre coincidan con el sistema real.
 
+## Armar los manuales (Módulo 15)
+
+| Cómo | Qué hace |
+|---|---|
+| `scripts\equipo\manuales.ps1` | Regenera las capturas con las pruebas E2E (AYNI encendido) y arma los manuales. Con `-SinCapturas` usa las que ya hay |
+| CI, en cada commit | Toma las capturas, arma los manuales y los deja en el artefacto **manuales** de la ejecución |
+| CI, commit con `[manuales]` en el mensaje | Además devuelve las capturas y los manuales a la rama con un commit propio |
+
+En el manual las capturas se recortan (las de celular, a su primera pantalla) y se pasan a JPEG para que el PDF pese poco. `plantilla.docx` define los estilos del Word. La sección "Publicar en el hosting" y los problemas de publicación quedan fuera del manual entregado: son solo del equipo.
+
 ## Lista de verificación final (M13)
 
-`../lista-de-verificacion.md`: el recorrido que imita la revisión del profesor (instalación, cada rol, seguridad, celular y accesibilidad). En el Módulo 15 se copia a `1. INICIO/`.
+`../lista-de-verificacion.md`: el recorrido que imita la revisión del profesor (instalación, cada rol, seguridad, celular y accesibilidad). Se arma como `1. INICIO/MANUAL/Lista de verificación.pdf`.
