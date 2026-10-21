@@ -89,6 +89,8 @@ for (const rol of Object.keys(CUENTAS) as RolE2E[]) {
     // En el celular el menú lateral se dibuja al abrirlo
     if (isMobile) await page.getByRole('button', { name: 'Abrir menú' }).click()
 
+    // El menú se dibuja cuando termina de cargar el panel del rol
+    await expect(page.locator('#menu-lateral nav a').first()).toBeAttached()
     const rutas = await page.locator('#menu-lateral nav a').evaluateAll((enlaces) => enlaces.map((a) => new URL((a as HTMLAnchorElement).href).pathname))
     expect(rutas.length).toBeGreaterThan(4)
     for (const ruta of rutas) {
