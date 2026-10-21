@@ -4,9 +4,9 @@ Hay dos formas de usar AYNI.
 
 ## 1. En la web (sin instalar nada)
 
-Abre https://aplicacionenlanube.cetivirgendelapuerta.com/grupo02/
+Abre https://aplicacionenlanube.cetivirgendelapuerta.com/grupo02/ (también desde el celular). Los usuarios de demostración están en `CREDENCIALES.txt`.
 
-> Disponible desde el Módulo 14.
+Si descargaste esta carpeta desde el FTP del curso, puedes instalarla tal cual en tu PC con los pasos de abajo: el panel ignora la configuración del servidor que viene incluida.
 
 ## 2. En tu computadora (local)
 
@@ -48,7 +48,7 @@ Elige **`1`**. Si falta Docker, el panel ofrece instalarlo con el instalador ofi
 | 5 | Reiniciar |
 | 6 | Abrir AYNI en el navegador |
 | 7 | Ver credenciales |
-| 8 | Abrir el manual de usuario |
+| 8 | Abrir los manuales de usuario e instalación (carpeta `MANUAL`) |
 | 9 | Abrir phpMyAdmin para ver la base de datos |
 | 10 | Ejecutar todas las pruebas automáticas y abrir el reporte |
 | 11 | Ver el estado de los servicios |

@@ -8,7 +8,23 @@ DirectoryIndex disabled
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
+    # En el hosting, siempre por HTTPS (en local no hay certificado)
+    RewriteCond %{HTTP_HOST} ^aplicacionenlanube\.cetivirgendelapuerta\.com$ [NC]
+    RewriteCond %{HTTPS} !=on
+    RewriteCond %{HTTP:X-Forwarded-Proto} !=https
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
     RewriteRule ^backend/public/ - [L]
+
+    # Prohibido (403): archivos ocultos (.env, .git, .htaccess), vendor/, storage/
+    # y cualquier archivo o carpeta real del proyecto fuera de backend/public
+    RewriteRule (^|/)\. - [F]
+    RewriteRule ^(vendor|storage)(/|$) - [F]
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^. - [F]
+
+    # Lo demás (React y /api) lo atiende backend/public
     RewriteRule ^(.*)$ backend/public/$1 [L]
 </IfModule>
 

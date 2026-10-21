@@ -10,7 +10,7 @@ class RecuperarRequest extends FormRequest
 {
     public function rules(): array
     {
-        [$formato] = Acceso::FORMATO_USUARIO[$this->input('acceso')] ?? ['/.*/'];
+        [$formato] = Acceso::FORMATO_USUARIO[$this->acceso()] ?? ['/.*/'];
 
         return [
             'acceso' => ['required', Rule::in(array_keys(Acceso::ROLES))],
@@ -23,8 +23,14 @@ class RecuperarRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'usuario.regex' => Acceso::FORMATO_USUARIO[$this->input('acceso')][1] ?? 'El usuario no tiene un formato válido.',
+            'usuario.regex' => Acceso::FORMATO_USUARIO[$this->acceso()][1] ?? 'El usuario no tiene un formato válido.',
             'usuario.required' => 'Ingresa tu usuario.',
         ];
+    }
+
+    /** Si llega como lista u otro tipo no es un acceso válido (422, no un error del servidor) */
+    private function acceso(): string
+    {
+        return is_string($this->input('acceso')) ? $this->input('acceso') : '';
     }
 }

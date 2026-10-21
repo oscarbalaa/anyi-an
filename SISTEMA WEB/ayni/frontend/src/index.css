@@ -23,7 +23,7 @@
   --color-grafito: #2e3138;
 
   /* Estados */
-  --color-exito: #1f7a4d;
+  --color-exito: #176340;
   --color-aviso: #8a5208;
   --color-peligro: #b42318;
   --color-info: #1d5d90;
@@ -63,8 +63,8 @@
 [data-tema='estudiante'] {
   --primario: #c65d3a;
   /* Botones y enlaces: contraste AA con texto blanco */
-  --accion: #b3522f;
-  --accion-hover: #9a4527;
+  --accion: #a24a2a;
+  --accion-hover: #8a3e23;
   --primario-suave: #fbe9df;
   --primario-oscuro: #9e4528;
   --acento: #2f6b4f;
@@ -79,8 +79,8 @@
 [data-tema='docente'] {
   --primario: #2a9d8f;
   /* Botones y enlaces: contraste AA con texto blanco */
-  --accion: #1e7a6f;
-  --accion-hover: #18645b;
+  --accion: #1a6e64;
+  --accion-hover: #155a52;
   --primario-suave: #e2f3f1;
   --primario-oscuro: #1e7368;
   --acento: #e66a5b;

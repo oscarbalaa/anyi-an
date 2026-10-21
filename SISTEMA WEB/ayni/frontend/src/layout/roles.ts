@@ -5,6 +5,7 @@ import {
   CalendarDays,
   ChartColumn,
   ClipboardList,
+  FileSpreadsheet,
   FileText,
   GraduationCap,
   House,
@@ -74,6 +75,7 @@ export const ROLES: Record<Rol, ConfigRol> = {
       { ruta: 'usuarios', texto: 'Usuarios', icono: ShieldCheck, modulo: 'M5' },
       { ruta: 'estructura', texto: 'Estructura académica', icono: Network, modulo: 'M6' },
       { ruta: 'incidencias', texto: 'Incidencias', icono: BookOpenCheck, modulo: 'M10' },
+      { ruta: 'reportes', texto: 'Reportes', icono: FileSpreadsheet, modulo: 'M12' },
     ],
   },
 }
@@ -82,4 +84,7 @@ export const ROLES: Record<Rol, ConfigRol> = {
 export const EXTRAS: ItemMenu[] = [
   { ruta: 'perfil', texto: 'Mi perfil', icono: Users, modulo: 'M5' },
   { ruta: 'notificaciones', texto: 'Notificaciones', icono: Bell, modulo: 'M10' },
+  { ruta: 'ficha', texto: 'Ficha del estudiante', icono: Users, modulo: 'M12' },
+  // Catálogo de componentes del diseño (M3)
+  { ruta: 'diseno', texto: 'Diseño', icono: House, modulo: 'M3' },
 ]

@@ -83,3 +83,25 @@ it('el secreto de pruebas E2E solo funciona fuera de producción y si está conf
     app()['env'] = 'production';
     expect($captcha->verificarSolicitud($solicitud))->toBeFalse();
 });
+
+it('en el hosting el secreto solo sirve para la prueba de humo: largo y con vencimiento de hasta 2 horas', function () {
+    app()['env'] = 'production';
+    $secreto = str_repeat('a1b2', 10);
+    $solicitud = Request::create('/', 'POST');
+    $solicitud->headers->set('X-Ayni-E2E', $secreto);
+    $captcha = app(Captcha::class);
+    config(['ayni.secreto_e2e' => $secreto]);
+
+    config(['ayni.secreto_e2e_hasta' => null]);
+    expect($captcha->verificarSolicitud($solicitud))->toBeFalse();
+    config(['ayni.secreto_e2e_hasta' => time() + 1800]);
+    expect($captcha->verificarSolicitud($solicitud))->toBeTrue();
+    // Vencido, demasiado largo o con un secreto corto, no
+    config(['ayni.secreto_e2e_hasta' => time() - 1]);
+    expect($captcha->verificarSolicitud($solicitud))->toBeFalse();
+    config(['ayni.secreto_e2e_hasta' => time() + 3 * 3600]);
+    expect($captcha->verificarSolicitud($solicitud))->toBeFalse();
+    config(['ayni.secreto_e2e' => 'corto', 'ayni.secreto_e2e_hasta' => time() + 1800]);
+    $solicitud->headers->set('X-Ayni-E2E', 'corto');
+    expect($captcha->verificarSolicitud($solicitud))->toBeFalse();
+});

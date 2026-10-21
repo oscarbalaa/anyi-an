@@ -2,6 +2,12 @@ import { z } from 'zod'
 import type { Rol } from '@/layout/roles'
 
 // Reglas de docs/validaciones.md (las mismas que valida el backend)
+
+/** Hoy en Lima (AAAA-MM-DD); con toISOString() sería la fecha UTC, que después de las 7 p. m. ya es mañana */
+export const hoyLima = (ahora = new Date()) => ahora.toLocaleDateString('en-CA', { timeZone: 'America/Lima' })
+
+/** "2026-05-18" → "18/05" */
+const diaMes = (f: string) => `${f.slice(8, 10)}/${f.slice(5, 7)}`
 export const REGLAS = {
   codigoEstudiante: /^E-\d{4}-\d{3}$/,
   dni: /^\d{8}$/,
@@ -157,7 +163,8 @@ export const esquemaContacto = z.object({
 
 export type DatosContacto = z.infer<typeof esquemaContacto>
 
-const nombre = (campo: 'nombres' | 'apellidos') =>
+/** Nombres o apellidos de una persona (docs/validaciones.md → Personas) */
+export const nombre = (campo: 'nombres' | 'apellidos') =>
   z
     .string()
     .transform(limpio)
@@ -212,22 +219,41 @@ export const esquemaPeriodo = z
 
 export type DatosPeriodo = z.infer<typeof esquemaPeriodo>
 
-export const esquemaBimestre = z
-  .object({
-    fecha_inicio: fechaObligatoria('Ingresa una fecha de inicio válida.'),
-    fecha_fin: fechaObligatoria('Ingresa una fecha de fin válida.'),
-    fecha_cierre_notas: z.string(),
-  })
-  .refine((d) => d.fecha_fin > d.fecha_inicio, {
-    path: ['fecha_fin'],
-    message: 'La fecha de fin debe ser posterior a la de inicio.',
-  })
-  .refine((d) => !d.fecha_cierre_notas || d.fecha_cierre_notas >= d.fecha_inicio, {
-    path: ['fecha_cierre_notas'],
-    message: 'La fecha de cierre de notas no puede ser anterior al inicio del bimestre (RN-02).',
-  })
+type Rango = { fecha_inicio: string; fecha_fin: string }
 
-export type DatosBimestre = z.infer<typeof esquemaBimestre>
+/** Bimestre dentro de su periodo (RN-02); los cruces con otros bimestres los revisa el servidor */
+export const esquemaBimestre = (periodo?: Rango) =>
+  z
+    .object({
+      fecha_inicio: fechaObligatoria('Ingresa una fecha de inicio válida.'),
+      fecha_fin: fechaObligatoria('Ingresa una fecha de fin válida.'),
+      fecha_cierre_notas: z.string(),
+    })
+    .refine((d) => d.fecha_fin > d.fecha_inicio, {
+      path: ['fecha_fin'],
+      message: 'La fecha de fin debe ser posterior a la de inicio.',
+    })
+    .refine((d) => !periodo || (d.fecha_inicio >= periodo.fecha_inicio && d.fecha_fin <= periodo.fecha_fin), {
+      path: ['fecha_inicio'],
+      message: periodo
+        ? `El bimestre debe estar dentro del periodo (${fechaDMA(periodo.fecha_inicio)} – ${fechaDMA(periodo.fecha_fin)}).`
+        : '',
+    })
+    .refine(
+      (d) =>
+        !d.fecha_cierre_notas ||
+        (d.fecha_cierre_notas >= d.fecha_inicio && (!periodo || d.fecha_cierre_notas <= periodo.fecha_fin)),
+      {
+        path: ['fecha_cierre_notas'],
+        message:
+          'La fecha de cierre de notas no puede ser anterior al inicio del bimestre ni posterior al fin del periodo (RN-02).',
+      },
+    )
+
+export type DatosBimestre = z.infer<ReturnType<typeof esquemaBimestre>>
+
+/** "2026-03-09" → "09/03/2026" */
+const fechaDMA = (f: string) => `${diaMes(f)}/${f.slice(0, 4)}`
 
 const ambiente = z
   .string()
@@ -277,7 +303,7 @@ export const esquemaAsignatura = z.object({
       (v) => /^\d+$/.test(v) && Number(v) >= 1 && Number(v) <= 20,
       'Las horas semanales son un número entero de 1 a 20.',
     ),
-  estado: z.enum(['ACTIVO', 'INACTIVO']),
+  estado: z.enum(['ACTIVO', 'INACTIVO'], 'El estado es activo o inactivo.'),
 })
 
 export type DatosAsignatura = z.input<typeof esquemaAsignatura>
@@ -311,6 +337,13 @@ export const esquemaBloque = z
     path: ['hora_fin'],
     message: 'La hora de fin debe ser posterior a la de inicio.',
   })
+  .refine((d) => d.hora_fin <= d.hora_inicio || minutos(d.hora_fin) - minutos(d.hora_inicio) >= 30, {
+    path: ['hora_fin'],
+    message: 'La clase debe durar al menos 30 minutos y terminar después de empezar.',
+  })
+
+/** "08:30" → 510 */
+const minutos = (h: string) => Number(h.slice(0, 2)) * 60 + Number(h.slice(3, 5))
 
 export type DatosBloque = z.infer<typeof esquemaBloque>
 
@@ -386,7 +419,7 @@ export const DOCUMENTOS = {
 const MENSAJE_DIRECCION = 'La dirección tiene de 5 a 200 caracteres: letras, números, espacios y . , # - / °'
 
 /** Edad cumplida a hoy (o a la fecha indicada) */
-export function edad(nacimiento: string, alDia = new Date().toISOString().slice(0, 10)) {
+export function edad(nacimiento: string, alDia = hoyLima()) {
   const [a, m, d] = nacimiento.split('-').map(Number)
   const [ha, hm, hd] = alDia.split('-').map(Number)
   return ha - a - (hm < m || (hm === m && hd < d) ? 1 : 0)
@@ -396,7 +429,7 @@ export function edad(nacimiento: string, alDia = new Date().toISOString().slice(
 export function esquemaPersona(estudiante: boolean) {
   return esquemaContacto
     .extend({
-      tipo_documento: z.enum(['DNI', 'CE', 'PASAPORTE']),
+      tipo_documento: z.enum(['DNI', 'CE', 'PASAPORTE'], 'El tipo de documento es DNI, CE o PASAPORTE.'),
       numero_documento: z.string().transform((v) => v.toUpperCase().replace(/\s/g, '')),
       nombres: nombre('nombres'),
       apellidos: nombre('apellidos'),
@@ -416,7 +449,7 @@ export function esquemaPersona(estudiante: boolean) {
       if (!d.numero_documento) error('numero_documento', 'Ingresa el número de documento.')
       else if (!DOCUMENTOS[d.tipo_documento][0].test(d.numero_documento))
         error('numero_documento', DOCUMENTOS[d.tipo_documento][1])
-      const hoy = new Date().toISOString().slice(0, 10)
+      const hoy = hoyLima()
       if (!d.fecha_nacimiento) {
         if (estudiante) error('fecha_nacimiento', 'Ingresa la fecha de nacimiento.')
       } else if (d.fecha_nacimiento >= hoy) {
@@ -524,31 +557,42 @@ export const esquemaAsistencia = z.object({
 
 export type DatosAsistencia = z.input<typeof esquemaAsistencia>
 
-/** Evaluación de un curso (RF-38) */
-export const esquemaEvaluacion = z
-  .object({
-    titulo: z
-      .string()
-      .transform(limpio)
-      .refine((v) => v.length > 0, 'Escribe el título de la evaluación.')
-      .refine(
-        (v) => v.length === 0 || (v.length >= 3 && v.length <= 150),
-        'El título debe tener de 3 a 150 caracteres.',
-      ),
-    tipo_evaluacion_id: z.string().min(1, 'Elige el tipo de evaluación.'),
-    subperiodo_id: z.string().min(1, 'Elige el bimestre.'),
-    fecha_asignacion: z.string().min(1, 'Ingresa una fecha de asignación válida.'),
-    fecha_limite: z.string().min(1, 'Ingresa una fecha límite válida.'),
-    peso: z.string().regex(/^([1-9]|10)$/, 'El peso es un número entero de 1 a 10.'),
-    indicaciones: z.string().max(2000, 'Las indicaciones no deben tener más de 2000 caracteres.'),
-    requiere_entrega: z.boolean(),
-  })
-  .refine((d) => !d.fecha_asignacion || !d.fecha_limite || d.fecha_limite >= d.fecha_asignacion, {
-    path: ['fecha_limite'],
-    message: 'La fecha límite no puede ser anterior a la de asignación.',
-  })
+/** Evaluación de un curso (RF-38); con los bimestres, revisa que las fechas caigan dentro del elegido */
+export const esquemaEvaluacion = (bimestres: (Rango & { id: number; nombre: string })[] = []) =>
+  z
+    .object({
+      titulo: z
+        .string()
+        .transform(limpio)
+        .refine((v) => v.length > 0, 'Escribe el título de la evaluación.')
+        .refine(
+          (v) => v.length === 0 || (v.length >= 3 && v.length <= 150),
+          'El título debe tener de 3 a 150 caracteres.',
+        ),
+      tipo_evaluacion_id: z.string().min(1, 'Elige el tipo de evaluación.'),
+      subperiodo_id: z.string().min(1, 'Elige el bimestre.'),
+      fecha_asignacion: z.string().min(1, 'Ingresa una fecha de asignación válida.'),
+      fecha_limite: z.string().min(1, 'Ingresa una fecha límite válida.'),
+      peso: z.string().regex(/^([1-9]|10)$/, 'El peso es un número entero de 1 a 10.'),
+      indicaciones: z.string().max(2000, 'Las indicaciones no deben tener más de 2000 caracteres.'),
+      requiere_entrega: z.boolean(),
+    })
+    .refine((d) => !d.fecha_asignacion || !d.fecha_limite || d.fecha_limite >= d.fecha_asignacion, {
+      path: ['fecha_limite'],
+      message: 'La fecha límite no puede ser anterior a la de asignación.',
+    })
+    .superRefine((d, ctx) => {
+      const b = bimestres.find((x) => String(x.id) === d.subperiodo_id)
+      if (!b || !d.fecha_asignacion || !d.fecha_limite) return
+      if (d.fecha_asignacion < b.fecha_inicio || d.fecha_limite > b.fecha_fin)
+        ctx.addIssue({
+          code: 'custom',
+          path: [d.fecha_asignacion < b.fecha_inicio ? 'fecha_asignacion' : 'fecha_limite'],
+          message: `Las fechas deben estar dentro del ${b.nombre} (${diaMes(b.fecha_inicio)} – ${diaMes(b.fecha_fin)}).`,
+        })
+    })
 
-export type DatosEvaluacion = z.input<typeof esquemaEvaluacion>
+export type DatosEvaluacion = z.input<ReturnType<typeof esquemaEvaluacion>>
 
 /** RN-08: de 0 a 20, hasta 2 decimales, con punto o coma. Devuelve el error o null */
 export function errorNota(valor: string): string | null {
@@ -563,7 +607,10 @@ export const esquemaIncidencia = z.object({
   matricula_id: z.string().min(1, 'Elige al estudiante.'),
   tipo_incidencia_id: z.string().min(1, 'Elige el tipo de incidencia.'),
   gravedad: z.enum(['LEVE', 'MODERADA', 'GRAVE'], 'Elige la gravedad: leve, moderada o grave.'),
-  fecha: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Ingresa una fecha válida.'),
+  fecha: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Ingresa una fecha válida.')
+    .refine((v) => v <= hoyLima(), 'La fecha no puede ser futura ni anterior al inicio del periodo.'),
   descripcion: z
     .string()
     .transform(limpio)
@@ -587,7 +634,10 @@ export const esquemaIntervencion = z.object({
       (v) => v.length === 0 || (v.length >= 10 && v.length <= 500),
       'Describe la intervención en 10 a 500 caracteres.',
     ),
-  fecha: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Ingresa una fecha válida.'),
+  fecha: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Ingresa una fecha válida.')
+    .refine((v) => v <= hoyLima(), 'La fecha debe estar entre la creación de la alerta y hoy.'),
   resultado: z
     .string()
     .transform(limpio)

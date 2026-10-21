@@ -12,8 +12,8 @@ backend/public/logo-ayni.svg
 dist-hosting/
 
 # Generados por el panel
-reportes/
-respaldos/
+/reportes/
+/respaldos/
 e2e/test-results/
 e2e/playwright-report/
 e2e/.sesiones.json

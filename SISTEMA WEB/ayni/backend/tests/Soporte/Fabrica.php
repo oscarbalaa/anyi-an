@@ -7,6 +7,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\Sanctum;
+use ZipArchive;
 
 /** Crea filas mínimas y válidas para probar las restricciones de la BD. */
 final class Fabrica
@@ -211,6 +212,20 @@ final class Fabrica
         $contenido = "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 595 842]>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF\n";
 
         return UploadedFile::fake()->createWithContent($nombre, $contenido.str_repeat('%', $relleno));
+    }
+
+    /** Un documento de Office mínimo pero real (.docx, .pptx o .xlsx): un zip con su [Content_Types].xml */
+    public static function office(string $nombre, ?string $carpeta = null): UploadedFile
+    {
+        $carpeta ??= ['docx' => 'word/', 'pptx' => 'ppt/', 'xlsx' => 'xl/'][pathinfo($nombre, PATHINFO_EXTENSION)];
+        $ruta = tempnam(sys_get_temp_dir(), 'office');
+        $zip = new ZipArchive;
+        $zip->open($ruta, ZipArchive::OVERWRITE);
+        $zip->addFromString('[Content_Types].xml', '<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"/>');
+        $zip->addFromString($carpeta.'documento.xml', '<documento/>');
+        $zip->close();
+
+        return UploadedFile::fake()->createWithContent($nombre, (string) file_get_contents($ruta));
     }
 
     /** Escenario completo: periodo, bimestre, aula, curso, matrícula y evaluación */

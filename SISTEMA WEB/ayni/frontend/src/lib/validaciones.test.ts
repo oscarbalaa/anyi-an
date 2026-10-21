@@ -4,6 +4,7 @@ import {
   esquemaApoderado,
   esquemaAula,
   esquemaBimestre,
+  hoyLima,
   esquemaBloque,
   esquemaColegio,
   esquemaContacto,
@@ -206,11 +207,27 @@ describe('estructura académica (M6)', () => {
 
   it('bimestre: el cierre no puede ser anterior al inicio (RN-02)', () => {
     const b = (cierre: string) =>
-      esquemaBimestre.safeParse({ fecha_inicio: '2027-03-01', fecha_fin: '2027-05-07', fecha_cierre_notas: cierre })
+      esquemaBimestre().safeParse({ fecha_inicio: '2027-03-01', fecha_fin: '2027-05-07', fecha_cierre_notas: cierre })
     expect(b('').success).toBe(true)
     expect(b('2027-05-14').success).toBe(true)
     expect(errorDe(b('2027-02-28'))).toBe(
-      'La fecha de cierre de notas no puede ser anterior al inicio del bimestre (RN-02).',
+      'La fecha de cierre de notas no puede ser anterior al inicio del bimestre ni posterior al fin del periodo (RN-02).',
+    )
+  })
+
+  it('bimestre: dentro de su periodo y con el cierre antes del fin del periodo (RN-02)', () => {
+    const periodo = { fecha_inicio: '2027-03-01', fecha_fin: '2027-12-20' }
+    const b = (inicio: string, fin: string, cierre = '') =>
+      esquemaBimestre(periodo).safeParse({ fecha_inicio: inicio, fecha_fin: fin, fecha_cierre_notas: cierre })
+    expect(b('2027-03-01', '2027-05-07').success).toBe(true)
+    expect(errorDe(b('2027-02-20', '2027-05-07'))).toBe(
+      'El bimestre debe estar dentro del periodo (01/03/2027 – 20/12/2027).',
+    )
+    expect(errorDe(b('2027-10-01', '2027-12-30'))).toBe(
+      'El bimestre debe estar dentro del periodo (01/03/2027 – 20/12/2027).',
+    )
+    expect(errorDe(b('2027-10-01', '2027-12-15', '2027-12-27'))).toBe(
+      'La fecha de cierre de notas no puede ser anterior al inicio del bimestre ni posterior al fin del periodo (RN-02).',
     )
   })
 
@@ -239,6 +256,13 @@ describe('estructura académica (M6)', () => {
     expect(b('08:00', '09:30').success).toBe(true)
     expect(errorDe(b('05:30', '07:00'))).toBe('La hora debe estar entre 06:00 y 20:00.')
     expect(errorDe(b('09:30', '08:00'))).toBe('La hora de fin debe ser posterior a la de inicio.')
+    expect(errorDe(b('08:00', '08:20'))).toBe('La clase debe durar al menos 30 minutos y terminar después de empezar.')
+    expect(b('08:00', '08:30').success).toBe(true)
+  })
+
+  it('hoy es el de Lima, no el de UTC: a las 8 p. m. del 19/10 en Lima sigue siendo 19/10', () => {
+    expect(hoyLima(new Date('2026-10-20T01:00:00Z'))).toBe('2026-10-19')
+    expect(hoyLima(new Date('2026-10-20T05:00:00Z'))).toBe('2026-10-20')
   })
 
   it('colegio: la escala va de 0 a 20 sin huecos ni cruces (RN-11)', () => {

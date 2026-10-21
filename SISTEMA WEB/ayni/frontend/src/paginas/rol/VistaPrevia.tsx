@@ -13,7 +13,7 @@ import { Insignia, type Tono } from '@/components/ui/insignia'
 import { TablaDatos, type Columna } from '@/components/ui/tabla-datos'
 import { TarjetaKpi } from '@/components/ui/tarjeta-kpi'
 import { useSesion } from '@/lib/sesion-contexto'
-import { filtros, REGLAS } from '@/lib/validaciones'
+import { filtros, nombre, REGLAS } from '@/lib/validaciones'
 import { ROLES, type Rol } from '@/layout/roles'
 
 type Fila = {
@@ -76,11 +76,7 @@ const columnas: Columna<Fila>[] = [
 
 const esquema = z.object({
   dni: z.string().regex(REGLAS.dni, 'El DNI debe tener 8 dígitos.'),
-  nombres: z
-    .string()
-    .trim()
-    .min(2, 'Los nombres deben tener al menos 2 letras.')
-    .regex(/^[\p{L}' -]+$/u, 'Los nombres solo pueden tener letras, espacios, apóstrofo o guion.'),
+  nombres: nombre('nombres'),
 })
 
 export default function VistaPrevia({ rol }: { rol: Rol }) {

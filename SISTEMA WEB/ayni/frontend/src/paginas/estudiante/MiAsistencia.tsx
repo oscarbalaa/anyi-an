@@ -241,7 +241,7 @@ function Calendario({ datos }: { datos: Datos }) {
               title={detalle}
               className={cn(
                 'flex aspect-square flex-col items-center justify-center gap-1 rounded-lg text-sm sm:text-base',
-                estados.length ? 'bg-fondo font-bold' : 'text-texto-suave/70',
+                estados.length ? 'bg-fondo font-bold' : 'text-texto-suave',
               )}
             >
               {i + 1}

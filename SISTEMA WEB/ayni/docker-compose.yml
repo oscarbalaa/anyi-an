@@ -92,6 +92,42 @@ services:
     ports:
       - "127.0.0.1:${AYNI_PUERTO_CORREO:-8025}:8025"
 
+  # ---- Hosting simulado (solo la CI, Módulo 14): Apache + PHP 8.1 + MariaDB 10.6, con la copia de dist-hosting/grupo02 ----
+  hosting-bd:
+    profiles: ["hosting"]
+    image: mariadb:10.6
+    environment:
+      MARIADB_ROOT_PASSWORD: HostingRoot2026
+      MARIADB_DATABASE: grupo02
+      MARIADB_USER: grupo02
+      MARIADB_PASSWORD: Grupo02Simulacion
+      TZ: America/Lima
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-time-zone=-05:00
+    volumes:
+      - ./dist-hosting/ayni_hosting.sql:/docker-entrypoint-initdb.d/ayni.sql:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 40
+      start_period: 20s
+
+  hosting-web:
+    profiles: ["hosting"]
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+      target: hosting
+    image: ayni-hosting:local
+    depends_on:
+      hosting-bd:
+        condition: service_healthy
+    volumes:
+      - ./dist-hosting/grupo02:/var/www/html/grupo02
+
   # ---- Pruebas (opción 10 del panel) ----
   pruebas-backend:
     profiles: ["pruebas"]
@@ -117,7 +153,7 @@ services:
     profiles: ["pruebas"]
     image: node:22-alpine
     working_dir: /app
-    command: ["sh", "-c", "npm ci --no-audit --no-fund && npm run lint && npm run formato:revisar && npx tsc -b && npx vitest run --reporter=default --reporter=junit --outputFile.junit=/reportes/frontend.xml"]
+    command: ["sh", "-c", "npm ci --no-audit --no-fund && npm run lint && npm run formato:revisar && npx tsc -b && npx vitest run --reporter=default --reporter=junit --outputFile.junit=/reportes/frontend.xml && npm run presupuesto"]
     volumes:
       - ./frontend:/app
       - ayni-frontend-modulos:/app/node_modules
@@ -143,6 +179,21 @@ services:
       - ayni-e2e-modulos:/e2e/node_modules
       - ./reportes/actual:/reportes
       - ./docs/manual/capturas:/capturas
+
+  # Manual de usuario e instalación en Word y PDF (1. INICIO/MANUAL), desde docs/manual
+  manuales:
+    profiles: ["pruebas"]
+    image: mcr.microsoft.com/playwright:v1.64.1-noble
+    working_dir: /e2e
+    environment:
+      AYNI_DOCS: /docs
+      AYNI_SALIDA: /manual
+    command: ["sh", "-c", "(command -v pandoc >/dev/null || (apt-get update -qq && apt-get install -y -qq pandoc >/dev/null)) && npm ci --no-audit --no-fund && node manuales.mjs --revisar"]
+    volumes:
+      - ./e2e:/e2e
+      - ayni-e2e-modulos:/e2e/node_modules
+      - ./docs:/docs:ro
+      - "./1. INICIO/MANUAL:/manual"
 
 volumes:
   ayni-bd:

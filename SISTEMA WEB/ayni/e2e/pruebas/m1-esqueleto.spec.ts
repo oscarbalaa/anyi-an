@@ -77,11 +77,36 @@ test.describe('archivos internos ocultos (igual que en el hosting)', () => {
     })
   }
 
+  // M14: lo que existe en el servidor fuera de backend/public responde 403 (no la pantalla de React)
+  for (const ruta of ['/.env', '/.htaccess', '/backend/', '/backend/app/', '/backend/.env', '/backend/composer.json', '/backend/artisan', '/vendor/autoload.php', '/storage/app/']) {
+    test(`prohíbe ${ruta} (403)`, async ({ request }) => {
+      expect((await request.get(ruta)).status()).toBe(403)
+    })
+  }
+
+  test('las pantallas de React y la API siguen respondiendo', async ({ request }) => {
+    for (const ruta of ['/', '/ingresar', '/admin/usuarios', '/robots.txt']) expect((await request.get(ruta)).status(), ruta).toBe(200)
+    expect((await request.get('/api/v1/health')).status()).toBe(200)
+  })
+
   test('envía cabeceras básicas de seguridad', async ({ request }) => {
     const respuesta = await request.get('/')
 
     expect(respuesta.headers()['x-content-type-options']).toBe('nosniff')
     expect(respuesta.headers()['x-frame-options']).toBe('SAMEORIGIN')
     expect(respuesta.headers()['server'] ?? '').not.toMatch(/\d/)
+    // M13: React solo carga lo propio (sin scripts de otros sitios ni eval)
+    expect(respuesta.headers()['content-security-policy']).toContain("script-src 'self'")
+    expect(respuesta.headers()['content-security-policy']).toContain("object-src 'none'")
+  })
+
+  test('la API envía cada cabecera de seguridad una sola vez y sin CORS para otros sitios', async ({ request }) => {
+    const respuesta = await request.get('/api/v1/health', { headers: { Origin: 'https://malo.example' } })
+
+    // Si Apache y Laravel la enviaran los dos, llegaría repetida ("DENY, SAMEORIGIN")
+    expect(respuesta.headers()['x-frame-options']).toBe('DENY')
+    expect(respuesta.headers()['x-content-type-options']).toBe('nosniff')
+    expect(respuesta.headers()['content-security-policy']).toBe("default-src 'none'; frame-ancestors 'none'")
+    expect(respuesta.headers()['access-control-allow-origin']).toBeUndefined()
   })
 })

@@ -1,18 +1,21 @@
 # Manuales de AYNI (fuente)
 
-Cada módulo escribe aquí su parte. En el Módulo 15 se exportan a Word y PDF en `1. INICIO/MANUAL/`.
+Cada módulo escribe aquí su parte. `e2e/manuales.mjs` (Módulo 15) los arma en Word y PDF en `1. INICIO/MANUAL/`, junto con la lista de verificación. El panel los abre con la opción `8`.
 
 ## Manual de instalación
 
 | Sección | Archivo | Estado |
 |---|---|---|
-| Uso en la web | — | Módulo 14 |
+| Uso en la web | `instalacion.md` | ✅ M14 |
+| Uso en local descargando desde el FTP | `instalacion.md` | ✅ M14 |
+| Publicar en el hosting (equipo) | `instalacion.md` | ✅ M14 |
 | Instalación local en Windows | `instalacion.md` | ✅ M1 |
 | Instalación local en Linux | `instalacion.md` | ✅ M1 |
 | El panel de control, opción por opción | `instalacion.md` | ✅ M1 |
 | Respaldo y restauración | `instalacion.md` | ✅ M1 |
-| Alternativa sin Docker | — | Módulo 15 |
+| Alternativa sin Docker (solo documentada) | `instalacion.md` | ✅ M15 |
 | Problemas frecuentes | `instalacion.md` | ✅ M1 (se amplía en cada módulo) |
+| Preguntas frecuentes | `instalacion.md` | ✅ M15 |
 
 ## Manual de usuario
 
@@ -21,8 +24,8 @@ Cada módulo escribe aquí su parte. En el Módulo 15 se exportan a Word y PDF e
 | Acceso y navegación (inicio, ingreso, menú, elementos comunes) | `usuario-01-acceso-y-navegacion.md` | ✅ M3 |
 | 1. Requisitos de acceso | `usuario-02-inicio-de-sesion.md` | ✅ M4 |
 | 2. Inicio de sesión, captcha y recuperación de contraseña | `usuario-02-inicio-de-sesion.md` | ✅ M4 |
-| 3. Navegación principal (inicio de cada rol) | — | M12 |
-| 4. Funciones por rol | — | M5 – M12 |
+| 3. Navegación principal (inicio de cada rol) | `usuario-10-inicio-y-reportes.md` | ✅ M12 |
+| 4. Funciones por rol | (ver abajo) | M5 – M12 |
 | 4.1 Administrador → Usuarios; Mi perfil (todos) | `usuario-03-usuarios-y-perfil.md` | ✅ M5 |
 | 4.2 Administrador → Estructura académica | `usuario-04-estructura-academica.md` | ✅ M6 |
 | 4.3 Administrador → Docentes, Estudiantes (importación desde Excel) y Matrículas | `usuario-05-personas-y-matriculas.md` | ✅ M7 |
@@ -30,7 +33,22 @@ Cada módulo escribe aquí su parte. En el Módulo 15 se exportan a Word y PDF e
 | 4.5 Docente → Evaluaciones, Notas, Calificaciones; Estudiante → Mis notas, Actividades, Horario; Administrador → cierre de bimestre | `usuario-07-evaluaciones-y-notas.md` | ✅ M9 |
 | 4.6 Docente y Administrador → Incidencias; Notificaciones y campana (los 3 roles) | `usuario-08-incidencias-y-notificaciones.md` | ✅ M10 |
 | 4.7 Administrador → Panel de riesgo y Alertas (estudiantiles y administrativas); Docente → Alertas asignadas y Coordinación | `usuario-09-alertas-y-riesgo.md` | ✅ M11 |
+| 4.8 Docente → Mis estudiantes; Ficha 360° (docente y administrador); Administrador → Reportes; boleta en PDF (administrador y estudiante) | `usuario-10-inicio-y-reportes.md` | ✅ M12 |
 | 5. Cierre de sesión (a pedido y por inactividad) | `usuario-02-inicio-de-sesion.md` | ✅ M4 |
-| 6. Solución de problemas frecuentes | — | Cada módulo |
+| 6. Solución de problemas frecuentes | La sección "Problemas frecuentes" de cada archivo | ✅ M15 (se juntan al armar el manual) |
 
 Las capturas de `capturas/` se generan con las pruebas E2E (`scripts/equipo/capturas.ps1`), en PC y celular, para que siempre coincidan con el sistema real.
+
+## Armar los manuales (Módulo 15)
+
+| Cómo | Qué hace |
+|---|---|
+| `scripts\equipo\manuales.ps1` | Regenera las capturas con las pruebas E2E (AYNI encendido) y arma los manuales. Con `-SinCapturas` usa las que ya hay |
+| CI, en cada commit | Toma las capturas, arma los manuales y los deja en el artefacto **manuales** de la ejecución |
+| CI, commit con `[manuales]` en el mensaje | Además devuelve las capturas y los manuales a la rama con un commit propio |
+
+En el manual las capturas se recortan (las de celular, a su primera pantalla) y se pasan a JPEG para que el PDF pese poco. `plantilla.docx` define los estilos del Word. La sección "Publicar en el hosting" y los problemas de publicación quedan fuera del manual entregado: son solo del equipo.
+
+## Lista de verificación final (M13)
+
+`../lista-de-verificacion.md`: el recorrido que imita la revisión del profesor (instalación, cada rol, seguridad, celular y accesibilidad). Se arma como `1. INICIO/MANUAL/Lista de verificación.pdf`.

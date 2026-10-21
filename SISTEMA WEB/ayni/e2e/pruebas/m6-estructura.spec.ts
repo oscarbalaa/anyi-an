@@ -14,7 +14,15 @@ async function capturar(page: Page, nombre: string) {
   await expect(page.getByRole('button', { name: 'Cerrar aviso' })).toHaveCount(0, { timeout: 8000 })
   await page.evaluate(() => window.scrollTo(0, 0))
   await page.evaluate(() => document.fonts.ready)
-  await page.evaluate(() => Promise.all([...document.images].map((i) => i.decode().catch(() => null))))
+  // Las ilustraciones fuera de la vista son diferidas (loading=lazy): se piden ya y no se espera más de 5 s
+  await page.evaluate(() =>
+    Promise.all(
+      [...document.images].map((i) => {
+        i.loading = 'eager'
+        return Promise.race([i.decode().catch(() => null), new Promise((listo) => setTimeout(listo, 5000))])
+      }),
+    ),
+  )
   await page.screenshot({ path: `${CAPTURAS}/${test.info().project.name}/${nombre}.png`, fullPage: true, animations: 'disabled' })
 }
 

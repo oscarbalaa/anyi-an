@@ -103,7 +103,12 @@ function Contenido({ v }: { v: VistaCalificaciones }) {
             descripcion="Créalas en Evaluaciones para calcular el promedio."
           />
         ) : (
-          <div className="overflow-x-auto rounded-2xl border border-borde">
+          <div
+            className="overflow-x-auto rounded-2xl border border-borde"
+            tabIndex={0}
+            role="region"
+            aria-label="Calificaciones del curso"
+          >
             <table className="w-full min-w-[36rem] text-left">
               <caption className="sr-only">Calificaciones del {v.bimestre.nombre}</caption>
               <thead className="bg-primario-suave/60 text-sm">

@@ -53,3 +53,9 @@ CMD ["php", "artisan", "test"]
 # 5) Modo desarrollo: el código se monta desde la carpeta del proyecto
 FROM base AS desarrollo
 CMD ["sh", "-c", "cd backend && composer install --no-interaction && chown -R www-data:www-data storage bootstrap/cache && apache2-foreground"]
+
+# 6) Simulación del hosting (solo la CI): misma PHP 8.1, la carpeta grupo02 del FTP en /var/www/html
+FROM base AS hosting
+COPY docker/hosting/apache.conf /etc/apache2/sites-available/000-default.conf
+HEALTHCHECK --interval=5s --timeout=5s --start-period=10s --retries=24 \
+    CMD curl -fsS http://localhost/grupo02/api/v1/health > /dev/null || exit 1

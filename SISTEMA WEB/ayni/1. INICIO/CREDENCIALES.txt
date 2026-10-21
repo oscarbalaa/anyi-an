@@ -9,7 +9,7 @@ DIRECCIONES
   phpMyAdmin (ver la BD) ... http://localhost:8080
   Correos de prueba ........ http://localhost:8025
   Versión web (hosting) .... https://aplicacionenlanube.cetivirgendelapuerta.com/grupo02/
-                             (se publica en el Módulo 14)
+                             (los mismos usuarios de demostración)
 
 BASE DE DATOS LOCAL (para phpMyAdmin)
   Usuario .......... ayni

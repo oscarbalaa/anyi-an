@@ -10,8 +10,7 @@ class IngresoRequest extends FormRequest
 {
     public function rules(): array
     {
-        $acceso = $this->input('acceso');
-        [$formato, $mensaje] = Acceso::FORMATO_USUARIO[$acceso] ?? ['/.*/', ''];
+        [$formato] = Acceso::FORMATO_USUARIO[$this->acceso()] ?? ['/.*/'];
 
         return [
             'acceso' => ['required', Rule::in(array_keys(Acceso::ROLES))],
@@ -25,7 +24,7 @@ class IngresoRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'usuario.regex' => Acceso::FORMATO_USUARIO[$this->input('acceso')][1] ?? 'El usuario no tiene un formato válido.',
+            'usuario.regex' => Acceso::FORMATO_USUARIO[$this->acceso()][1] ?? 'El usuario no tiene un formato válido.',
             'usuario.required' => 'Ingresa tu usuario.',
             'contrasena.required' => 'Ingresa tu contraseña.',
             'acceso.in' => 'El tipo de acceso no es válido.',
@@ -35,5 +34,11 @@ class IngresoRequest extends FormRequest
     public function attributes(): array
     {
         return ['contrasena' => 'la contraseña'];
+    }
+
+    /** Si llega como lista u otro tipo no es un acceso válido (422, no un error del servidor) */
+    private function acceso(): string
+    {
+        return is_string($this->input('acceso')) ? $this->input('acceso') : '';
     }
 }

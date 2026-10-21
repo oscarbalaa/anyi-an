@@ -1,0 +1,29 @@
+# AYNI - datos privados del hosting (plantilla)
+# Copia este archivo como CREDENCIALES_PRIVADAS.txt (en esta misma carpeta) y complétalo.
+# CREDENCIALES_PRIVADAS.txt NO se sube a GitHub ni al FTP. Lo usa scripts\equipo\publicar-hosting.ps1.
+
+# Dirección pública del sistema (con la barra final)
+URL=https://aplicacionenlanube.cetivirgendelapuerta.com/grupo02/
+
+# FTP del curso (se conecta con FTPS: FTP sobre TLS explícito)
+FTP_HOST=
+FTP_USUARIO=
+FTP_CLAVE=
+# Carpeta del grupo tal como se ve al entrar por FTP (por ejemplo /grupo02 o /public_html/grupo02)
+FTP_CARPETA=/grupo02
+# Solo si el certificado del FTP no coincide con su nombre: la huella SHA-1 que muestra FileZilla
+FTP_HUELLA_CERTIFICADO=
+
+# Base de datos del hosting (la entrega el profesor)
+BD_HOST=localhost
+BD_PUERTO=3306
+BD_NOMBRE=
+BD_USUARIO=
+BD_CLAVE=
+
+# Correo (Gmail del proyecto con contraseña de aplicación). Vacío = los correos solo quedan en el log
+CORREO_USUARIO=
+CORREO_CLAVE=
+CORREO_REMITENTE=
+
+# Clave de la aplicación: la crea el script la primera vez. No la cambies después.

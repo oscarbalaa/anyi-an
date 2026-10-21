@@ -7,7 +7,10 @@ on:
 jobs:
   pruebas:
     runs-on: ubuntu-24.04
-    timeout-minutes: 40
+    timeout-minutes: 60
+    # Para devolver a la rama las capturas y manuales (solo commits con [manuales])
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -19,6 +22,9 @@ jobs:
 
       - name: Revisar el panel de Linux (ShellCheck)
         run: docker run --rm -v "$PWD:/w" koalaman/shellcheck:stable -S warning /w/scripts/ayni.sh "/w/1. INICIO/AYNI.sh"
+
+      - name: Matriz de trazabilidad (cada requisito con sus pruebas)
+        run: node scripts/pruebas/trazabilidad.mjs --revisar
 
       - name: Construir y encender AYNI
         run: |
@@ -32,8 +38,39 @@ jobs:
       - name: Pruebas del frontend
         run: docker compose --profile pruebas run --rm pruebas-frontend
 
-      - name: Pruebas punta a punta
+      - name: Pruebas punta a punta (y capturas del manual en PC y celular)
+        env:
+          AYNI_CAPTURAS: /capturas
         run: docker compose --profile pruebas run --rm pruebas-e2e
+
+      - name: Manuales de usuario e instalación en Word y PDF
+        run: docker compose --profile pruebas run --rm --no-deps manuales
+
+      - name: Respaldo y restauración desde el panel (RF-66)
+        run: bash scripts/pruebas/respaldo.test.sh
+
+      - name: "Hosting simulado: armar la copia de grupo02 con publicar-hosting.ps1"
+        run: pwsh -NoProfile -File scripts/equipo/publicar-hosting.ps1 -SoloPreparar -BaseDeDatos -Credenciales docker/hosting/credenciales-simulacion.txt
+
+      - name: "Hosting simulado: Apache + PHP 8.1 + MariaDB 10.6 en /grupo02/"
+        run: |
+          sudo chmod -R a+rwX dist-hosting/grupo02/backend/storage dist-hosting/grupo02/backend/bootstrap/cache
+          # Igual que la prueba de humo del script: un secreto que vence en una hora
+          secreto="$(head -c 24 /dev/urandom | od -An -tx1 | tr -d ' \n')"
+          echo "AYNI_SECRETO_HUMO=$secreto" >> "$GITHUB_ENV"
+          printf 'AYNI_SECRETO_E2E=%s\nAYNI_SECRETO_E2E_HASTA=%s\n' "$secreto" "$(( $(date +%s) + 3600 ))" >> dist-hosting/grupo02/backend/.env
+          docker compose --profile hosting up -d --build --wait hosting-bd hosting-web
+
+      - name: "Prueba de humo contra el hosting simulado (solo lectura)"
+        run: docker compose --profile pruebas run --rm --no-deps -e AYNI_URL=http://hosting-web/grupo02/ -e AYNI_SECRETO_E2E="$AYNI_SECRETO_HUMO" pruebas-e2e sh -c 'npm ci --no-audit --no-fund && npx playwright test -c playwright.humo.config.ts'
+
+      - name: "Descargar la copia del FTP en una carpeta nueva e instalar con el panel"
+        run: |
+          docker compose --profile hosting down
+          # El panel pide 8 GB libres: se borran herramientas del servidor de la CI que AYNI no usa
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/share/swift
+          df -h . | tail -1
+          bash scripts/pruebas/instalar-copia.test.sh
 
       - name: Guardar reportes
         if: always()
@@ -41,3 +78,22 @@ jobs:
         with:
           name: reportes-de-pruebas
           path: reportes/actual
+
+      - name: Guardar manuales
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: manuales
+          path: 1. INICIO/MANUAL/*.*
+          if-no-files-found: ignore
+
+      - name: Devolver capturas y manuales a la rama (commits con [manuales])
+        if: success() && github.event_name == 'push' && contains(github.event.head_commit.message, '[manuales]')
+        run: |
+          sudo chown -R "$(id -u):$(id -g)" docs/manual/capturas "1. INICIO/MANUAL"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/manual/capturas "1. INICIO/MANUAL"
+          git diff --cached --quiet && exit 0
+          git commit -m 'M15: capturas y manuales generados por la CI'
+          git push origin "HEAD:$GITHUB_REF_NAME"

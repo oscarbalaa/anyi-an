@@ -9,11 +9,15 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use ZipArchive;
 
 /** Archivos subidos (entregas y material de apoyo): fuera de la carpeta pública y con permiso para descargar */
 class Archivos
 {
     private const OOXML = ['docx', 'pptx', 'xlsx'];
+
+    /** Extensiones con las que se guarda en disco; cualquier otra (.php, .html…) se guarda como .bin */
+    private const EXTENSIONES = ['pdf', 'docx', 'pptx', 'xlsx', 'jpg', 'jpeg', 'png'];
 
     /** RN-26: 10 MB o lo que permita el servidor si es menos */
     public static function limiteBytes(): int
@@ -51,7 +55,7 @@ class Archivos
         $extension = mb_strtolower($archivo->getClientOriginalExtension());
         $valido = match (true) {
             $extension === 'pdf' => $this->empiezaCon($archivo, '%PDF-'),
-            in_array($extension, self::OOXML, true) => $this->empiezaCon($archivo, "PK\x03\x04"),
+            in_array($extension, self::OOXML, true) => $this->esOfficeAbierto($archivo, $extension),
             in_array($extension, ['jpg', 'jpeg'], true) => $archivo->getMimeType() === 'image/jpeg',
             $extension === 'png' => $archivo->getMimeType() === 'image/png',
             default => false,
@@ -63,7 +67,8 @@ class Archivos
 
     public function guardar(UploadedFile $archivo, string $carpeta, int $usuarioId): int
     {
-        $extension = mb_strtolower($archivo->getClientOriginalExtension()) ?: 'bin';
+        $extension = mb_strtolower($archivo->getClientOriginalExtension());
+        $extension = in_array($extension, self::EXTENSIONES, true) ? $extension : 'bin';
         $ruta = Storage::disk('local')->putFileAs($carpeta, $archivo, Str::random(32).'.'.$extension);
         $nombre = mb_substr(preg_replace('/[\x00-\x1F\/\\\\]/u', '', $archivo->getClientOriginalName()) ?: "archivo.{$extension}", 0, 255);
 
@@ -136,6 +141,30 @@ class Archivos
         if (! $archivo->isValid() || $archivo->getSize() > self::limiteBytes()) {
             throw new ErrorRegla('El archivo pesa más de '.self::limiteTexto().'.', $campo);
         }
+    }
+
+    /** Un .docx/.pptx/.xlsx es un zip con [Content_Types].xml y la carpeta de su programa (no basta renombrar un .zip) */
+    private function esOfficeAbierto(UploadedFile $archivo, string $extension): bool
+    {
+        if (! $this->empiezaCon($archivo, "PK\x03\x04")) {
+            return false;
+        }
+        $zip = new ZipArchive;
+        if ($zip->open($archivo->getRealPath(), ZipArchive::RDONLY) !== true) {
+            return false;
+        }
+        $carpeta = ['docx' => 'word/', 'pptx' => 'ppt/', 'xlsx' => 'xl/'][$extension];
+        $valido = $zip->locateName('[Content_Types].xml') !== false;
+        for ($i = 0; $valido && $i < $zip->numFiles; $i++) {
+            if (str_starts_with((string) $zip->getNameIndex($i), $carpeta)) {
+                $zip->close();
+
+                return true;
+            }
+        }
+        $zip->close();
+
+        return false;
     }
 
     private function empiezaCon(UploadedFile $archivo, string $firma): bool

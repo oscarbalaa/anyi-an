@@ -205,7 +205,7 @@ DIRECCIONES
   phpMyAdmin (ver la BD) ... http://localhost:$(puerto_pma)
   Correos de prueba ........ http://localhost:$(puerto_correo)
   Versión web (hosting) .... $URL_HOSTING
-                             (se publica en el Módulo 14)
+                             (los mismos usuarios de demostración)
 
 BASE DE DATOS LOCAL (para phpMyAdmin)
   Usuario .......... $usuario
@@ -346,8 +346,12 @@ accion_encender() {
     fi
     revisar_puertos || return 1
     paso 'Encendiendo AYNI'
+    # Si la carpeta se actualizó a una versión nueva, se reconstruye; sin cambios Docker reutiliza lo construido
+    compose build app || aviso 'No se pudo actualizar AYNI (¿sin internet?): se enciende la versión ya instalada.'
     compose up -d mysql app phpmyadmin mailpit
     esperar_api || { error 'AYNI no respondió a tiempo. Revisa los registros con la opción [12].'; return 1; }
+    # Aplica las tablas nuevas de una versión más reciente (no borra datos)
+    artisan ayni:preparar-bd >/dev/null || aviso 'No se pudo actualizar la base de datos: usa la opción [14].'
     actualizar_credenciales
     ok "AYNI encendido en $(url_web)"
     abrir "$(url_web)"
@@ -383,11 +387,13 @@ accion_credenciales() {
 }
 
 accion_manual() {
-    local pdf
-    pdf="$(find "$INICIO/MANUAL" -maxdepth 1 -name 'Manual de usuario*.pdf' 2>/dev/null | head -1)"
-    if [ -n "$pdf" ]; then abrir "$pdf"; return; fi
-    aviso 'El manual completo se publica en el Módulo 15.'
-    info "Por ahora puedes ver el avance en: $RAIZ/docs/manual"
+    local pdf abiertos=0
+    for pdf in "$INICIO/MANUAL/Manual de usuario.pdf" "$INICIO/MANUAL/Manual de instalación.pdf"; do
+        if [ -f "$pdf" ]; then abrir "$pdf"; abiertos=1; fi
+    done
+    if [ "$abiertos" = 1 ]; then info "Los manuales (Word y PDF) están en: $INICIO/MANUAL"; return; fi
+    aviso 'Esta copia no trae los manuales en PDF.'
+    info "Su texto está en: $RAIZ/docs/manual"
     abrir "$RAIZ/docs/manual"
 }
 
@@ -521,7 +527,7 @@ mostrar_menu() {
     echo '  [5]  Reiniciar'
     echo '  [6]  Abrir AYNI en el navegador'
     echo '  [7]  Ver credenciales'
-    echo '  [8]  Abrir manual de usuario'
+    echo '  [8]  Abrir los manuales (usuario e instalación)'
     echo ' REVISIÓN'
     echo '  [9]  Abrir phpMyAdmin (ver la base de datos)'
     echo '  [10] Ejecutar TODAS las pruebas + abrir reporte'

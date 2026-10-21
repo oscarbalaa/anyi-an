@@ -10,6 +10,7 @@
     "test": "vitest run",
     "test:cobertura": "vitest run --coverage",
     "lint": "oxlint src",
+    "presupuesto": "node scripts/presupuesto.mjs",
     "formato": "prettier --write \"src/**/*.{ts,tsx,css}\"",
     "formato:revisar": "prettier --check \"src/**/*.{ts,tsx,css}\""
   },
