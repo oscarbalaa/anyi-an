@@ -205,11 +205,11 @@ Para un servidor propio (por ejemplo, un VPS de Hostinger con **Ubuntu 24.04 wit
 2. En el DNS del dominio, un registro `A` con el nombre `ayni` y la IP del VPS (en Cloudflare, **DNS only** hasta tener el certificado).
 3. Sitio → **SSL/TLS → Actions → New Let's Encrypt Certificate**.
 4. Sitio → **Settings → Root Directory**: `backend/public`.
-5. Sitio → **Vhost**: cambia el bloque `location / { … }` por el contenido de `docker/vps/nginx-cloudpanel.conf` y guarda.
+5. Sitio → **Varnish Cache**: desactivado. Sitio → **Vhost**: en el **segundo** bloque `server` (el de `listen 8080`), cambia las líneas `try_files $uri $uri/ /index.php?$args;` e `index index.php index.html;` por el contenido de `docker/vps/nginx-cloudpanel.conf` y guarda. El primer bloque no se toca.
 6. Sitio → **Databases → Add Database**: nombre, usuario y contraseña de la base de AYNI.
 
 **En tu PC:**
-1. Copia `1. INICIO\CREDENCIALES_PRIVADAS.ejemplo.txt` como `1. INICIO\CREDENCIALES_VPS.txt` (no se sube a GitHub) y completa `URL=https://ayni.ruta-practica.com/`, `BD_HOST=127.0.0.1`, `BD_NOMBRE`, `BD_USUARIO`, `BD_CLAVE` y, si quieres correos reales, `CORREO_*`. Los datos de FTP quedan vacíos.
+1. Copia `1. INICIO\CREDENCIALES_PRIVADAS.ejemplo.txt` como `1. INICIO\CREDENCIALES_VPS.txt` (no se sube a GitHub) y completa `URL=https://ayni.ruta-practica.com/`, `BD_HOST=127.0.0.1`, `BD_NOMBRE`, `BD_USUARIO`, `BD_CLAVE`, `PROXIES_CONFIABLES=127.0.0.1` y, si quieres correos reales, `CORREO_*`. Los datos de FTP quedan vacíos.
 2. Con AYNI encendido, arma el paquete y la base de datos de demostración:
    ```powershell
    powershell -ExecutionPolicy Bypass -File scripts\equipo\publicar-hosting.ps1 -Credenciales "1. INICIO\CREDENCIALES_VPS.txt" -BaseDeDatos -Paquete
