@@ -46,4 +46,7 @@ return [
     'secreto_e2e' => env('AYNI_SECRETO_E2E'),
     'secreto_e2e_hasta' => env('AYNI_SECRETO_E2E_HASTA'),
 
+    // IP de los proxies propios (separadas por comas) para leer la IP real del visitante. Vacío = ninguno
+    'proxies_confiables' => env('AYNI_PROXIES_CONFIABLES', ''),
+
 ];

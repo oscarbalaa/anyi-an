@@ -26,4 +26,7 @@ CORREO_USUARIO=
 CORREO_CLAVE=
 CORREO_REMITENTE=
 
+# Solo en un VPS con CloudPanel: 127.0.0.1 (el Nginx del panel). En el hosting del curso, vacío
+PROXIES_CONFIABLES=
+
 # Clave de la aplicación: la crea el script la primera vez. No la cambies después.
