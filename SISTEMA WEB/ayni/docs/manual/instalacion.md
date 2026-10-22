@@ -196,7 +196,42 @@ Opciones: `-SoloPreparar` (arma la copia sin subir), `-SinHumo` (no ejecuta la p
 
 **El captcha en la prueba de humo:** el script deja en el servidor, solo durante la prueba, un secreto aleatorio que vence en 30 minutos, y lo quita al terminar (aunque la prueba falle). Ver `docs/seguridad.md`.
 
-## 10. Problemas frecuentes
+## 10. Publicar en el hosting: VPS con CloudPanel (solo el equipo)
+
+Para un servidor propio (por ejemplo, un VPS de Hostinger con **Ubuntu 24.04 with CloudPanel**), con AYNI en la raíz de un dominio como `https://ayni.ruta-practica.com/`.
+
+**En CloudPanel (una sola vez):**
+1. **Add Site → Create a PHP Site → Laravel**, PHP **8.1**, dominio `ayni.ruta-practica.com`. Anota el usuario del sitio y su contraseña.
+2. En el DNS del dominio, un registro `A` con el nombre `ayni` y la IP del VPS (en Cloudflare, **DNS only** hasta tener el certificado).
+3. Sitio → **SSL/TLS → Actions → New Let's Encrypt Certificate**.
+4. Sitio → **Settings → Root Directory**: `backend/public`.
+5. Sitio → **Vhost**: cambia el bloque `location / { … }` por el contenido de `docker/vps/nginx-cloudpanel.conf` y guarda.
+6. Sitio → **Databases → Add Database**: nombre, usuario y contraseña de la base de AYNI.
+
+**En tu PC:**
+1. Copia `1. INICIO\CREDENCIALES_PRIVADAS.ejemplo.txt` como `1. INICIO\CREDENCIALES_VPS.txt` (no se sube a GitHub) y completa `URL=https://ayni.ruta-practica.com/`, `BD_HOST=127.0.0.1`, `BD_NOMBRE`, `BD_USUARIO`, `BD_CLAVE` y, si quieres correos reales, `CORREO_*`. Los datos de FTP quedan vacíos.
+2. Con AYNI encendido, arma el paquete y la base de datos de demostración:
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File scripts\equipo\publicar-hosting.ps1 -Credenciales "1. INICIO\CREDENCIALES_VPS.txt" -BaseDeDatos -Paquete
+   ```
+   Quedan `dist-hosting\ayni.tar.gz` y `dist-hosting\ayni_hosting.sql`.
+
+**Subir e instalar:**
+1. Con **FileZilla** por **SFTP** (servidor `sftp://IP-del-VPS`, puerto 22, el usuario del sitio), sube `ayni.tar.gz` y `ayni_hosting.sql` a `htdocs/ayni.ruta-practica.com/`.
+2. Por SSH con el mismo usuario (`ssh usuario-del-sitio@IP-del-VPS`):
+   ```bash
+   cd ~/htdocs/ayni.ruta-practica.com
+   tar -xzf ayni.tar.gz && rm ayni.tar.gz
+   mysql -h 127.0.0.1 -u USUARIO_BD -p NOMBRE_BD < ayni_hosting.sql && rm ayni_hosting.sql
+   ```
+   La base también se puede importar desde phpMyAdmin (CloudPanel → Databases → Manage).
+3. Abre `https://ayni.ruta-practica.com/api/v1/health` (debe responder) y luego `https://ayni.ruta-practica.com/`.
+
+**Para publicar una versión nueva:** vuelve a armar el paquete **sin** `-BaseDeDatos` (así no se tocan los datos), súbelo y descomprímelo encima. Los archivos que subieron los usuarios se conservan.
+
+**Acceso para el profesor:** **Admin Area → Users → Add User** con el rol **User** y solo el sitio de AYNI: ve sus archivos, su base de datos y phpMyAdmin, y nada de los demás sitios del servidor.
+
+## 11. Problemas frecuentes
 
 | Problema | Solución |
 |---|---|
@@ -217,7 +252,7 @@ Opciones: `-SoloPreparar` (arma la copia sin subir), `-SinHumo` (no ejecuta la p
 | La web muestra "No se pudo cargar…" en todas las pantallas | La base de datos del hosting no está importada o sus datos en `CREDENCIALES_PRIVADAS.txt` no coinciden: revisa `https://…/grupo02/api/v1/health` y vuelve a publicar |
 | Recargar una pantalla en la web da 404 | El servidor no está leyendo el `.htaccess`: confirma que `grupo02/.htaccess` se subió (es un archivo oculto) |
 
-## 11. Preguntas frecuentes
+## 12. Preguntas frecuentes
 
 **¿Necesito internet para usar AYNI en local?**
 Solo la primera vez, para descargar Docker y las imágenes (~2 GB). Después funciona sin conexión.

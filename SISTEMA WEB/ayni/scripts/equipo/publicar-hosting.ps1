@@ -9,6 +9,8 @@
 #   -SoloPreparar   arma la copia y no sube nada (lo usa la CI)
 #   -BaseDeDatos    además genera dist-hosting\ayni_hosting.sql (datos de demostración de hoy, compatible con MariaDB)
 #   -SinHumo        no ejecuta la prueba de humo al final
+#   -Paquete        arma dist-hosting\ayni.tar.gz para subirlo a mano a un VPS (CloudPanel) y no sube nada
+#   -Credenciales   otro archivo de datos, por ejemplo "1. INICIO\CREDENCIALES_VPS.txt"
 #
 # Los datos del FTP, la BD del hosting y el correo se leen de "1. INICIO\CREDENCIALES_PRIVADAS.txt"
 # (plantilla: "1. INICIO\CREDENCIALES_PRIVADAS.ejemplo.txt"). Ese archivo nunca se sube.
@@ -16,6 +18,7 @@ param(
     [switch]$SoloPreparar,
     [switch]$BaseDeDatos,
     [switch]$SinHumo,
+    [switch]$Paquete,
     [string]$Credenciales = '',
     [string]$Carpeta = 'grupo02'
 )
@@ -127,15 +130,17 @@ function Preparar($c) {
     }
     Ok "$(@($archivos).Count) archivos del proyecto"
 
-    # React compilado para /grupo02/ y vendor de Laravel sin dependencias de desarrollo (no hay SSH para Composer)
+    # React compilado para la carpeta de la URL (/grupo02/ en el hosting del curso, / en un dominio propio)
+    # y vendor de Laravel sin dependencias de desarrollo (no hay SSH para Composer)
+    $base = ([Uri]$c['URL']).AbsolutePath
     Ejecutar docker @('compose', 'build', 'app')
-    Ejecutar docker @('build', '-q', '-f', 'docker/app/Dockerfile', '--target', 'frontend', '--build-arg', "AYNI_BASE=/$Carpeta/", '-t', 'ayni-frontend-hosting:local', '.')
+    Ejecutar docker @('build', '-q', '-f', 'docker/app/Dockerfile', '--target', 'frontend', '--build-arg', "AYNI_BASE=$base", '-t', 'ayni-frontend-hosting:local', '.')
     foreach ($par in @(@('ayni-frontend-hosting:local', '/app/dist/.', 'backend/public'), @('ayni-app:local', '/var/www/ayni/backend/vendor', 'backend'), @('ayni-app:local', '/var/www/ayni/backend/bootstrap/cache/.', 'backend/bootstrap/cache'))) {
         $id = (& docker create $par[0]).Trim()
         try { Ejecutar docker @('cp', "${id}:$($par[1])", (Join-Path $destino $par[2])) }
         finally { & docker rm $id | Out-Null }
     }
-    Ok "React para /$Carpeta/, vendor/ y bootstrap/cache"
+    Ok "React para $base, vendor/ y bootstrap/cache"
 
     Escribir-Utf8 (Join-Path $destino 'backend/.env') (Env-Hosting $c)
     Ok 'backend/.env del servidor (APP_ENV=production, APP_DEBUG=false)'
@@ -309,6 +314,14 @@ foreach ($r in (@($cambios.cambiados) + @($cambios.nuevos) | Select-Object -Firs
 if ($cambios.nuevos.Count + $cambios.cambiados.Count -gt 15) { Write-Host '    …' }
 
 if ($SoloPreparar) { Ok "Copia lista en dist-hosting\$Carpeta (no se subió nada)"; exit 0 }
+if ($Paquete) {
+    # tar viene con Windows 10/11; en el VPS se descomprime con: tar -xzf ayni.tar.gz
+    $tar = Join-Path $salida 'ayni.tar.gz'
+    if (Test-Path -LiteralPath $tar) { Remove-Item -LiteralPath $tar -Force }
+    Ejecutar tar @('-czf', $tar, '-C', $destino, '.')
+    Ok "Paquete listo: dist-hosting\ayni.tar.gz ($([math]::Round((Get-Item -LiteralPath $tar).Length / 1MB, 1)) MB). No se subió nada."
+    exit 0
+}
 if ($cambios.nuevos.Count + $cambios.cambiados.Count + $cambios.borrados.Count -eq 0) { Ok 'No hay cambios que subir.' }
 else {
     $respuesta = Read-Host '  ¿Subir estos cambios al hosting? Escribe SI para continuar'

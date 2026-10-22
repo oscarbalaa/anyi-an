@@ -1,6 +1,7 @@
 # Configuración y credenciales locales
 .env
 1. INICIO/CREDENCIALES_PRIVADAS.txt
+1. INICIO/CREDENCIALES_VPS.txt
 
 # Dependencias y compilados
 node_modules/
