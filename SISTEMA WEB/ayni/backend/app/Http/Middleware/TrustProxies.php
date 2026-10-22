@@ -14,6 +14,13 @@ class TrustProxies extends Middleware
      */
     protected $proxies;
 
+    /** Solo detrás de un proxy propio (el Nginx de CloudPanel): AYNI_PROXIES_CONFIABLES=127.0.0.1 */
+    public function __construct()
+    {
+        $confiables = (string) config('ayni.proxies_confiables');
+        $this->proxies = $confiables === '' ? null : array_map('trim', explode(',', $confiables));
+    }
+
     /**
      * The headers that should be used to detect proxies.
      *

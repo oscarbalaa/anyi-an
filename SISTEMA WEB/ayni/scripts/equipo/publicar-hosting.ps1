@@ -104,6 +104,8 @@ function Env-Hosting($c, [string]$secreto = '', [long]$hasta = 0) {
         "MAIL_FROM_ADDRESS=$(& $v 'CORREO_REMITENTE' $c['CORREO_USUARIO'])"
         'MAIL_FROM_NAME=AYNI'
     )
+    # VPS con CloudPanel: Nginx se reenvía a sí mismo (127.0.0.1); así AYNI ve la IP real de cada visitante
+    if ($c['PROXIES_CONFIABLES']) { $lineas += "AYNI_PROXIES_CONFIABLES=$($c['PROXIES_CONFIABLES'])" }
     # Solo mientras corre la prueba de humo (vence sola; ver docs/seguridad.md)
     if ($secreto) { $lineas += "AYNI_SECRETO_E2E=$secreto"; $lineas += "AYNI_SECRETO_E2E_HASTA=$hasta" }
     return ($lineas -join "`n") + "`n"
