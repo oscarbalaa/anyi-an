@@ -51,7 +51,11 @@ function Leer-Credenciales([string]$ruta) {
     }
     $datos = @{}
     foreach ($linea in Get-Content -LiteralPath $ruta -Encoding UTF8) {
-        if ($linea -match '^\s*([A-Z_]+)\s*=\s*(.*)$') { $datos[$Matches[1]] = $Matches[2].Trim() }
+        if ($linea -match '^\s*([A-Z_]+)\s*=\s*(.*)$') {
+            # Una clave repetida (la del ejemplo y la propia) haría ganar en silencio la de más abajo
+            if ($datos.ContainsKey($Matches[1])) { Fallo "$($Matches[1]) aparece más de una vez en $ruta. Deja solo una línea." }
+            $datos[$Matches[1]] = $Matches[2].Trim()
+        }
     }
     foreach ($clave in 'URL', 'BD_NOMBRE', 'BD_USUARIO', 'BD_CLAVE') {
         if (-not $datos[$clave]) { Fallo "Falta $clave en $ruta" }
@@ -62,7 +66,7 @@ function Leer-Credenciales([string]$ruta) {
         [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes)
         $datos['APP_KEY'] = 'base64:' + [Convert]::ToBase64String($bytes)
         Add-Content -LiteralPath $ruta -Value "APP_KEY=$($datos['APP_KEY'])" -Encoding UTF8
-        Aviso 'Se creó APP_KEY y se guardó en CREDENCIALES_PRIVADAS.txt (no la cambies después).'
+        Aviso "Se creó APP_KEY y se guardó en $(Split-Path -Leaf $ruta) (no la cambies después)."
     }
     $datos['URL'] = $datos['URL'].TrimEnd('/') + '/'
     return $datos
@@ -149,6 +153,12 @@ function Preparar($c) {
 }
 
 # ---------- Base de datos de demostración para importar en el hosting ----------
+# Windows PowerShell 5.1 no escapa las comillas al pasar argumentos a un programa: el guion viaja en base64
+function En-Mysql([string]$guion) {
+    $b64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes(($guion -replace "`r", '')))
+    & docker compose exec -T mysql sh -c "echo $b64 | base64 -d | sh"
+}
+
 function Exportar-Bd {
     Paso 'Base de datos para el hosting (datos de demostración de hoy)'
     $tarea = @'
@@ -157,17 +167,18 @@ mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -e "DROP DATABASE IF EXISTS ayni_publicar;
 '@
     Ejecutar docker @('compose', 'up', '-d', '--wait', 'mysql')
     # El .ps1 se guarda con fin de línea de Windows: el sh del contenedor no acepta los \r
-    Ejecutar docker @('compose', 'exec', '-T', 'mysql', 'sh', '-c', ($tarea -replace "`r", ''))
+    En-Mysql $tarea
+    if ($LASTEXITCODE -ne 0) { Fallo 'No se pudo crear la base de datos temporal ayni_publicar.' }
     # Los PDF de ejemplo de la demo también viajan (storage/app/demo)
     $archivosDemo = Join-Path $destino 'backend/storage/app'
     Ejecutar docker @('compose', 'run', '--rm', '--no-deps', '-e', 'DB_DATABASE=ayni_publicar', '-v', "${archivosDemo}:/salida", 'app', 'sh', '-c', 'php backend/artisan migrate:fresh --seed --force && mkdir -p /salida/demo && cp backend/storage/app/demo/*.pdf /salida/demo/ && chmod -R a+rwX /salida/demo')
     $archivo = Join-Path $salida 'ayni_hosting.sql'
-    $dump = & docker compose exec -T mysql sh -c 'mysqldump -uroot -p"$MYSQL_ROOT_PASSWORD" --single-transaction --routines --triggers --default-character-set=utf8mb4 --skip-dump-date --no-tablespaces ayni_publicar 2>/dev/null'
+    $dump = En-Mysql 'mysqldump -uroot -p"$MYSQL_ROOT_PASSWORD" --single-transaction --routines --triggers --default-character-set=utf8mb4 --skip-dump-date --no-tablespaces ayni_publicar 2>/dev/null'
     if ($LASTEXITCODE -ne 0 -or -not $dump) { Fallo 'No se pudo exportar la base de datos.' }
     # MariaDB ejecuta los comentarios /*!8xxxx … */ de MySQL 8 y no conoce algunos (DEFAULT ENCRYPTION): se quitan
     $texto = (($dump -join "`n") -replace '/\*!80\d{3}\s[^*]*\*/', '') + "`n"
     Escribir-Utf8 $archivo $texto
-    & docker compose exec -T mysql sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -e "DROP DATABASE ayni_publicar" 2>/dev/null' | Out-Null
+    En-Mysql 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -e "DROP DATABASE ayni_publicar" 2>/dev/null' | Out-Null
     Ok "dist-hosting\ayni_hosting.sql: impórtalo en el phpMyAdmin del hosting (o envíaselo al profesor)"
 }
 
@@ -303,6 +314,7 @@ function Humo($c) {
 # ---------- Programa ----------
 $rutaCredenciales = if ($Credenciales) { $Credenciales } else { Join-Path $raiz '1. INICIO\CREDENCIALES_PRIVADAS.txt' }
 $c = Leer-Credenciales $rutaCredenciales
+Ok "Dirección pública: $($c['URL'])"
 New-Item -ItemType Directory -Force -Path $salida | Out-Null
 Preparar $c
 if ($BaseDeDatos) { Exportar-Bd }
