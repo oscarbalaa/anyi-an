@@ -204,7 +204,7 @@ Para un servidor propio (por ejemplo, un VPS de Hostinger con **Ubuntu 24.04 wit
 1. **Add Site → Create a PHP Site → Laravel**, PHP **8.1**, dominio `ayni.ruta-practica.com`. Anota el usuario del sitio y su contraseña.
 2. En el DNS del dominio, un registro `A` con el nombre `ayni` y la IP del VPS (en Cloudflare, **DNS only** hasta tener el certificado).
 3. Sitio → **SSL/TLS → Actions → New Let's Encrypt Certificate**.
-4. Sitio → **Settings → Root Directory**: `backend/public`.
+4. Sitio → **Settings → Root Directory**: `ayni.ruta-practica.com/backend/public` (CloudPanel cuenta la ruta desde `htdocs`, así que va el nombre del dominio delante).
 5. Sitio → **Varnish Cache**: desactivado. Sitio → **Vhost**: en el **segundo** bloque `server` (el de `listen 8080`), cambia las líneas `try_files $uri $uri/ /index.php?$args;` e `index index.php index.html;` por el contenido de `docker/vps/nginx-cloudpanel.conf` y guarda. El primer bloque no se toca.
 6. Sitio → **Databases → Add Database**: nombre, usuario y contraseña de la base de AYNI.
 
