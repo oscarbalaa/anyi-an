@@ -13,7 +13,7 @@ Para iniciar, ejecuta `1. INICIO/AYNI.bat` (Windows) o `1. INICIO/AYNI.sh` (Linu
 
 La primera vez elige la opción **1** del menú. Las credenciales están en `1. INICIO/CREDENCIALES.txt`.
 
-**Versión web:** https://aplicacionenlanube.cetivirgendelapuerta.com/grupo02/
+**Versión web:** https://ayni.ruta-practica.com/
 
 ## Documentos
 
