@@ -16,7 +16,7 @@ $script:Inicio = Join-Path $script:Raiz '1. INICIO'
 $script:ArchivoEnv = Join-Path $script:Raiz '.env'
 $script:ArchivoEnvEjemplo = Join-Path $script:Raiz '.env.example'
 $script:AutoSi = [bool]$Si
-$script:UrlHosting = 'https://aplicacionenlanube.cetivirgendelapuerta.com/grupo02/'
+$script:UrlHosting = 'https://ayni.ruta-practica.com/'
 
 # ---------------------------------------------------------------- salida
 

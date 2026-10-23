@@ -10,7 +10,21 @@
 | Docente o coordinador | **Ingresar → Soy docente** | DNI (8 dígitos) | Mínimo 8 caracteres, con mayúscula, minúscula, número y símbolo |
 | Administrativo | **Administración** (arriba a la derecha) | Nombre de usuario (`cmedina`) | Igual que el docente |
 
-La cuenta la crea la administración del colegio, que entrega una **contraseña temporal**. En el primer ingreso AYNI pide cambiarla (ver la sección 4).
+La cuenta la crea la administración del colegio, que entrega una **contraseña temporal**. En el primer ingreso AYNI pide cambiarla (ver "Cambiar la contraseña temporal").
+
+**Dónde se abre:** en la web, https://ayni.ruta-practica.com/ (computadora o celular, con cualquier navegador actualizado); en una instalación local, http://localhost:5173.
+
+**Cuentas de demostración** (colegio ficticio "IEP El Señor es mi Pastor"), para probar cada rol:
+
+| Rol | Usuario | Contraseña | Entra por |
+|---|---|---|---|
+| Administrador | `cmedina` | `Ayni#2026` | **Administración** |
+| Docente que coordina el 3.º A | `41234567` | `Ayni#2026` | **Ingresar → Soy docente** |
+| Docente, tutora del 3.º B | `42345678` | `Ayni#2026` | **Ingresar → Soy docente** |
+| Estudiante de secundaria (3.º B) | `E-2026-001` | `piki2026` | **Ingresar → Soy estudiante** |
+| Estudiante de primaria (4.º) | `E-2026-002` | `piki2026` | **Ingresar → Soy estudiante** |
+
+Cinco intentos fallidos bloquean la cuenta (ver "Cuenta bloqueada"). Si pruebas en grupo, que cada persona use una cuenta distinta para no bloquearse entre sí.
 
 ## 2. Iniciar sesión
 
