@@ -8,7 +8,7 @@ DIRECCIONES
   Desde un celular (Wi-Fi) . http://192.168.1.8:5173
   phpMyAdmin (ver la BD) ... http://localhost:8080
   Correos de prueba ........ http://localhost:8025
-  Versión web (hosting) .... https://aplicacionenlanube.cetivirgendelapuerta.com/grupo02/
+  Versión web (hosting) .... https://ayni.ruta-practica.com/
                              (los mismos usuarios de demostración)
 
 BASE DE DATOS LOCAL (para phpMyAdmin)

@@ -4,14 +4,14 @@
 
 | Forma | Para quién | Qué se necesita |
 |---|---|---|
-| **Web** | Cualquier usuario | Un navegador. Dirección: https://aplicacionenlanube.cetivirgendelapuerta.com/grupo02/ |
+| **Web** | Cualquier usuario | Un navegador. Dirección: https://ayni.ruta-practica.com/ |
 | **Local** | Revisión del sistema en una PC | Descargar la carpeta del proyecto y usar el panel `1. INICIO/AYNI.bat` (Windows) o `AYNI.sh` (Linux) |
 
 La versión local usa el mismo código y las mismas reglas de seguridad que la versión web.
 
 ### Uso en la web
 
-1. Abre https://aplicacionenlanube.cetivirgendelapuerta.com/grupo02/ en cualquier navegador, también desde el celular con datos móviles. Siempre se abre con **HTTPS** (candado): si escribes `http://`, el servidor te lleva a la versión segura.
+1. Abre https://ayni.ruta-practica.com/ en cualquier navegador, también desde el celular con datos móviles. Siempre se abre con **HTTPS** (candado): si escribes `http://`, el servidor te lleva a la versión segura.
 2. Pulsa **Ingresar** y elige tu acceso (estudiante o docente) o **Administración**. Los usuarios son los mismos de la demostración (`1. INICIO/CREDENCIALES.txt`):
 
    | Rol | Usuario | Contraseña | Entra por |
@@ -21,13 +21,13 @@ La versión local usa el mismo código y las mismas reglas de seguridad que la v
    | Docente, tutora del 3.º B | `42345678` | `Ayni#2026` | Ingresar → Docente |
    | Estudiante (3.º B) | `E-2026-001` | `piki2026` | Ingresar → Estudiante |
 
-3. En la web los correos de recuperación **sí llegan** a la bandeja real del usuario (desde la cuenta Gmail del proyecto).
+3. En la web los correos de recuperación de contraseña se envían a la bandeja real del usuario, desde la cuenta de correo del proyecto.
 
-Por seguridad, desde el navegador solo se ve el sistema: el código, la configuración (`.env`), `vendor/`, `storage/`, `1. INICIO/` y los manuales responden **403 Prohibido**. Esos archivos solo se descargan por FTP.
+Por seguridad, desde el navegador solo se ve el sistema: el servidor publica únicamente la parte visible (`backend/public`). El código, la configuración (`.env`), `vendor/`, `storage/`, `1. INICIO/` y los manuales no se pueden abrir desde la web; solo se descargan por FTP o SFTP.
 
 ### Uso en local descargando desde el FTP
 
-La carpeta `grupo02` del FTP es **el mismo proyecto** que usa el equipo, listo para instalar:
+La carpeta del sistema en el servidor (por FTP o SFTP) es **el mismo proyecto** que usa el equipo, listo para instalar:
 
 1. Con **FileZilla** (o cualquier programa FTP), descarga la carpeta `grupo02` completa a tu PC, por ejemplo a `Documentos\grupo02`. La ruta puede tener espacios o tildes.
 2. Abre `grupo02\1. INICIO` y haz doble clic en **`AYNI.bat`** (en Linux, `bash "1. INICIO/AYNI.sh"`).

@@ -6,7 +6,7 @@ VERSION="0.1.0"
 RAIZ="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 INICIO="$RAIZ/1. INICIO"
 ENV="$RAIZ/.env"
-URL_HOSTING="https://aplicacionenlanube.cetivirgendelapuerta.com/grupo02/"
+URL_HOSTING="https://ayni.ruta-practica.com/"
 AUTO_SI=0
 DOCKER=(docker)
 

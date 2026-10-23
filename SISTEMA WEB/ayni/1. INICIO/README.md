@@ -4,7 +4,7 @@ Hay dos formas de usar AYNI.
 
 ## 1. En la web (sin instalar nada)
 
-Abre https://aplicacionenlanube.cetivirgendelapuerta.com/grupo02/ (también desde el celular). Los usuarios de demostración están en `CREDENCIALES.txt`.
+Abre https://ayni.ruta-practica.com/ (también desde el celular). Los usuarios de demostración están en `CREDENCIALES.txt`.
 
 Si descargaste esta carpeta desde el FTP del curso, puedes instalarla tal cual en tu PC con los pasos de abajo: el panel ignora la configuración del servidor que viene incluida.
 

@@ -4,7 +4,7 @@
 
 ## Antes de empezar (5 minutos antes)
 
-- [ ] AYNI encendido (opción `3`) **o** la versión web abierta: https://aplicacionenlanube.cetivirgendelapuerta.com/grupo02/
+- [ ] AYNI encendido (opción `3`) **o** la versión web abierta: https://ayni.ruta-practica.com/
 - [ ] Datos de demostración recién cargados (opción `14` en local): así las fechas, alertas y pendientes son los de hoy.
 - [ ] Tres ventanas listas: una normal y dos de incógnito (para tener administración, docente y estudiante abiertos a la vez).
 - [ ] Un celular en la misma Wi-Fi con la dirección "Desde un celular" de `CREDENCIALES.txt` (o la web con datos móviles).
