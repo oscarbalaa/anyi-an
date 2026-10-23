@@ -332,7 +332,9 @@ if ($Paquete) {
     # tar viene con Windows 10/11; en el VPS se descomprime con: tar -xzf ayni.tar.gz
     $tar = Join-Path $salida 'ayni.tar.gz'
     if (Test-Path -LiteralPath $tar) { Remove-Item -LiteralPath $tar -Force }
-    Ejecutar tar @('-czf', $tar, '-C', $destino, '.')
+    # Rutas relativas: el tar de Git Bash (GNU) toma "C:\…" como un servidor remoto
+    Push-Location -LiteralPath $salida
+    try { Ejecutar tar @('-czf', 'ayni.tar.gz', '-C', $Carpeta, '.') } finally { Pop-Location }
     Ok "Paquete listo: dist-hosting\ayni.tar.gz ($([math]::Round((Get-Item -LiteralPath $tar).Length / 1MB, 1)) MB). No se subió nada."
     exit 0
 }
