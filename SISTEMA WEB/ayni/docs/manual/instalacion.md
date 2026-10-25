@@ -234,6 +234,8 @@ cd ~/htdocs/ayni.ruta-practica.com/backend && php artisan migrate --force
 
 **Acceso para el profesor:** **Admin Area → Users → Add User** con el rol **User** y solo el sitio de AYNI: ve sus archivos, su base de datos y phpMyAdmin, y nada de los demás sitios del servidor.
 
+Los datos que se le entregan (web, SFTP, SSH, CloudPanel y base de datos, con sus puertos) están en la plantilla `1. INICIO/ACCESOS_DOCENTE.ejemplo.txt`: cópiala como `ACCESOS_DOCENTE.txt` (no se sube a GitHub) y completa las contraseñas.
+
 ## 11. Problemas frecuentes
 
 | Problema | Solución |
