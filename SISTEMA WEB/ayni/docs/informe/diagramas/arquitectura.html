@@ -1,0 +1,26 @@
+<html><head><meta charset="utf-8"><style>body{margin:0;background:#fff;font-family:Arial}text{font-family:Arial}</style><script src="cajas.js"></script></head><body><script>
+const L=lienzo(1300,760);
+L.grupo(20,20,250,720,'Capa de presentación','azul');
+L.caja(40,60,210,110,'Navegador',['PC, tableta o celular','Chrome, Edge, Firefox, Safari','sin instalar aplicaciones'],'azul');
+L.caja(40,200,210,190,'Aplicación React (SPA)',['React 19 + TypeScript','React Router · TanStack Query','Tailwind 4 · shadcn/ui','Zod + React Hook Form','(validación en el cliente)','Token Bearer de la sesión'],'azul');
+L.grupo(300,20,640,720,'Servidor de aplicación (Laravel 10 · PHP 8.1)','verde');
+L.caja(320,60,600,70,'Servidor web',['Nginx (VPS) o Apache con .htaccess (hosting): HTTPS, cabeceras de seguridad,','sirve React y envía /api/v1 a Laravel; lo privado responde 403'],'verde');
+L.caja(320,160,290,150,'Entrada a la API REST /api/v1',['Rutas por rol: /admin, /docente,','/estudiante (126 rutas)','Middleware: auth:sanctum, rol,','cambio de contraseña, límite','de peticiones, CORS cerrado'],'verde');
+L.caja(630,160,290,150,'Validación y control',['Form Requests (2.ª capa de','validación, mensajes por campo)','Controladores delgados','Respuestas JSON con','"mensaje" y "errores"'],'verde');
+L.caja(320,340,600,150,'Servicios de dominio (lógica de negocio)',['Acceso y captcha · Usuarios · Estructura académica · Personas e importación Excel','Asistencia · Evaluaciones, entregas y notas · Calificaciones (escala de 20)','Incidencias · Notificaciones · Riesgo: motor de reglas v0 y alertas','Inicio por rol · Ficha 360° · Reportes PDF y Excel · Auditoría','Cierre de bimestre y cálculo diario sin cron (en el primer uso del día)'],'verde');
+L.caja(320,520,290,110,'Modelos y consultas',['Eloquent y Query Builder','consultas con parámetros,','sin N+1, transacciones'],'verde');
+L.caja(630,520,290,110,'Almacenamiento de archivos',['Disco configurable (storage/app)','entregas PDF y material,','fuera de la carpeta pública'],'verde');
+L.caja(320,650,600,70,'Microservicio de IA (Unidad 2)',['Modelo de clasificación + explicabilidad: reemplaza al motor de reglas v0'],'morado',true);
+L.grupo(970,20,310,720,'Datos y servicios externos','naranja');
+L.caja(990,160,270,150,'Base de datos relacional',['MySQL 8 / MariaDB 10.6+','42 tablas · utf8mb4','hora de Lima (UTC−5)','restricciones CHECK, UNIQUE','y claves foráneas'],'naranja');
+L.caja(990,340,270,110,'Correo SMTP',['Gmail del proyecto (web)','Mailpit en local','si falla, no se interrumpe'],'naranja');
+L.caja(990,480,270,110,'Google Cloud (Unidad 3)',['Compute Engine, Cloud SQL','y Cloud Storage'],'morado',true);
+L.flecha([[145,170],[145,200]]);
+L.flecha([[250,95],[320,95]],'HTTPS',{ly:88});
+L.flecha([[250,280],[285,280],[285,235],[320,235]],'JSON|/api/v1',{lx:256,ly:300});
+L.flecha([[465,130],[465,160]]); L.flecha([[610,235],[630,235]]); L.flecha([[775,310],[775,340]]);
+L.flecha([[465,490],[465,520]]); L.flecha([[775,490],[775,520]]);
+L.flecha([[465,630],[465,640],[950,640],[950,235],[990,235]],'SQL|(PDO)',{lx:955,ly:480});
+L.flecha([[920,395],[990,395]],'SMTP',{ly:388});
+L.flecha([[620,650],[620,630]],'',{punteado:true});
+</script></body></html>

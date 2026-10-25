@@ -1,0 +1,31 @@
+erDiagram
+    rol ||--o{ usuario : "rol_id"
+    usuario ||--o{ auditoria : "usuario_id"
+    usuario ||--o{ recuperacion_password : "usuario_id"
+    usuario ||--o{ notificacion : "usuario_id"
+    rol {
+        bigint id PK
+        varchar codigo UK
+    }
+    usuario {
+        bigint id PK
+        bigint rol_id FK
+        varchar username UK
+        varchar email UK
+    }
+    auditoria {
+        bigint id PK
+        bigint usuario_id FK
+    }
+    recuperacion_password {
+        bigint id PK
+        bigint usuario_id FK
+        char token_hash UK
+    }
+    captcha_desafio {
+        char id PK
+    }
+    notificacion {
+        bigint id PK
+        bigint usuario_id FK
+    }

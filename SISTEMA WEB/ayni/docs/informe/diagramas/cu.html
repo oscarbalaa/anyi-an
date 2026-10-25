@@ -1,0 +1,61 @@
+<html><head><meta charset="utf-8"><style>body{margin:0;background:#fff;font-family:Arial} text{font-family:Arial}</style></head><body>
+<svg id="lienzo" xmlns="http://www.w3.org/2000/svg"></svg>
+<script>
+const svg=document.getElementById('lienzo');
+const W=1540, rowH=46, top0=70;
+const colA=[ // [codigo, nombre]
+['CU-00','Visitar la landing y elegir acceso'],
+['CU-01','Iniciar sesión'],['CU-02','Recuperar contraseña'],['CU-03','Cerrar sesión'],['CU-05','Gestionar mi perfil'],['CU-23','Revisar notificaciones'],['CU-27','Consultar inicio y ficha 360°'],
+['CU-15','Consultar mi asistencia'],['CU-17','Entregar actividad'],['CU-21','Consultar mis notas y horario'],
+['CU-13','Registrar asistencia'],['CU-16','Gestionar evaluaciones y material'],['CU-18','Registrar notas'],['CU-19','Publicar promedios del bimestre'],
+['CU-28','Generar reportes'],['CU-22','Registrar y consultar incidencias'],['CU-25','Atender alerta estudiantil'],['CU-26','Consultar paneles de riesgo y coordinación']];
+const colB=[['CU-04','Gestionar usuarios'],['CU-06','Configurar periodos, bimestres y colegio'],['CU-07','Configurar grados, secciones, aulas y asignaturas'],['CU-08','Asignar carga, coordinadores y horarios'],['CU-09','Gestionar docentes'],['CU-10','Gestionar estudiantes y apoderados'],['CU-11','Importar estudiantes desde Excel'],['CU-12','Gestionar matrículas'],['CU-14','Corregir y justificar asistencia'],['CU-20','Cerrar bimestre'],['CU-24','Calcular riesgo y generar alertas']];
+const pos={};
+const xa=580, xb=1045, rx=190, ry=19;
+colA.forEach((c,i)=>pos[c[0]]={x:xa,y:top0+i*rowH,t:c});
+const offB=top0+1*rowH;
+colB.forEach((c,i)=>pos[c[0]]={x:xb,y:offB+i*rowH,t:c});
+const H=top0+colA.length*rowH+60;
+svg.setAttribute('width',W); svg.setAttribute('height',H);
+function el(n,a,t){const e=document.createElementNS('http://www.w3.org/2000/svg',n);for(const k in a)e.setAttribute(k,a[k]);if(t)e.textContent=t;svg.appendChild(e);return e;}
+el('rect',{x:360,y:30,width:900,height:H-40,fill:'none',stroke:'#333','stroke-width':1.5});
+el('text',{x:375,y:52,'font-size':15,'font-weight':'bold'},'AYNI');
+const actores={
+ 'Visitante':{x:90,y:pos['CU-00'].y},
+ 'Usuario':{x:90,y:(pos['CU-01'].y+pos['CU-27'].y)/2},
+ 'Estudiante':{x:90,y:pos['CU-17'].y+20},
+ 'Docente':{x:90,y:pos['CU-18'].y+40},
+ 'Coordinador académico':{x:90,y:pos['CU-26'].y+10},
+ 'Administrador':{x:1420,y:pos['CU-24'].y+60},
+ 'Sistema':{x:1420,y:pos['CU-26'].y-10},
+};
+const enlaces={
+ 'Visitante':['CU-00'],'Usuario':['CU-01','CU-02','CU-03','CU-05','CU-23','CU-27'],
+ 'Estudiante':['CU-15','CU-17','CU-21','CU-28'],'Docente':['CU-13','CU-16','CU-18','CU-19','CU-22','CU-25','CU-28'],
+ 'Coordinador académico':['CU-25','CU-26'],
+ 'Administrador':['CU-04','CU-06','CU-07','CU-08','CU-09','CU-10','CU-11','CU-12','CU-14','CU-20','CU-22','CU-25','CU-26','CU-28'],
+ 'Sistema':['CU-20','CU-24']};
+for(const a in enlaces){const A=actores[a];const der=A.x>700;
+ enlaces[a].forEach(c=>{const p=pos[c];let ex=p.x+(der?rx:-rx);
+  if(der && p.x===xa) ex=p.x+rx; if(!der && p.x===xb) ex=p.x-rx;
+  el('line',{x1:A.x+(der?-22:22),y1:A.y-10,x2:ex,y2:p.y,stroke:'#555','stroke-width':1});});}
+// generalización: Estudiante, Docente, Administrador -> Usuario; Coordinador -> Docente
+function gen(de,a){const D=actores[de],U=actores[a];
+ const x1=D.x-40,y1=D.y-35; const x2=U.x-40,y2=U.y+35;
+ el('path',{d:`M${D.x-25},${D.y-30} C ${D.x-70},${D.y-30} ${U.x-70},${U.y+30} ${U.x-28},${U.y+30}`,fill:'none',stroke:'#333','stroke-width':1.2,'stroke-dasharray':''});
+ el('polygon',{points:`${U.x-26},${U.y+30} ${U.x-38},${U.y+23} ${U.x-38},${U.y+37}`,fill:'#fff',stroke:'#333'});}
+gen('Estudiante','Usuario'); gen('Docente','Usuario'); gen('Coordinador académico','Docente');
+// Administrador hereda de Usuario: nota textual
+for(const c in pos){const p=pos[c];
+ el('ellipse',{cx:p.x,cy:p.y,rx:rx,ry:ry,fill:'#f4f8fb',stroke:'#2f5d8a','stroke-width':1.3});
+ el('text',{x:p.x,y:p.y+4,'text-anchor':'middle','font-size':12.5},p.t[0]+' '+p.t[1]);}
+for(const a in actores){const {x,y}=actores[a];
+ el('circle',{cx:x,cy:y-30,r:9,fill:'#fff',stroke:'#222','stroke-width':1.5});
+ el('line',{x1:x,y1:y-21,x2:x,y2:y+2,stroke:'#222','stroke-width':1.5});
+ el('line',{x1:x-14,y1:y-12,x2:x+14,y2:y-12,stroke:'#222','stroke-width':1.5});
+ el('line',{x1:x,y1:y+2,x2:x-11,y2:y+20,stroke:'#222','stroke-width':1.5});
+ el('line',{x1:x,y1:y+2,x2:x+11,y2:y+20,stroke:'#222','stroke-width':1.5});
+ el('text',{x:x,y:y+36,'text-anchor':'middle','font-size':13,'font-weight':'bold'},a);}
+el('text',{x:1300,y:H-34,'font-size':11.5,'fill':'#444'},'Administrador también es Usuario');
+el('text',{x:1300,y:H-18,'font-size':11.5,'fill':'#444'},'(CU-01, 02, 03, 05, 23 y 27).');
+</script></body></html>

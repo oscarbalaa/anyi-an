@@ -1,0 +1,61 @@
+erDiagram
+    matricula ||--o{ prediccion_riesgo : "matricula_id"
+    modelo_ml ||--o{ prediccion_riesgo : "modelo_id"
+    subperiodo ||--o{ prediccion_riesgo : "subperiodo_id"
+    prediccion_riesgo ||--o{ factor_riesgo : "prediccion_id"
+    prediccion_riesgo ||--o{ recomendacion : "prediccion_id"
+    matricula ||--o{ alerta_estudiantil : "matricula_id"
+    prediccion_riesgo ||--o{ alerta_estudiantil : "prediccion_id"
+    docente ||--o{ alerta_estudiantil : "responsable_docente_id"
+    subperiodo ||--o{ alerta_estudiantil : "subperiodo_id"
+    alerta_estudiantil ||--o{ intervencion : "alerta_id"
+    usuario ||--o{ intervencion : "responsable_id"
+    alerta_estudiantil ||--o{ historial_alerta : "alerta_id"
+    usuario ||--o{ historial_alerta : "usuario_id"
+    modelo_ml {
+        bigint id PK
+        tinyint activo_unico UK
+    }
+    prediccion_riesgo {
+        bigint id PK
+        bigint matricula_id FK
+        bigint subperiodo_id FK
+        bigint modelo_id FK
+    }
+    factor_riesgo {
+        bigint id PK
+        bigint prediccion_id FK
+    }
+    recomendacion {
+        bigint id PK
+        bigint prediccion_id FK
+    }
+    alerta_estudiantil {
+        bigint id PK
+        bigint prediccion_id FK
+        bigint matricula_id FK
+        bigint subperiodo_id FK
+        bigint responsable_docente_id FK
+    }
+    intervencion {
+        bigint id PK
+        bigint alerta_id FK
+        bigint responsable_id FK
+    }
+    historial_alerta {
+        bigint id PK
+        bigint alerta_id FK
+        bigint usuario_id FK
+    }
+    matricula {
+        bigint id PK
+    }
+    subperiodo {
+        bigint id PK
+    }
+    docente {
+        bigint id PK
+    }
+    usuario {
+        bigint id PK
+    }

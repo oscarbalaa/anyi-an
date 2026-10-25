@@ -1,0 +1,17 @@
+<html><head><meta charset="utf-8"><style>body{margin:0;background:#fff;font-family:Arial}text{font-family:Arial}</style><script src="carriles.js"></script></head><body><script>
+carriles({carriles:['Docente','AYNI (sistema)','Estudiante'], anchoCarril:330,
+nodos:{
+ i:{c:0,f:0,t:'Crear evaluación',tipo:'fin'},
+ a:{c:0,f:1,t:'Define tipo, fechas, peso y|puntaje máximo (1 a 100)'},
+ q:{c:0,f:2,t:'¿Publicar ahora?',tipo:'decision'},
+ b:{c:1,f:3,t:'BORRADOR: solo la ve el|docente; no cuenta ni avisa'},
+ c:{c:1,f:4,t:'PUBLICADA: visible y|cuenta en el promedio'},
+ e1:{c:2,f:5,t:'Ve la actividad y|entrega su PDF'},
+ d:{c:0,f:6,t:'Registra notas de 0 al|puntaje máximo'},
+ s:{c:1,f:7,t:'Nota × 20 ÷ puntaje máximo;|promedio ponderado del curso'},
+ p:{c:0,f:8,t:'Publica los promedios|del bimestre'},
+ e2:{c:2,f:9,t:'Ve su promedio y su|equivalencia literal'},
+ z:{c:1,f:10,t:'Fecha de cierre: calificación|CERRADA, sin cambios'},
+ fin:{c:1,f:11,t:'Boleta en PDF',tipo:'fin'}},
+aristas:[['i','a'],['a','q'],['q','b','No'],['q','c','Sí','lado-lado'],['b','c','Al publicarla'],['c','e1'],['e1','d'],['d','s'],['s','p'],['p','e2'],['e2','z'],['z','fin']]});
+</script></body></html>

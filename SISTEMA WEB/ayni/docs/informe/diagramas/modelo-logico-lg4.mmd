@@ -1,0 +1,57 @@
+erDiagram
+    curso_aula ||--o{ evaluacion : "curso_aula_id"
+    subperiodo ||--o{ evaluacion : "subperiodo_id"
+    tipo_evaluacion ||--o{ evaluacion : "tipo_evaluacion_id"
+    archivo ||--o{ evaluacion_material : "archivo_id"
+    evaluacion ||--o{ evaluacion_material : "evaluacion_id"
+    archivo ||--o{ entrega : "archivo_id"
+    evaluacion ||--o{ entrega : "evaluacion_id"
+    matricula ||--o{ entrega : "matricula_id"
+    evaluacion ||--o{ nota_evaluacion : "evaluacion_id"
+    matricula ||--o{ nota_evaluacion : "matricula_id"
+    curso_aula ||--o{ calificacion_periodo : "curso_aula_id"
+    matricula ||--o{ calificacion_periodo : "matricula_id"
+    subperiodo ||--o{ calificacion_periodo : "subperiodo_id"
+    tipo_evaluacion {
+        bigint id PK
+        varchar nombre UK
+    }
+    evaluacion {
+        bigint id PK
+        bigint curso_aula_id FK
+        bigint subperiodo_id FK
+        bigint tipo_evaluacion_id FK
+    }
+    evaluacion_material {
+        bigint evaluacion_id PK
+        bigint archivo_id PK
+    }
+    archivo {
+        bigint id PK
+    }
+    entrega {
+        bigint id PK
+        bigint evaluacion_id FK
+        bigint matricula_id FK
+        bigint archivo_id FK
+    }
+    nota_evaluacion {
+        bigint id PK
+        bigint evaluacion_id FK
+        bigint matricula_id FK
+    }
+    calificacion_periodo {
+        bigint id PK
+        bigint matricula_id FK
+        bigint curso_aula_id FK
+        bigint subperiodo_id FK
+    }
+    curso_aula {
+        bigint id PK
+    }
+    subperiodo {
+        bigint id PK
+    }
+    matricula {
+        bigint id PK
+    }
