@@ -1,0 +1,106 @@
+==============================================================
+  AYNI - ACCESOS PARA EL DOCENTE
+  Curso: Aplicaciones en la Nube - Grupo 02
+  Docente: Dr. Mirko Martín Manrique Ronceros
+==============================================================
+Copia este archivo como ACCESOS_DOCENTE.txt, completa las
+contraseñas y entrégalo solo al docente. ACCESOS_DOCENTE.txt
+no se sube a GitHub ni al servidor.
+
+--------------------------------------------------------------
+1. SISTEMA WEB
+--------------------------------------------------------------
+  Dirección ............ https://ayni.ruta-practica.com/
+  Puerto ............... 443 (HTTPS). Si se entra por http:// (puerto 80),
+                         el servidor redirige solo a https://
+  Comprobar el servidor  https://ayni.ruta-practica.com/api/v1/health
+                         (debe responder "estado": "ok" y la base conectada)
+
+  Usuarios de demostración (personas ficticias):
+  Rol                         Entra por                  Usuario      Contraseña
+  Administrador ............. Administración             cmedina      Ayni#2026
+  Docente (coordina 3.º A) .. Ingresar > Soy docente     41234567     Ayni#2026
+  Docente (tutora 3.º B) .... Ingresar > Soy docente     42345678     Ayni#2026
+  Estudiante secundaria ..... Ingresar > Soy estudiante  E-2026-001   piki2026
+  Estudiante primaria ....... Ingresar > Soy estudiante  E-2026-002   piki2026
+
+  Al ingresar se pide el código de la imagen (captcha).
+  Tras 5 intentos fallidos la cuenta se bloquea: las de administración se
+  liberan solas a los 15 minutos; las demás las desbloquea un administrador
+  en Usuarios.
+
+--------------------------------------------------------------
+2. ARCHIVOS DEL SITIO (SFTP)
+--------------------------------------------------------------
+  Programa ............. FileZilla (u otro cliente SFTP)
+  Protocolo ............ SFTP - SSH File Transfer Protocol (no "FTP")
+  Servidor ............. ayni.ruta-practica.com
+  Puerto ............... 22
+  Usuario .............. ayni
+  Contraseña ........... ____________________
+  Carpeta del sistema .. /home/ayni/htdocs/ayni.ruta-practica.com
+
+  La carpeta pública es backend/public. El código, el .env, vendor/ y la
+  documentación no se pueden abrir desde el navegador (responden 403/404).
+
+--------------------------------------------------------------
+3. CONSOLA (SSH)
+--------------------------------------------------------------
+  Comando .............. ssh ayni@ayni.ruta-practica.com -p 22
+  Usuario y contraseña . los mismos del punto 2
+  Comandos útiles:
+    cd ~/htdocs/ayni.ruta-practica.com/backend
+    php -v                         (PHP 8.1)
+    php artisan migrate:status     (migraciones aplicadas)
+    tail -n 50 storage/logs/laravel.log
+
+--------------------------------------------------------------
+4. PANEL DEL SERVIDOR (CLOUDPANEL)
+--------------------------------------------------------------
+  Dirección ............ https://2.25.104.128:8443
+  Puerto ............... 8443 (HTTPS). El navegador avisa que el certificado
+                         no es de confianza: "Avanzado > Continuar".
+  Usuario .............. ____________________
+  Contraseña ........... ____________________
+  Acceso ............... Solo el sitio ayni.ruta-practica.com: archivos,
+                         base de datos (phpMyAdmin), registros, PHP y SSL.
+
+--------------------------------------------------------------
+5. BASE DE DATOS (MySQL 8)
+--------------------------------------------------------------
+  Base de datos ........ ayni-db
+  Usuario .............. ayni-db
+  Contraseña ........... ____________________
+  Servidor y puerto .... 127.0.0.1 : 3306 (solo dentro del servidor; el
+                         puerto 3306 no está abierto a Internet)
+
+  Cómo entrar:
+  a) phpMyAdmin: CloudPanel > Sites > ayni.ruta-practica.com > Databases >
+     Manage, con el usuario y la contraseña de este punto.
+  b) HeidiSQL o MySQL Workbench por túnel SSH:
+       Tipo de conexión ... MySQL (SSH tunnel)
+       SSH ................ ayni.ruta-practica.com, puerto 22, usuario y
+                            contraseña del punto 2
+       MySQL .............. 127.0.0.1, puerto 3306, usuario y contraseña de
+                            este punto
+  c) Por SSH: mysql -h 127.0.0.1 -u ayni-db -p ayni-db
+
+--------------------------------------------------------------
+6. CÓDIGO FUENTE Y DOCUMENTACIÓN
+--------------------------------------------------------------
+  Repositorio .......... https://github.com/oscarbalaa/anyi-an
+                         (privado: el docente recibe una invitación)
+  Manuales ............. SISTEMA WEB/ayni/1. INICIO/MANUAL
+                         (Manual de usuario y de instalación, Word y PDF)
+  Instalación local .... SISTEMA WEB/ayni/1. INICIO/AYNI.bat (Windows)
+                         o AYNI.sh (Linux); ver 1. INICIO/README.md
+
+--------------------------------------------------------------
+RESUMEN DE PUERTOS
+--------------------------------------------------------------
+  22 ..... SSH y SFTP
+  80 ..... HTTP (redirige a 443)
+  443 .... HTTPS: sistema web y API (/api/v1)
+  8443 ... CloudPanel
+  3306 ... MySQL (solo local, por túnel SSH o phpMyAdmin)
+==============================================================

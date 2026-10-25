@@ -2,6 +2,7 @@
 .env
 1. INICIO/CREDENCIALES_PRIVADAS.txt
 1. INICIO/CREDENCIALES_VPS.txt
+1. INICIO/ACCESOS_DOCENTE.txt
 
 # Dependencias y compilados
 node_modules/
