@@ -187,7 +187,7 @@ powershell -ExecutionPolicy Bypass -File scripts\equipo\publicar-hosting.ps1
 |---|---|
 | 1. Preparar | Arma `dist-hosting\grupo02`: los archivos del proyecto que están en git (nunca `.env` locales, `CREDENCIALES_PRIVADAS.txt`, `node_modules` ni respaldos), React compilado para `/grupo02/`, `vendor/` de Laravel sin dependencias de desarrollo (no hay SSH para Composer) y el `backend/.env` del servidor con `APP_ENV=production` y `APP_DEBUG=false` |
 | 2. Comparar | Calcula la huella de cada archivo y la compara con la última subida: muestra cuántos archivos son nuevos, cuántos cambiaron y cuáles se borrarán del FTP |
-| 3. Subir | Solo si escribes **SI**: sube por **FTPS** (FTP con cifrado TLS) únicamente lo que cambió, deja `.htaccess` y `.env` para el final y borra del FTP solo lo que el script subió antes y ya no existe |
+| 3. Subir | Solo si escribes **SI**: sube por **FTPS** (FTP con cifrado TLS) únicamente lo que cambió, deja `.htaccess` y `.env` para el final y borra del FTP solo lo que el script subió antes y ya no existe. Reintenta cada archivo hasta 4 veces y va guardando lo que ya subió: si se corta, al volver a ejecutarlo sigue desde ahí |
 | 4. Prueba de humo | Contra la URL pública, en PC y celular: la web, la API, que lo privado responda 403, que un error no muestre detalles técnicos, y el ingreso de cada rol con un recorrido de **solo lectura** por su menú (no crea ni cambia datos) |
 
 Opciones: `-SoloPreparar` (arma la copia sin subir), `-SinHumo` (no ejecuta la prueba de humo).
@@ -253,6 +253,7 @@ Los datos que se le entregan (web, SFTP, SSH, CloudPanel y base de datos, con su
 | Una cuenta de demostración quedó bloqueada (5 intentos fallidos) | Las de administración se liberan solas en 15 minutos. Para las demás, opción `14` (reinicia la BD con los datos de demostración) |
 | No llega el correo de recuperación de contraseña | En la instalación local los correos no salen a internet: ábrelos con la opción `13` (Correos de prueba) |
 | Publicar: "The remote certificate is invalid…" | El certificado del FTP no coincide con su nombre: completa `FTP_HUELLA_CERTIFICADO` (sección 9) |
+| Publicar: "(451) Error local al procesar" o "Archivos sin subir" | El FTP compartido cortó la conexión. Vuelve a ejecutar el mismo comando: solo sube lo que falta |
 | Publicar: "(530) Not logged in" | Revisa `FTP_USUARIO` y `FTP_CLAVE` en `CREDENCIALES_PRIVADAS.txt` |
 | La web muestra "No se pudo cargar…" en todas las pantallas | La base de datos del hosting no está importada o sus datos en `CREDENCIALES_PRIVADAS.txt` no coinciden: revisa `https://…/grupo02/api/v1/health` y vuelve a publicar |
 | Recargar una pantalla en la web da 404 | El servidor no está leyendo el `.htaccess`: confirma que `grupo02/.htaccess` se subió (es un archivo oculto) |
