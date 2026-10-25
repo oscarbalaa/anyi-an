@@ -14,6 +14,8 @@ no se sube a GitHub ni al servidor.
   Puerto ............... 443 (HTTPS). Si se entra por http:// (puerto 80),
                          el servidor redirige solo a https://
   Comprobar el servidor  https://ayni.ruta-practica.com/api/v1/health
+  Hosting del curso .... https://aplicacionenlanube.cetivirgendelapuerta.com/grupo02/
+                         (misma versión y mismos usuarios, en la carpeta grupo02 del FTP del curso)
                          (debe responder "estado": "ok" y la base conectada)
 
   Usuarios de demostración (personas ficticias):
