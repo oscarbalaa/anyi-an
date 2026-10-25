@@ -114,6 +114,17 @@ describe('docente', function () {
 });
 
 describe('estudiante', function () {
+    it('sabe quién es su tutor y quién coordina su aula (en el inicio y en su perfil)', function () {
+        DatosRiesgo::tutor($this->e, $this->e->otroProfe);
+        Fabrica::como($this->valeria->usuario);
+        expect($this->getJson('/api/v1/estudiante/inicio')->json('coordinador'))->toBeNull();
+
+        // La coordinación más cercana: aquí, la del nivel secundaria
+        DB::table('coordinacion')->insert(['docente_id' => DB::table('docente')->where('usuario_id', $this->e->otroProfe)->value('id'), 'periodo_id' => $this->e->periodo, 'ambito' => 'NIVEL', 'nivel' => 'SECUNDARIA']);
+        expect($this->getJson('/api/v1/estudiante/inicio')->json())->toMatchArray(['tutor' => 'Ana Torres', 'coordinador' => 'Ana Torres'])
+            ->and($this->getJson('/api/v1/perfil')->json('perfil'))->toMatchArray(['tutor' => 'Ana Torres', 'coordinador' => 'Ana Torres']);
+    });
+
     it('ve su promedio publicado, su asistencia, lo que debe entregar y sus clases de hoy', function () {
         DatosRiesgo::tutor($this->e, $this->e->otroProfe);
         DB::table('calificacion_periodo')->insert([

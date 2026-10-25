@@ -65,7 +65,7 @@ describe('crear y listar (RF-38)', function () {
 
         $r = $this->getJson("/api/v1/docente/cursos/{$this->e->mat}/evaluaciones")->assertOk();
         expect($r->json('bimestre.nombre'))->toBe('II Bimestre')
-            ->and($r->json('resumen'))->toBe(['evaluaciones' => 1, 'entregas' => 0, 'por_calificar' => 0])
+            ->and($r->json('resumen'))->toBe(['evaluaciones' => 1, 'borradores' => 0, 'entregas' => 0, 'por_calificar' => 0])
             ->and($r->json('evaluaciones.0'))->toMatchArray(['titulo' => 'Práctica 7 · Inecuaciones', 'tipo' => 'Práctica', 'peso' => 2, 'momento' => 'EN_CURSO', 'entregas' => 0, 'estudiantes' => 3])
             ->and(collect($r->json('tipos'))->pluck('nombre'))->toContain('Práctica', 'Examen');
     });

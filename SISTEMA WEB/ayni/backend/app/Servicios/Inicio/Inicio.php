@@ -87,7 +87,7 @@ class Inicio
             $sinNota = DB::table('evaluacion as ev')->join('curso_aula as c', 'c.id', '=', 'ev.curso_aula_id')
                 ->join('matricula as m', fn ($j) => $j->on('m.aula_id', '=', 'c.aula_id')->where('m.estado', 'ACTIVA'))
                 ->leftJoin('nota_evaluacion as n', fn ($j) => $j->on('n.evaluacion_id', '=', 'ev.id')->on('n.matricula_id', '=', 'm.id'))
-                ->where('c.docente_id', $docente)->where('ev.subperiodo_id', $bimestre->id)->where('ev.fecha_limite', '<', today()->toDateString())
+                ->where('c.docente_id', $docente)->where('ev.subperiodo_id', $bimestre->id)->where('ev.estado', 'PUBLICADA')->where('ev.fecha_limite', '<', today()->toDateString())
                 ->whereNull('n.nota')->groupBy('ev.id', 'ev.titulo', 'ev.curso_aula_id', 'ev.fecha_limite')
                 ->orderBy('ev.fecha_limite')->limit(5)
                 ->get(['ev.id', 'ev.titulo', 'ev.curso_aula_id', DB::raw('COUNT(*) as sin_nota')]);
@@ -136,7 +136,7 @@ class Inicio
         $m = MiMatricula::de($usuario);
         $base = $this->saludo($usuario, $periodo, $bimestre);
         if (! $m || ! $bimestre) {
-            return $base + ['aula' => null, 'tutor' => null, 'promedio' => null, 'cursos' => [], 'asistencia' => null, 'pendientes' => 0, 'por_entregar' => [], 'hoy' => []];
+            return $base + ['aula' => null, 'tutor' => null, 'coordinador' => null, 'promedio' => null, 'cursos' => [], 'asistencia' => null, 'pendientes' => 0, 'por_entregar' => [], 'hoy' => []];
         }
         $resumen = $this->notas->resumen($usuario, null);
         $actividades = $this->entregas->actividades($usuario, null);
@@ -149,6 +149,7 @@ class Inicio
         return $base + [
             'aula' => MiMatricula::nombreAula($m),
             'tutor' => $tutor ? Cursos::nombreCorto($tutor->nombres, $tutor->apellidos) : null,
+            'coordinador' => AulasDelUsuario::nombreCoordinador($m->aula_id),
             'promedio' => $resumen['promedio'],
             'promedio_bimestre' => $resumen['bimestre']['nombre'] ?? null,
             'cursos' => collect($resumen['cursos'])->map(fn ($c) => ['id' => $c['id'], 'asignatura' => $c['asignatura'], 'promedio' => $c['promedio']])->all(),
@@ -169,7 +170,7 @@ class Inicio
 
         $esperadas = DB::table('evaluacion as ev')->join('curso_aula as c', 'c.id', '=', 'ev.curso_aula_id')
             ->join('matricula as m', fn ($j) => $j->on('m.aula_id', '=', 'c.aula_id')->where('m.estado', 'ACTIVA'))
-            ->where('ev.subperiodo_id', $bimestre->id)->where('ev.fecha_limite', '<', today()->toDateString());
+            ->where('ev.subperiodo_id', $bimestre->id)->where('ev.estado', 'PUBLICADA')->where('ev.fecha_limite', '<', today()->toDateString());
         $puestas = (clone $esperadas)->join('nota_evaluacion as n', fn ($j) => $j->on('n.evaluacion_id', '=', 'ev.id')->on('n.matricula_id', '=', 'm.id'))->whereNotNull('n.nota')->count();
         $esperadas = $esperadas->count();
 

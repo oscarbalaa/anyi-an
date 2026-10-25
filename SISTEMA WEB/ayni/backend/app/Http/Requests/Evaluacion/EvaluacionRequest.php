@@ -30,6 +30,8 @@ class EvaluacionRequest extends FormRequest
             'peso' => ['required', 'integer', 'between:1,10'],
             'indicaciones' => ['nullable', 'string', 'max:2000'],
             'requiere_entrega' => ['required', 'boolean'],
+            'estado' => ['sometimes', 'string', 'in:BORRADOR,PUBLICADA'],
+            'puntaje_maximo' => ['sometimes', 'integer', 'between:1,100'],
         ];
     }
 
@@ -46,6 +48,8 @@ class EvaluacionRequest extends FormRequest
             'peso.*' => 'El peso es un número entero de 1 a 10.',
             'indicaciones.*' => 'Las indicaciones no deben tener más de 2000 caracteres.',
             'requiere_entrega.*' => 'Indica si los estudiantes entregan un archivo.',
+            'estado.*' => 'Elige si la evaluación queda en borrador o publicada.',
+            'puntaje_maximo.*' => 'El puntaje máximo es un número entero de 1 a 100.',
         ];
     }
 }

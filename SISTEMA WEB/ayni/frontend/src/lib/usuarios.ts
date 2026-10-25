@@ -139,6 +139,7 @@ export type Perfil = {
   codigo?: string
   aula?: string | null
   tutor?: string | null
+  coordinador?: string | null
 }
 
 export function usePerfil() {

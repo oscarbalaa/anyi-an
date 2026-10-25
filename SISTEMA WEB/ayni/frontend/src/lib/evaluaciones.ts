@@ -29,6 +29,10 @@ export type FilaEvaluacion = {
   fecha_limite: string
   indicaciones: string | null
   requiere_entrega: boolean
+  /** BORRADOR: solo la ve el docente; no cuenta en el promedio ni se califica */
+  estado: 'BORRADOR' | 'PUBLICADA'
+  /** La nota se pone de 0 a este puntaje; en el promedio cuenta sobre 20 */
+  puntaje_maximo: number
   momento: 'POR_ASIGNAR' | 'EN_CURSO' | 'VENCIDA'
   entregas: number
   calificadas: number
@@ -41,7 +45,7 @@ export type ListaEvaluaciones = {
   bimestre: Bimestre
   bimestres: Bimestre[]
   tipos: { id: number; nombre: string }[]
-  resumen: { evaluaciones: number; entregas: number | null; por_calificar: number }
+  resumen: { evaluaciones: number; borradores: number; entregas: number | null; por_calificar: number }
   evaluaciones: FilaEvaluacion[]
   editable: boolean
   limite_archivo: string
@@ -67,10 +71,15 @@ export type Planilla = {
     fecha_asignacion: string
     fecha_limite: string
     requiere_entrega: boolean
+    estado: 'BORRADOR' | 'PUBLICADA'
+    puntaje_maximo: number
   }
   curso: CursoAsistencia
   bimestre: Bimestre
   nota_aprobatoria: number
+  /** La nota aprobatoria del colegio (sobre 20) llevada al puntaje de esta evaluación */
+  aprobatoria_evaluacion: number
+  escala: number
   publicada: boolean
   editable: boolean
   resumen: { promedio: number | null; desaprobados: number; sin_entregar: number }
@@ -84,7 +93,16 @@ export type VistaCalificaciones = {
   estado: EstadoCalificacion
   publicado_en: string | null
   nota_aprobatoria: number
-  evaluaciones: { id: number; titulo: string; tipo: string; peso: number; fecha_limite: string }[]
+  evaluaciones: {
+    id: number
+    titulo: string
+    tipo: string
+    peso: number
+    puntaje_maximo: number
+    fecha_limite: string
+  }[]
+  /** Calificación general del curso (20) */
+  escala: number
   estudiantes: {
     matricula_id: number
     nombre: string
@@ -110,6 +128,7 @@ export type Actividad = {
   peso_porcentaje: number
   requiere_entrega: boolean
   estado: EstadoActividad
+  puntaje_maximo: number
   nota: number | null
 }
 
@@ -151,7 +170,7 @@ export type MisNotas = {
   }[]
   promedio: number | null
   anterior: { nombre: string; promedio: number | null } | null
-  ultimas: { id: number; titulo: string; curso: string; nota: number; fecha: string }[]
+  ultimas: { id: number; titulo: string; curso: string; nota: number; puntaje_maximo: number; fecha: string }[]
   escala?: { codigo: string; desde: number }[]
 }
 
@@ -267,6 +286,10 @@ export function useCambioEvaluaciones() {
 /** 15.5 → "15,5"; null → "—" */
 export const nota = (n: number | null | undefined, vacio = '—') =>
   n === null || n === undefined ? vacio : n.toLocaleString('es', { maximumFractionDigits: 2 })
+
+/** La nota con su puntaje cuando no es sobre 20: 40 → "40 / 50"; 15.5 → "15,5" */
+export const notaSobre = (n: number | null | undefined, maximo = 20) =>
+  n === null || n === undefined || maximo === 20 ? nota(n) : `${nota(n)} / ${nota(maximo)}`
 
 /** 1258291 → "1,2 MB" */
 export const tamano = (bytes: number) =>

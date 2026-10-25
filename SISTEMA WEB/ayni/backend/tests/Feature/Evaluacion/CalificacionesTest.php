@@ -66,9 +66,9 @@ describe('notas de una evaluación (RF-42, RF-43, RN-08)', function () {
     })->with([
         '20,5' => ['20,5', 'La nota debe estar entre 0 y 20.'],
         '25' => [25, 'La nota debe estar entre 0 y 20.'],
-        'negativa' => ['-1', 'La nota debe ser un número de 0 a 20, con hasta 2 decimales.'],
-        'letras' => ['abc', 'La nota debe ser un número de 0 a 20, con hasta 2 decimales.'],
-        'tres decimales' => ['15.555', 'La nota debe ser un número de 0 a 20, con hasta 2 decimales.'],
+        'negativa' => ['-1', 'La nota debe ser un número con hasta 2 decimales.'],
+        'letras' => ['abc', 'La nota debe ser un número con hasta 2 decimales.'],
+        'tres decimales' => ['15.555', 'La nota debe ser un número con hasta 2 decimales.'],
     ]);
 
     it('el docente corrige el estado de entrega y solo califica a su aula', function () {
@@ -166,7 +166,7 @@ describe('publicar y ver mis notas (RF-45, RF-47, RN-13)', function () {
     it('un curso sin evaluaciones no se publica y otro docente no publica cursos ajenos', function () {
         Fabrica::como($this->e->otroProfe);
         $this->postJson("/api/v1/docente/cursos/{$this->e->com}/calificaciones/publicar", ['bimestre_id' => $this->e->b2])->assertStatus(422)
-            ->assertJsonPath('mensaje', 'El curso aún no tiene evaluaciones en este bimestre.');
+            ->assertJsonPath('mensaje', 'El curso aún no tiene evaluaciones publicadas en este bimestre.');
         $this->postJson("/api/v1/docente/cursos/{$this->e->mat}/calificaciones/publicar", ['bimestre_id' => $this->e->b2])->assertForbidden();
     });
 });

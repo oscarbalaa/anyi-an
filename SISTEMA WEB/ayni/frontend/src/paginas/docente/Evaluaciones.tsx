@@ -23,7 +23,7 @@ import {
   type FilaEvaluacion,
   type ListaEvaluaciones,
 } from '@/lib/evaluaciones'
-import { esquemaEvaluacion, type DatosEvaluacion } from '@/lib/validaciones'
+import { esquemaEvaluacion, numeroTexto, type DatosEvaluacion } from '@/lib/validaciones'
 import { FiltrosCurso } from './FiltrosCurso'
 import { useCursoElegido } from './useCursoElegido'
 
@@ -107,7 +107,10 @@ export default function Evaluaciones() {
                   principal: true,
                   celda: (e) => (
                     <span className="block leading-tight">
-                      <span className="block font-bold">{e.titulo}</span>
+                      <span className="flex flex-wrap items-center gap-2 font-bold">
+                        {e.titulo}
+                        {e.estado === 'BORRADOR' && <Insignia tono="aviso">Borrador</Insignia>}
+                      </span>
                       {e.material.length > 0 && (
                         <span className="text-sm text-texto-suave">
                           {e.material.length} {e.material.length === 1 ? 'archivo' : 'archivos'} de apoyo
@@ -118,6 +121,7 @@ export default function Evaluaciones() {
                 },
                 { clave: 'tipo', titulo: 'Tipo', celda: (e) => e.tipo },
                 { clave: 'peso', titulo: 'Peso', celda: (e) => e.peso },
+                { clave: 'puntaje', titulo: 'Puntaje', celda: (e) => `sobre ${numeroTexto(e.puntaje_maximo)}` },
                 { clave: 'limite', titulo: 'Fecha límite', celda: (e) => fechaCorta(e.fecha_limite) },
                 { clave: 'entregas', titulo: 'Entregas', celda: (e) => <Entregas e={e} /> },
                 {
@@ -125,11 +129,13 @@ export default function Evaluaciones() {
                   titulo: 'Acción',
                   celda: (e) => (
                     <span className="flex flex-wrap gap-2">
-                      <Button asChild variante="secundario" tamano="chico">
-                        <Link to={`/docente/notas?evaluacion=${e.id}`} aria-label={`Calificar ${e.titulo}`}>
-                          Calificar
-                        </Link>
-                      </Button>
+                      {e.estado === 'PUBLICADA' && (
+                        <Button asChild variante="secundario" tamano="chico">
+                          <Link to={`/docente/notas?evaluacion=${e.id}`} aria-label={`Calificar ${e.titulo}`}>
+                            Calificar
+                          </Link>
+                        </Button>
+                      )}
                       <Button
                         variante="fantasma"
                         tamano="chico"
@@ -219,6 +225,8 @@ function FormEvaluacion({
       fecha_asignacion: evaluacion?.fecha_asignacion ?? '',
       fecha_limite: evaluacion?.fecha_limite ?? '',
       peso: String(evaluacion?.peso ?? 1),
+      puntaje_maximo: String(evaluacion?.puntaje_maximo ?? 20),
+      estado: evaluacion?.estado ?? 'PUBLICADA',
       indicaciones: evaluacion?.indicaciones ?? '',
       requiere_entrega: evaluacion?.requiere_entrega ?? true,
     },
@@ -232,6 +240,7 @@ function FormEvaluacion({
       tipo_evaluacion_id: Number(d.tipo_evaluacion_id),
       subperiodo_id: Number(d.subperiodo_id),
       peso: Number(d.peso),
+      puntaje_maximo: Number(d.puntaje_maximo),
       indicaciones: d.indicaciones || null,
     }
     try {
@@ -292,10 +301,33 @@ function FormEvaluacion({
             opciones={Array.from({ length: 10 }, (_, i) => ({ valor: String(i + 1), texto: String(i + 1) }))}
             {...register('peso')}
           />
+          <Campo
+            etiqueta="Puntaje máximo"
+            inputMode="numeric"
+            maxLength={3}
+            filtro={(v) => v.replace(/\D/g, '')}
+            disabled={Boolean(evaluacion?.calificadas)}
+            error={errors.puntaje_maximo?.message}
+            ayuda={
+              evaluacion?.calificadas
+                ? 'Ya tiene notas: el puntaje no se cambia.'
+                : 'La nota se pone de 0 a este puntaje; en el promedio del curso cuenta sobre 20.'
+            }
+            {...register('puntaje_maximo')}
+          />
+          <Selector
+            etiqueta="Estado"
+            className="sm:col-span-2"
+            opciones={[
+              { valor: 'PUBLICADA', texto: 'Publicada: la ven los estudiantes y cuenta en el promedio' },
+              { valor: 'BORRADOR', texto: 'Borrador: solo tú la ves; aún no se califica' },
+            ]}
+            {...register('estado')}
+          />
         </div>
-        {errors.peso && (
+        {(errors.peso || errors.estado) && (
           <p role="alert" className="text-sm font-semibold text-peligro">
-            {errors.peso.message}
+            {errors.peso?.message ?? errors.estado?.message}
           </p>
         )}
         <div className="flex flex-col gap-1.5">

@@ -37,7 +37,7 @@ Arriba de los tres inicios va el saludo según la hora de Lima (*Buenos días*, 
 
 ![Inicio del estudiante](capturas/pc/56-estudiante-inicio.png)
 
-- Tu aula, el bimestre y tu tutor(a).
+- Tu aula, el bimestre, tu **tutor(a)** y quién **coordina** tu aula: a ellos puedes acudir si necesitas ayuda. También aparecen en **Mi perfil**.
 - Cuántas **actividades tienes por entregar** y la lista de las más próximas (al pulsarlas se abren en Actividades).
 - **Mi promedio** (solo con los promedios **publicados** por tus docentes), **Mi asistencia** del bimestre y **Por entregar**.
 - **Mis notas por curso:** el promedio publicado de cada curso, o *Sin publicar*.
@@ -50,8 +50,10 @@ Arriba de los tres inicios va el saludo según la hora de Lima (*Buenos días*, 
 
 ![Mis estudiantes](capturas/pc/57-docente-mis-estudiantes.png)
 
-- Elige el **Curso** (solo aparecen los tuyos) y, si quieres, filtra por **Nivel de riesgo** o busca por nombre o código.
-- Para cada estudiante: **promedio del curso** en el bimestre en curso (lo que aún no tiene nota cuenta como 0, RN-09; en rojo si es menor que 11), su **asistencia en tus clases** y su **nivel de riesgo**.
+- En **Ver** elige uno de **tus cursos** o, si eres **tutor(a)**, **Mi tutoría** para ver a todos los estudiantes de tu aula. Si quieres, filtra por **Nivel de riesgo** o busca por nombre o código.
+- En un curso, para cada estudiante: su **promedio en ese curso** en el bimestre en curso (lo que aún no tiene nota cuenta como 0, RN-09; en rojo si es menor que 11) y su **asistencia en tus clases**.
+- En **Mi tutoría**: su **promedio general** (el de todos sus cursos) y su **asistencia general**.
+- El **riesgo** siempre mira **todos los cursos** del estudiante (su asistencia general y el promedio de lo ya calificado). Por eso puede no coincidir con las columnas de un solo curso; debajo de cada nivel se explica el **motivo** (por ejemplo, *Asistencia de 82 % (menos de 85 %): 9 faltas en 50 clases*).
 - **Ver ficha** abre su ficha 360°.
 - **Asistencia de {aula} en Excel** descarga el reporte de asistencia del aula (punto 5).
 

@@ -334,6 +334,9 @@ erDiagram
         date fecha_asignacion
         date fecha_limite
         tinyint peso
+        tinyint requiere_entrega
+        varchar estado
+        decimal puntaje_maximo
         bigint creado_por FK
         timestamp created_at
         timestamp updated_at

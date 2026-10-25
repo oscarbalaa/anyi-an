@@ -67,8 +67,10 @@ Las pruebas automáticas de cada módulo recorren esta tabla con valores válido
 | Tipo | Uno de los tipos configurados | Práctica | — |
 | Fecha de asignación / límite | Dentro del bimestre; límite ≥ asignación | 02/10 – 06/10 | límite antes de la asignación |
 | Peso | Entero de 1 a 10 | 2 | 0, 1.5, "dos" |
+| Puntaje máximo | Entero de 1 a 100; 20 si no se indica. Con notas registradas ya no cambia | 50 (examen sobre 50) | 0, 101 |
+| Estado | BORRADOR (solo la ve el docente; no se califica ni cuenta en el promedio) o PUBLICADA. Con entregas o notas no vuelve a borrador | PUBLICADA | OCULTA |
 | Indicaciones | Hasta 2000 caracteres | — | — |
-| Nota | De 0 a 20, hasta 2 decimales; acepta punto o coma; letras bloqueadas | 15, 15.5, 15,5 | 20,5, -1, abc, 15.555 |
+| Nota | De 0 al puntaje máximo de la evaluación (20 si no se cambió), hasta 2 decimales; acepta punto o coma; letras bloqueadas. Solo en evaluaciones publicadas | 15, 15.5, 15,5; 45,5 en un examen sobre 50 | 20,5 (sobre 20), 51 (sobre 50), -1, abc, 15.555 |
 | Observación (nota / asistencia) | Hasta 300 caracteres | Entregó 26 sep | — |
 | Archivo de entrega | Solo PDF, verificado por su contenido real (no solo por la extensión); hasta 10 MB o el límite del hosting | tarea.pdf | tarea.exe renombrado a .pdf, 15 MB |
 | Material de apoyo | PDF, DOCX, PPTX, XLSX, JPG o PNG, verificado por su contenido (un .docx/.pptx/.xlsx debe ser un documento de Office real, no un .zip renombrado); hasta 10 MB y 5 archivos por evaluación | guia.pdf | script.php, falso.pdf, archivo.zip renombrado a .docx |
@@ -114,7 +116,7 @@ Las pruebas automáticas de cada módulo recorren esta tabla con valores válido
 | Umbrales de asistencia | Porcentaje de 0 a 100. El umbral ALTO debe ser menor que el MEDIO |
 | Equivalencia literal | Rangos de 0 a 20, sin huecos ni cruces, de C a AD |
 | Umbrales de promedio | Número de 0 a 20. El umbral ALTO no puede ser mayor que el MEDIO |
-| Entregas pendientes (riesgo alto) | Entero de 1 a 20 |
+| Entregas pendientes que suman riesgo | Entero de 1 a 20 (riesgo medio; alto si además el promedio es desaprobatorio) |
 | Días para el cierre del bimestre | Entero de 0 a 30 |
 | Nombre del colegio | 3 a 150 caracteres |
 | Código modular | 7 dígitos (opcional) |

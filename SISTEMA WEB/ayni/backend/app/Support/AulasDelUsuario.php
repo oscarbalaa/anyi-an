@@ -68,6 +68,15 @@ class AulasDelUsuario
         return null;
     }
 
+    /** Quién coordina el aula, para que el estudiante sepa a quién acudir: "Luis Paredes" */
+    public static function nombreCoordinador(int $aulaId): ?string
+    {
+        $docente = self::coordinadorDe($aulaId);
+        $p = $docente ? DB::table('docente')->join('persona', 'persona.id', '=', 'docente.persona_id')->where('docente.id', $docente)->first(['persona.nombres', 'persona.apellidos']) : null;
+
+        return $p ? Cursos::nombreCorto($p->nombres, $p->apellidos) : null;
+    }
+
     /** Nombre del ámbito de un coordinador: "3.º A", "Nivel primaria", "Todo el colegio" */
     public static function nombreAmbito(int $docenteId, int $periodoId): ?string
     {

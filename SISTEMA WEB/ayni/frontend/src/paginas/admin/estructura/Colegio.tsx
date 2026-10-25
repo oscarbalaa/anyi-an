@@ -30,12 +30,16 @@ const PARAMETROS = [
   ],
   ['umbral_asistencia_alto', 'Asistencia para riesgo ALTO (%)', 'Por debajo de este porcentaje el riesgo es alto.'],
   ['umbral_asistencia_medio', 'Asistencia para riesgo MEDIO (%)', 'Debe ser mayor que el de riesgo alto.'],
-  ['umbral_promedio_alto', 'Promedio para riesgo ALTO', 'Junto con las entregas pendientes de abajo.'],
+  [
+    'umbral_promedio_alto',
+    'Promedio para riesgo ALTO',
+    'Por debajo de este promedio (desaprobatorio) el riesgo es alto.',
+  ],
   ['umbral_promedio_medio', 'Promedio para riesgo MEDIO', 'No puede ser menor que el de riesgo alto.'],
   [
     'umbral_pendientes_alto',
-    'Entregas pendientes para riesgo ALTO',
-    'Con promedio bajo y estas pendientes, el riesgo es alto.',
+    'Entregas pendientes que suman riesgo',
+    'Desde esta cantidad de entregas vencidas el riesgo es medio (alto si además el promedio es desaprobatorio).',
   ],
 ] as const
 

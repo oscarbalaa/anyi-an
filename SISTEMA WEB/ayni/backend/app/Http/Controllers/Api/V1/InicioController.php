@@ -39,8 +39,8 @@ class InicioController extends Controller
 
     public function misEstudiantes(Request $request, MisEstudiantes $estudiantes): JsonResponse
     {
-        $f = $request->validate(['curso_id' => ['nullable', 'integer']], ['*' => 'El curso no es válido.']);
+        $f = $request->validate(['curso_id' => ['nullable', 'integer'], 'tutoria' => ['nullable', 'boolean']], ['*' => 'El curso no es válido.']);
 
-        return $this->json($estudiantes->listar($request->user()->load('rol'), isset($f['curso_id']) ? (int) $f['curso_id'] : null));
+        return $this->json($estudiantes->listar($request->user()->load('rol'), isset($f['curso_id']) ? (int) $f['curso_id'] : null, (bool) ($f['tutoria'] ?? false)));
     }
 }

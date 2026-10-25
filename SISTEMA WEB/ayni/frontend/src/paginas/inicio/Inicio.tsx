@@ -368,7 +368,14 @@ function InicioDeEstudiante() {
         <div>
           <h1 className="text-3xl font-black sm:text-4xl">Hola, {data.nombre}</h1>
           <p className="mt-1 text-lg text-texto-suave">
-            {[data.aula, data.bimestre?.nombre, data.tutor && `Tutor(a): ${data.tutor}`].filter(Boolean).join(' · ')}
+            {[
+              data.aula,
+              data.bimestre?.nombre,
+              data.tutor && `Tutor(a): ${data.tutor}`,
+              data.coordinador && `Coordinación: ${data.coordinador}`,
+            ]
+              .filter(Boolean)
+              .join(' · ')}
           </p>
         </div>
         {data.aula && (

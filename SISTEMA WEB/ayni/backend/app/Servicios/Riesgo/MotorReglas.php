@@ -13,8 +13,9 @@ class MotorReglas
 
     public const TITULOS = [
         'asistencia' => 'Faltas frecuentes',
-        'promedio_y_pendientes' => 'Promedio bajo con tareas pendientes',
+        'promedio_y_pendientes' => 'Promedio desaprobatorio con tareas pendientes',
         'promedio' => 'Promedio bajo',
+        'pendientes' => 'Tareas pendientes',
         'descenso' => 'Notas en descenso',
     ];
 
@@ -45,10 +46,20 @@ class MotorReglas
         $promedio = $f['promedio'];
         $curso = $f['curso_bajo'];
         $cursoTexto = $curso ? "; el curso más bajo es {$curso['nombre']} (".self::nota($curso['promedio']).')' : '';
-        if ($promedio !== null && $promedio < (float) $u->umbral_promedio_alto && $f['pendientes'] >= (int) $u->umbral_pendientes_alto) {
-            $factores[] = $this->factor('promedio_y_pendientes', 'ALTO', self::nota($promedio)." y {$f['pendientes']} pendientes", 'Promedio de '.self::nota($promedio).' (menos de '.self::nota((float) $u->umbral_promedio_alto).") con {$f['pendientes']} entregas pendientes{$cursoTexto}.");
-        } elseif ($promedio !== null && $promedio < (float) $u->umbral_promedio_medio) {
-            $factores[] = $this->factor('promedio', 'MEDIO', self::nota($promedio), 'Promedio de '.self::nota($promedio).' (menos de '.self::nota((float) $u->umbral_promedio_medio).")$cursoTexto.");
+        // Revisión del grupo: un promedio desaprobatorio ya es riesgo alto; las entregas vencidas suman aparte
+        $pendientes = $f['pendientes'] >= (int) $u->umbral_pendientes_alto;
+        $textoPendientes = "{$f['pendientes']} entregas pendientes";
+        if ($promedio !== null && $promedio < (float) $u->umbral_promedio_alto && $pendientes) {
+            $factores[] = $this->factor('promedio_y_pendientes', 'ALTO', self::nota($promedio)." y {$f['pendientes']} pendientes", 'Promedio de '.self::nota($promedio).' (menos de '.self::nota((float) $u->umbral_promedio_alto).") con {$textoPendientes}{$cursoTexto}.");
+        } else {
+            if ($promedio !== null && $promedio < (float) $u->umbral_promedio_alto) {
+                $factores[] = $this->factor('promedio', 'ALTO', self::nota($promedio), 'Promedio desaprobatorio de '.self::nota($promedio).' (menos de '.self::nota((float) $u->umbral_promedio_alto).")$cursoTexto.");
+            } elseif ($promedio !== null && $promedio < (float) $u->umbral_promedio_medio) {
+                $factores[] = $this->factor('promedio', 'MEDIO', self::nota($promedio), 'Promedio de '.self::nota($promedio).' (menos de '.self::nota((float) $u->umbral_promedio_medio).")$cursoTexto.");
+            }
+            if ($pendientes) {
+                $factores[] = $this->factor('pendientes', 'MEDIO', (string) $f['pendientes'], "Tiene {$textoPendientes} (actividades vencidas sin entregar).");
+            }
         }
 
         if ($d = $f['descenso']) {
@@ -80,7 +91,10 @@ class MotorReglas
             $nuevas = match ($x['variable']) {
                 'asistencia' => $x['nivel'] === 'ALTO' ? [[1, self::APODERADO_FALTAS], [2, self::MOTIVOS_FALTAS]] : [[2, self::MOTIVOS_FALTAS]],
                 'promedio_y_pendientes' => array_filter([[1, "Acordar con el estudiante un plan para ponerse al día con sus {$f['pendientes']} entregas pendientes."], $curso ? [1, "Coordinar reforzamiento en {$curso} con su docente."] : null, [2, 'Informar al apoderado sobre las tareas pendientes.']]),
-                'promedio' => [[2, $curso ? "Coordinar reforzamiento en {$curso} con su docente." : 'Coordinar reforzamiento en los cursos con nota baja.']],
+                'promedio' => $x['nivel'] === 'ALTO'
+                    ? [[1, $curso ? "Coordinar reforzamiento en {$curso} con su docente." : 'Coordinar reforzamiento en los cursos con nota baja.'], [2, 'Informar al apoderado sobre el promedio desaprobatorio.']]
+                    : [[2, $curso ? "Coordinar reforzamiento en {$curso} con su docente." : 'Coordinar reforzamiento en los cursos con nota baja.']],
+                'pendientes' => [[2, "Acordar con el estudiante un plan para ponerse al día con sus {$f['pendientes']} entregas pendientes."]],
                 'descenso' => [[2, "Conversar con el docente de {$f['descenso']['curso']} sobre la baja de sus notas."]],
             };
             foreach ($nuevas as [$prioridad, $texto]) {

@@ -72,7 +72,7 @@ Menú de tu nombre (arriba a la derecha) → **Mi perfil**.
 
 - **Tu tarjeta:** iniciales, nombre completo, rol, estado y último acceso.
 - **Datos personales:** documento y correo y celular, más lo propio de tu rol:
-  - estudiante: código, aula y tutor(a);
+  - estudiante: código, aula, tutor(a) y quién coordina su aula;
   - docente: especialidad, cursos a cargo, tutoría y coordinación;
   - administrativo: cargo y ámbito, además de sus **permisos principales**.
 - **Editar contacto:** cambia tu correo y tu celular. El correo sirve para recuperar la contraseña; puedes dejarlo vacío.

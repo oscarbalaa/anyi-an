@@ -75,9 +75,17 @@ test.describe('mis estudiantes y ficha 360° (RF-60, RF-61)', () => {
     await conSesion(page, 'docente')
     await page.goto('/docente/estudiantes')
     await expect(page.getByRole('heading', { level: 1, name: 'Mis estudiantes' })).toBeVisible()
-    await expect(page.getByLabel('Curso')).toBeVisible()
+    await expect(page.getByLabel('Ver', { exact: true })).toBeVisible()
     await sinDesbordeHorizontal(page)
     await capturar(page, '57-docente-mis-estudiantes')
+
+    // El docente demo es tutor: ve toda su aula con el promedio y la asistencia generales
+    const tutoria = page.getByLabel('Ver', { exact: true }).locator('option', { hasText: /^Mi tutoría/ })
+    if (await tutoria.count()) {
+      await page.getByLabel('Ver', { exact: true }).selectOption('tutoria')
+      await expect(page.getByText(/^Tu aula de tutoría/)).toBeVisible()
+      await expect(page.getByText('Promedio general').first()).toBeAttached()
+    }
 
     await visible(page.getByRole('link', { name: /^Ver la ficha de / })).click()
     await expect(page).toHaveURL(/\/docente\/ficha\?matricula=\d+$/)

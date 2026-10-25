@@ -121,12 +121,12 @@ class MisNotas
 
         return DB::table('nota_evaluacion as n')->join('evaluacion as ev', 'ev.id', '=', 'n.evaluacion_id')
             ->join('curso_aula as c', 'c.id', '=', 'ev.curso_aula_id')->join('asignatura as a', 'a.id', '=', 'c.asignatura_id')
-            ->where('n.matricula_id', $matriculaId)->whereNotNull('n.nota')
+            ->where('n.matricula_id', $matriculaId)->whereNotNull('n.nota')->where('ev.estado', 'PUBLICADA')
             ->orderByDesc('n.updated_at')->orderByDesc('n.id')->limit(40)
-            ->get(['ev.id', 'ev.titulo', 'ev.curso_aula_id', 'ev.subperiodo_id', 'a.nombre as curso', 'n.nota', 'n.updated_at'])
+            ->get(['ev.id', 'ev.titulo', 'ev.curso_aula_id', 'ev.subperiodo_id', 'ev.puntaje_maximo', 'a.nombre as curso', 'n.nota', 'n.updated_at'])
             ->filter(fn ($n) => $claves->has("{$n->curso_aula_id}-{$n->subperiodo_id}"))
             ->take(4)
-            ->map(fn ($n) => ['id' => $n->id, 'titulo' => $n->titulo, 'curso' => $n->curso, 'nota' => (float) $n->nota, 'fecha' => substr($n->updated_at, 0, 10)])
+            ->map(fn ($n) => ['id' => $n->id, 'titulo' => $n->titulo, 'curso' => $n->curso, 'nota' => (float) $n->nota, 'puntaje_maximo' => (float) $n->puntaje_maximo, 'fecha' => substr($n->updated_at, 0, 10)])
             ->values()->all();
     }
 }

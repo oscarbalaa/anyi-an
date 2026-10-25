@@ -126,7 +126,7 @@ describe('estructura académica', function () {
 });
 
 describe('evaluaciones, notas y asistencia', function () {
-    it('acepta notas de 0 a 20 y rechaza 25 y negativas', function () {
+    it('acepta notas de 0 a 100 (el tope de cada evaluación lo revisa la aplicación) y rechaza 101 y negativas', function () {
         $e = Fabrica::escenario();
         $nota = fn ($valor) => DB::table('nota_evaluacion')->updateOrInsert(
             ['evaluacion_id' => $e->evaluacion, 'matricula_id' => $e->matricula],
@@ -135,11 +135,21 @@ describe('evaluaciones, notas y asistencia', function () {
 
         $nota(20);
         $nota(0);
-        $nota(15.5);
+        $nota(45.5);
+        $nota(100);
         $nota(null);
-        rechaza(fn () => $nota(25), 'ck_nota_rango');
+        rechaza(fn () => $nota(101), 'ck_nota_rango');
         rechaza(fn () => $nota(-1), 'ck_nota_rango');
-        rechaza(fn () => $nota(20.5), 'ck_nota_rango');
+    });
+
+    it('la evaluación está en borrador o publicada y su puntaje máximo va de 1 a 100', function () {
+        $e = Fabrica::escenario();
+        $cambiar = fn (array $d) => DB::table('evaluacion')->where('id', $e->evaluacion)->update($d);
+
+        $cambiar(['estado' => 'BORRADOR', 'puntaje_maximo' => 50]);
+        rechaza(fn () => $cambiar(['estado' => 'OCULTA']), 'ck_evaluacion_estado');
+        rechaza(fn () => $cambiar(['puntaje_maximo' => 0]), 'ck_evaluacion_puntaje');
+        rechaza(fn () => $cambiar(['puntaje_maximo' => 101]), 'ck_evaluacion_puntaje');
     });
 
     it('no repite la nota de un estudiante en una evaluación', function () {

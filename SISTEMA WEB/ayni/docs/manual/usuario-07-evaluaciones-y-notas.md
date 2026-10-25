@@ -2,26 +2,31 @@
 
 > Sección del Módulo 9.
 
-Las notas van de **0 a 20** (se pueden escribir con punto o coma: `15.5` o `15,5`). Para mostrarlas también se usa la escala literal del colegio: **AD** de 18 a 20, **A** de 14 a 17,99, **B** de 11 a 13,99 y **C** de 0 a 10,99 (el administrador puede cambiarla en Estructura académica → Colegio).
+La **calificación general del curso es sobre 20**. Cada evaluación se califica de 0 a su **puntaje máximo**: 20 si no se cambia, o el que elija el docente (por ejemplo, un examen sobre 50 o una tarea sobre 10). Las notas se pueden escribir con punto o coma (`15.5` o `15,5`). Para mostrarlas también se usa la escala literal del colegio: **AD** de 18 a 20, **A** de 14 a 17,99, **B** de 11 a 13,99 y **C** de 0 a 10,99 (el administrador puede cambiarla en Estructura académica → Colegio).
 
-**Promedio del bimestre** (RN-09) = Σ(nota × peso) ÷ Σ(pesos) de las evaluaciones del curso en el bimestre. **Una evaluación sin nota cuenta como 0.** Se redondea a 1 decimal (0,05 sube).
+**Promedio del bimestre** (RN-09) = Σ(nota sobre 20 × peso) ÷ Σ(pesos) de las evaluaciones **publicadas** del curso en el bimestre. Una nota sobre otro puntaje se lleva a 20: nota × 20 ÷ puntaje máximo. **Una evaluación sin nota cuenta como 0.** Se redondea a 1 decimal (0,05 sube).
 
 > Ejemplo: Práctica 5 = 11 (peso 1), Práctica 6 sin nota (peso 1), Proyecto = 10 (peso 2) → (11 + 0 + 20) ÷ 4 = 7,75 → **7,8**.
+>
+> Con puntajes distintos: Examen = 40 de 50 → 16 sobre 20 (peso 1); Tarea = 7 de 10 → 14 sobre 20 (peso 1) → (16 + 14) ÷ 2 = **15**.
 
 ## 1. Docente → Evaluaciones
 
 ![Evaluaciones](capturas/pc/35-docente-evaluaciones.png)
 
-Elige el **Curso** y el **Bimestre**. Arriba se ven cuántas evaluaciones hay, el % de entregas y cuántas ya vencidas faltan calificar. La tabla muestra cada evaluación con su tipo, peso, fecha límite y cuántos entregaron.
+Elige el **Curso** y el **Bimestre**. Arriba se ven cuántas evaluaciones hay, el % de entregas y cuántas ya vencidas faltan calificar. La tabla muestra cada evaluación con su tipo, peso, **puntaje**, fecha límite y cuántos entregaron. Las que están en borrador llevan la etiqueta **Borrador**.
 
 ### Crear una evaluación
 
 1. **Nueva evaluación**.
-2. Llena el **Título** (3 a 150 caracteres), el **Tipo** (Práctica, Proyecto, Examen…), la **Fecha de asignación** y la **Fecha límite** (dentro del bimestre; la límite no puede ser anterior), el **Peso** (entero de 1 a 10) y, si quieres, las **Indicaciones** (cada línea se muestra como un paso).
-3. **Los estudiantes entregan un archivo (PDF)**: déjalo marcado para prácticas y proyectos. Al elegir *Examen* se desmarca solo, porque se rinde en clase.
-4. **Crear evaluación**. Se abre la evaluación para agregarle **material de apoyo** (PDF, Word, PowerPoint, Excel, JPG o PNG, hasta 10 MB y 5 archivos).
+2. Llena el **Título** (3 a 150 caracteres), el **Tipo** (Práctica, Proyecto, Examen…), la **Fecha de asignación** y la **Fecha límite** (dentro del bimestre; la límite no puede ser anterior), el **Peso** (entero de 1 a 10), el **Puntaje máximo** (entero de 1 a 100; por defecto 20) y, si quieres, las **Indicaciones** (cada línea se muestra como un paso).
+3. **Estado**:
+   - **Publicada**: los estudiantes la ven en Actividades, se califica y cuenta en el promedio.
+   - **Borrador**: solo la ves tú. Sirve para prepararla con calma (indicaciones, material) y publicarla después desde **Abrir**. No se califica ni cuenta en el promedio.
+4. **Los estudiantes entregan un archivo (PDF)**: déjalo marcado para prácticas y proyectos. Al elegir *Examen* se desmarca solo, porque se rinde en clase.
+5. **Crear evaluación**. Se abre la evaluación para agregarle **material de apoyo** (PDF, Word, PowerPoint, Excel, JPG o PNG, hasta 10 MB y 5 archivos).
 
-**Abrir** permite editarla o eliminarla. Una evaluación con entregas o notas ya no se elimina. Si cambias el peso, los promedios se recalculan solos.
+**Abrir** permite editarla, publicarla o eliminarla. Una evaluación con entregas o notas ya no se elimina, no vuelve a borrador y no cambia su puntaje máximo (las notas ya están sobre ese puntaje). Si cambias el peso, los promedios se recalculan solos.
 
 ## 2. Estudiante → Actividades
 
@@ -50,8 +55,10 @@ Una vez entregada ya no se cambia: si te equivocaste, habla con tu docente.
 Llega desde **Calificar** en Evaluaciones, o desde **Notas** eligiendo curso, bimestre y evaluación.
 
 - **Estado de entrega**: el sistema lo calcula (Entregado, Tardío, No entregado o Pendiente) y lo puedes corregir. Si un estudiante subió su archivo, verás **Entregó el …** para descargarlo.
-- **Nota**: de 0 a 20 con hasta 2 decimales. Las letras no se pueden escribir; una nota fuera de rango se marca en rojo con el motivo. Las notas por debajo de 11 se resaltan.
-- **Observación**: hasta 300 caracteres.
+- **Nota**: de 0 al **puntaje máximo** de la evaluación (aparece arriba: *Sobre 20 puntos*, *Sobre 50 puntos*…) con hasta 2 decimales. Las letras no se pueden escribir; una nota fuera de rango se marca en rojo con el motivo. Se resaltan las notas desaprobatorias: por debajo de 11 sobre 20, o su equivalente (27,5 en un examen sobre 50).
+- **Observación** (opcional): hasta 300 caracteres.
+- En el **celular** cada estudiante es una tarjeta, y cada campo dice qué va: *Estado de entrega*, *Nota (0 – 20)* y *Observación (opcional)*.
+- Una evaluación en **borrador** se ve pero no se califica: el sistema pide publicarla primero.
 - Mientras haya **Cambios sin guardar**, el sistema avisa si intentas salir de la pantalla.
 - **Guardar notas** guarda y recalcula los promedios. **Exportar** descarga la planilla en Excel.
 
@@ -59,7 +66,7 @@ Llega desde **Calificar** en Evaluaciones, o desde **Notas** eligiendo curso, bi
 
 ![Calificaciones del bimestre](capturas/pc/37-docente-calificaciones.png)
 
-Muestra a cada estudiante con sus notas por evaluación y su **promedio ponderado**, con su letra. Las notas y promedios por debajo de 11 se marcan en rojo. Si faltan notas, un aviso indica en qué evaluaciones y a cuántos estudiantes.
+Muestra a cada estudiante con sus notas por evaluación (cada columna dice su peso y, si no es sobre 20, su puntaje) y su **promedio ponderado sobre 20**, con su letra. Las notas y promedios desaprobatorios se marcan en rojo. Las evaluaciones en borrador no aparecen. Si faltan notas, un aviso indica en qué evaluaciones y a cuántos estudiantes.
 
 **Publicar promedios** (RF-45):
 
@@ -76,7 +83,7 @@ El estado se ve arriba: **Borrador** (los estudiantes aún no ven nada), **Publi
 - Tu **promedio del bimestre** y la diferencia con el bimestre anterior.
 - **Notas por curso**: solo de los cursos cuyo docente ya **publicó** el promedio. Los demás dicen *Aún no publicado*.
 - **Últimas publicaciones**: tus notas más recientes.
-- **Ver detalle** abre el curso: sus evaluaciones con su nota, tus entregas, la evolución por bimestre y la próxima evaluación.
+- **Ver detalle** abre el curso: sus evaluaciones con su nota (si no es sobre 20, se ve con su puntaje: *40 / 50*), tus entregas, la evolución por bimestre y la próxima evaluación.
 
 ![Detalle del curso](capturas/pc/41-estudiante-notas-curso.png)
 
@@ -104,4 +111,7 @@ Al cerrarse, lo que no tenga nota se calcula como 0, todos los promedios quedan 
 | No veo mis notas de un curso | Tu docente aún no publica los promedios del bimestre |
 | El promedio es muy bajo a mitad del bimestre | Las evaluaciones que aún no tienen nota cuentan como 0 hasta que se califiquen (RN-09) |
 | No puedo eliminar una evaluación | Ya tiene entregas o notas. Puedes corregirla con **Abrir** |
+| "La evaluación está en borrador: publícala antes de registrar notas." | Ábrela en **Evaluaciones**, cambia el **Estado** a *Publicada* y guarda |
+| No puedo cambiar el puntaje máximo | Ya hay notas registradas sobre el puntaje actual |
+| El estudiante no ve una actividad | Está en borrador, o su fecha de asignación aún no llega |
 | "El bimestre está cerrado…" | Pasó su fecha de cierre o el administrador lo cerró: ya no se modifica |
