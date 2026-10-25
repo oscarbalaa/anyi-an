@@ -1,0 +1,17 @@
+<html><head><meta charset="utf-8"><style>body{margin:0;background:#fff;font-family:Arial}text{font-family:Arial}</style><script src="carriles.js"></script></head><body><script>
+carriles({carriles:['Docente o sistema','Motor de riesgo (AYNI)','Tutor o coordinador'], anchoCarril:330,
+nodos:{
+ i:{c:0,f:0,t:'Se guarda asistencia o notas,|o es el primer ingreso del día',tipo:'fin'},
+ a:{c:1,f:1,t:'Calcula los indicadores del|bimestre: asistencia, promedio,|entregas vencidas, descenso'},
+ b:{c:1,f:2,t:'Aplica las reglas con los|umbrales del colegio'},
+ q:{c:1,f:3,t:'¿Cambió el resultado|desde la última vez?',tipo:'decision'},
+ c:{c:1,f:4,t:'Guarda la predicción, sus|factores y recomendaciones'},
+ q2:{c:1,f:5,t:'¿Nivel MEDIO|o ALTO?',tipo:'decision'},
+ d:{c:1,f:6,t:'Crea o actualiza la única|alerta activa del bimestre'},
+ e:{c:2,f:7,t:'Recibe la alerta y el aviso|en la campana'},
+ f:{c:2,f:8,t:'La pasa a seguimiento y|registra intervenciones'},
+ g:{c:2,f:9,t:'La cierra con justificación|(o la reasigna)'},
+ fin:{c:2,f:10,t:'Historial completo',tipo:'fin'},
+ n:{c:0,f:4,t:'Sin cambios: no se|crea otra predicción'}},
+aristas:[['i','a'],['a','b'],['b','q'],['q','c','Sí'],['q','n','No','lado'],['c','q2'],['q2','d','Sí'],['d','e'],['e','f'],['f','g'],['g','fin']]});
+</script></body></html>
