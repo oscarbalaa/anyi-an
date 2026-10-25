@@ -60,13 +60,15 @@ describe('cálculo (RF-52)', function () {
             ->and($f['pendientes'])->toBe(2)
             ->and($f['curso_bajo'])->toEqual(['nombre' => 'Comunicación', 'promedio' => 10])
             ->and($f['descenso'])->toEqual(['curso' => 'Matemática', 'notas' => [13, 11, 8]])
-            ->and(riesgoDe($this->kevin)->nivel_riesgo)->toBe('MEDIO')
+            // Promedio desaprobatorio (menos de 11): riesgo alto aunque solo deba 2 tareas
+            ->and(riesgoDe($this->kevin)->nivel_riesgo)->toBe('ALTO')
             ->and(DB::table('factor_riesgo')->where('prediccion_id', riesgoDe($this->kevin)->id)->pluck('variable')->all())->toBe(['promedio', 'descenso']);
 
-        // Con 3 entregas vencidas el promedio bajo pasa a riesgo alto
+        // Con 3 entregas vencidas la regla junta el promedio y las tareas
         DatosRiesgo::vencidas($this->e->com, $this->e->b2, 1);
         app(Riesgo::class)->recalcular();
-        expect(riesgoDe($this->kevin)->nivel_riesgo)->toBe('ALTO');
+        expect(riesgoDe($this->kevin)->nivel_riesgo)->toBe('ALTO')
+            ->and(DB::table('factor_riesgo')->where('prediccion_id', riesgoDe($this->kevin)->id)->pluck('variable')->all())->toBe(['promedio_y_pendientes', 'descenso']);
     });
 
     it('solo guarda una predicción nueva cuando algo cambia', function () {
@@ -105,7 +107,7 @@ describe('cuándo se calcula (sin cron)', function () {
     it('al guardar notas', function () {
         $ev = Fabrica::evaluacion($this->e->mat, $this->e->b2, ['fecha_asignacion' => '2026-06-01', 'fecha_limite' => '2026-06-05', 'requiere_entrega' => false]);
         Fabrica::como($this->e->profe);
-        $this->putJson("/api/v1/docente/evaluaciones/{$ev}/notas", ['registros' => [['matricula_id' => $this->kevin, 'nota' => '9', 'estado_entrega' => 'PENDIENTE']]])->assertOk();
+        $this->putJson("/api/v1/docente/evaluaciones/{$ev}/notas", ['registros' => [['matricula_id' => $this->kevin, 'nota' => '11,5', 'estado_entrega' => 'PENDIENTE']]])->assertOk();
 
         expect(riesgoDe($this->kevin)->nivel_riesgo)->toBe('MEDIO');
     });

@@ -41,7 +41,7 @@ CREATE TABLE `alerta_administrativa` (
   CONSTRAINT `ck_alerta_admin_estado` CHECK ((`estado` in (_utf8mb4'ABIERTA',_utf8mb4'RESUELTA'))),
   CONSTRAINT `ck_alerta_admin_severidad` CHECK ((`severidad` in (_utf8mb4'CRITICO',_utf8mb4'ATENCION',_utf8mb4'PENDIENTE'))),
   CONSTRAINT `ck_alerta_admin_tipo` CHECK ((`tipo` in (_utf8mb4'USUARIO_BLOQUEADO',_utf8mb4'ESTUDIANTE_SIN_MATRICULA',_utf8mb4'DOCENTE_SIN_ASISTENCIA',_utf8mb4'CURSO_SIN_DOCENTE',_utf8mb4'AULA_SIN_TUTOR',_utf8mb4'NOTAS_PENDIENTES_CIERRE')))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Avisos operativos para el administrador';
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Avisos operativos para el administrador';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -73,7 +73,7 @@ CREATE TABLE `alerta_estudiantil` (
   CONSTRAINT `alerta_estudiantil_subperiodo_id_foreign` FOREIGN KEY (`subperiodo_id`) REFERENCES `subperiodo` (`id`),
   CONSTRAINT `ck_alerta_cierre` CHECK (((`fecha_cierre` is null) or (`fecha_cierre` >= `fecha_creacion`))),
   CONSTRAINT `ck_alerta_estado` CHECK ((`estado` in (_utf8mb4'NUEVA',_utf8mb4'EN_SEGUIMIENTO',_utf8mb4'CERRADA',_utf8mb4'DESCARTADA')))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Alerta de riesgo académico con seguimiento';
+) ENGINE=InnoDB AUTO_INCREMENT=40 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Alerta de riesgo académico con seguimiento';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -253,7 +253,7 @@ CREATE TABLE `calificacion_periodo` (
   CONSTRAINT `calificacion_periodo_subperiodo_id_foreign` FOREIGN KEY (`subperiodo_id`) REFERENCES `subperiodo` (`id`),
   CONSTRAINT `ck_calificacion_estado` CHECK ((`estado` in (_utf8mb4'BORRADOR',_utf8mb4'PUBLICADA',_utf8mb4'CERRADA'))),
   CONSTRAINT `ck_calificacion_promedio` CHECK (((`promedio` is null) or (`promedio` between 0 and 20)))
-) ENGINE=InnoDB AUTO_INCREMENT=2665 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Promedio del estudiante por curso y bimestre';
+) ENGINE=InnoDB AUTO_INCREMENT=3553 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Promedio del estudiante por curso y bimestre';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -378,7 +378,7 @@ CREATE TABLE `entrega` (
   CONSTRAINT `entrega_evaluacion_id_foreign` FOREIGN KEY (`evaluacion_id`) REFERENCES `evaluacion` (`id`) ON DELETE CASCADE,
   CONSTRAINT `entrega_matricula_id_foreign` FOREIGN KEY (`matricula_id`) REFERENCES `matricula` (`id`),
   CONSTRAINT `ck_entrega_estado` CHECK (((`estado` in (_utf8mb4'BORRADOR',_utf8mb4'ENTREGADA')) and ((`estado` = _utf8mb4'BORRADOR') or (`entregada_en` is not null))))
-) ENGINE=InnoDB AUTO_INCREMENT=10720 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Entrega de un estudiante para una evaluación';
+) ENGINE=InnoDB AUTO_INCREMENT=10722 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Entrega de un estudiante para una evaluación';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -445,6 +445,8 @@ CREATE TABLE `evaluacion` (
   `fecha_limite` date NOT NULL COMMENT 'Se puede entregar hasta las 11:59 p. m. de este día',
   `peso` tinyint unsigned NOT NULL DEFAULT '1' COMMENT 'Peso relativo (1 a 10) en el promedio',
   `requiere_entrega` tinyint(1) NOT NULL DEFAULT '1' COMMENT 'El estudiante sube un archivo',
+  `estado` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'PUBLICADA' COMMENT 'BORRADOR (solo la ve el docente) o PUBLICADA',
+  `puntaje_maximo` decimal(5,2) NOT NULL DEFAULT '20.00' COMMENT 'La nota se pone de 0 a este puntaje',
   `creado_por` bigint unsigned DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de registro',
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Última modificación',
@@ -457,8 +459,10 @@ CREATE TABLE `evaluacion` (
   CONSTRAINT `evaluacion_curso_aula_id_foreign` FOREIGN KEY (`curso_aula_id`) REFERENCES `curso_aula` (`id`),
   CONSTRAINT `evaluacion_subperiodo_id_foreign` FOREIGN KEY (`subperiodo_id`) REFERENCES `subperiodo` (`id`),
   CONSTRAINT `evaluacion_tipo_evaluacion_id_foreign` FOREIGN KEY (`tipo_evaluacion_id`) REFERENCES `tipo_evaluacion` (`id`),
+  CONSTRAINT `ck_evaluacion_estado` CHECK ((`estado` in (_utf8mb4'BORRADOR',_utf8mb4'PUBLICADA'))),
   CONSTRAINT `ck_evaluacion_fechas` CHECK ((`fecha_limite` >= `fecha_asignacion`)),
-  CONSTRAINT `ck_evaluacion_peso` CHECK ((`peso` between 1 and 10))
+  CONSTRAINT `ck_evaluacion_peso` CHECK ((`peso` between 1 and 10)),
+  CONSTRAINT `ck_evaluacion_puntaje` CHECK ((`puntaje_maximo` between 1 and 100))
 ) ENGINE=InnoDB AUTO_INCREMENT=1441 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Evaluaciones o actividades de un curso en un bimestre';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -496,7 +500,7 @@ CREATE TABLE `factor_riesgo` (
   PRIMARY KEY (`id`),
   KEY `ix_factor_prediccion` (`prediccion_id`),
   CONSTRAINT `factor_riesgo_prediccion_id_foreign` FOREIGN KEY (`prediccion_id`) REFERENCES `prediccion_riesgo` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Factores que explican la predicción (reglas activadas o valores SHAP)';
+) ENGINE=InnoDB AUTO_INCREMENT=216 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Factores que explican la predicción (reglas activadas o valores SHAP)';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -539,7 +543,7 @@ CREATE TABLE `historial_alerta` (
   CONSTRAINT `historial_alerta_alerta_id_foreign` FOREIGN KEY (`alerta_id`) REFERENCES `alerta_estudiantil` (`id`) ON DELETE CASCADE,
   CONSTRAINT `historial_alerta_usuario_id_foreign` FOREIGN KEY (`usuario_id`) REFERENCES `usuario` (`id`),
   CONSTRAINT `ck_historial_accion` CHECK ((`accion` in (_utf8mb4'GENERADA',_utf8mb4'ASIGNADA_DOCENTE_AULA',_utf8mb4'REASIGNADA',_utf8mb4'NIVEL_ACTUALIZADO',_utf8mb4'INTERVENCION',_utf8mb4'ESTADO_CAMBIADO',_utf8mb4'CERRADA')))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Historial de cambios de una alerta';
+) ENGINE=InnoDB AUTO_INCREMENT=79 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Historial de cambios de una alerta';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -691,7 +695,7 @@ CREATE TABLE `migrations` (
   `migration` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `batch` int NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -727,7 +731,7 @@ CREATE TABLE `nota_evaluacion` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `evaluacion_id` bigint unsigned NOT NULL,
   `matricula_id` bigint unsigned NOT NULL,
-  `nota` decimal(4,2) DEFAULT NULL COMMENT '0 a 20; NULL = aún sin calificar',
+  `nota` decimal(5,2) DEFAULT NULL COMMENT 'De 0 al puntaje máximo de la evaluación; NULL = aún sin calificar',
   `estado_entrega` varchar(15) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'PENDIENTE' COMMENT 'PENDIENTE, ENTREGADO, TARDIO o NO_ENTREGADO',
   `observacion` varchar(300) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `registrado_por` bigint unsigned DEFAULT NULL,
@@ -741,7 +745,7 @@ CREATE TABLE `nota_evaluacion` (
   CONSTRAINT `nota_evaluacion_matricula_id_foreign` FOREIGN KEY (`matricula_id`) REFERENCES `matricula` (`id`),
   CONSTRAINT `nota_evaluacion_registrado_por_foreign` FOREIGN KEY (`registrado_por`) REFERENCES `usuario` (`id`),
   CONSTRAINT `ck_nota_estado_entrega` CHECK ((`estado_entrega` in (_utf8mb4'PENDIENTE',_utf8mb4'ENTREGADO',_utf8mb4'TARDIO',_utf8mb4'NO_ENTREGADO'))),
-  CONSTRAINT `ck_nota_rango` CHECK (((`nota` is null) or (`nota` between 0 and 20)))
+  CONSTRAINT `ck_nota_rango` CHECK (((`nota` is null) or (`nota` between 0 and 100)))
 ) ENGINE=InnoDB AUTO_INCREMENT=14209 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Nota de cada estudiante en cada evaluación';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -764,7 +768,7 @@ CREATE TABLE `notificacion` (
   PRIMARY KEY (`id`),
   KEY `ix_notificacion_usuario` (`usuario_id`,`leida_en`),
   CONSTRAINT `notificacion_usuario_id_foreign` FOREIGN KEY (`usuario_id`) REFERENCES `usuario` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Notificaciones de la campana';
+) ENGINE=InnoDB AUTO_INCREMENT=188 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Notificaciones de la campana';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -891,7 +895,7 @@ CREATE TABLE `prediccion_riesgo` (
   CONSTRAINT `prediccion_riesgo_subperiodo_id_foreign` FOREIGN KEY (`subperiodo_id`) REFERENCES `subperiodo` (`id`),
   CONSTRAINT `ck_prediccion_nivel` CHECK ((`nivel_riesgo` in (_utf8mb4'BAJO',_utf8mb4'MEDIO',_utf8mb4'ALTO'))),
   CONSTRAINT `ck_prediccion_probabilidad` CHECK ((`probabilidad` between 0 and 1))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Nivel de riesgo calculado para un estudiante en un bimestre';
+) ENGINE=InnoDB AUTO_INCREMENT=297 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Nivel de riesgo calculado para un estudiante en un bimestre';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -910,7 +914,7 @@ CREATE TABLE `recomendacion` (
   KEY `recomendacion_prediccion_id_foreign` (`prediccion_id`),
   CONSTRAINT `recomendacion_prediccion_id_foreign` FOREIGN KEY (`prediccion_id`) REFERENCES `prediccion_riesgo` (`id`) ON DELETE CASCADE,
   CONSTRAINT `ck_recomendacion_prioridad` CHECK ((`prioridad` between 1 and 3))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Recomendaciones de intervención de una predicción';
+) ENGINE=InnoDB AUTO_INCREMENT=297 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Recomendaciones de intervención de una predicción';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --

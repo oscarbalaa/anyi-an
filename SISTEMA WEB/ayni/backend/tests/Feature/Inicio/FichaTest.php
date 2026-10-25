@@ -96,8 +96,28 @@ describe('mis estudiantes (RF-61)', function () {
 
         expect($r->json('curso.nombre'))->toBe('Comunicación · 3.º B')
             ->and($r->json('total'))->toBe(3)
-            ->and($r->json('estudiantes.0'))->toEqual(['matricula_id' => $this->kevin, 'nombre' => 'Aranda Ruiz, Alumno', 'codigo' => 'E-2026-001', 'promedio' => 12, 'asistencia' => 70, 'nivel' => 'ALTO'])
-            ->and($r->json('estudiantes.1.nivel'))->toBe('BAJO');
+            ->and($r->json('modo'))->toBe('CURSO')
+            ->and($r->json('estudiantes.0'))->toMatchArray(['matricula_id' => $this->kevin, 'nombre' => 'Aranda Ruiz, Alumno', 'codigo' => 'E-2026-001', 'promedio' => 12, 'asistencia' => 70, 'nivel' => 'ALTO'])
+            // El nivel dice por qué: aquí, las faltas (la asistencia de todos sus cursos)
+            ->and($r->json('estudiantes.0.motivos.0.titulo'))->toBe('Faltas frecuentes')
+            ->and($r->json('estudiantes.0.motivos.0.descripcion'))->toContain('Asistencia de 70 %')
+            ->and($r->json('estudiantes.1.nivel'))->toBe('BAJO')
+            ->and($r->json('estudiantes.1.motivos'))->toBe([]);
+    });
+
+    it('el tutor ve toda su aula con el promedio y la asistencia de todos los cursos', function () {
+        Fabrica::como($this->e->otroProfe);
+        $r = $this->getJson('/api/v1/docente/estudiantes?tutoria=1')->assertOk();
+
+        expect($r->json('modo'))->toBe('TUTORIA')
+            ->and($r->json('tutoria'))->toBe(['aula_id' => DB::table('curso_aula')->where('id', $this->e->com)->value('aula_id'), 'aula' => '3.º B'])
+            ->and($r->json('curso'))->toBeNull()
+            // Matemática 9 y Comunicación 12 → 10,5
+            ->and($r->json('estudiantes.0'))->toMatchArray(['nombre' => 'Aranda Ruiz, Alumno', 'promedio' => 10.5, 'asistencia' => 70, 'nivel' => 'ALTO']);
+
+        // Quien no es tutor sigue viendo sus cursos
+        Fabrica::como($this->e->profe);
+        expect($this->getJson('/api/v1/docente/estudiantes?tutoria=1')->json())->toMatchArray(['modo' => 'CURSO', 'tutoria' => null]);
     });
 
     it('solo muestra cursos propios aunque pidan otro', function () {

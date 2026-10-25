@@ -454,14 +454,18 @@ Evaluaciones o actividades de un curso en un bimestre
 | `fecha_limite` | date | No |  |  | Se puede entregar hasta las 11:59 p. m. de este día |
 | `peso` | tinyint unsigned | No |  | `1` | Peso relativo (1 a 10) en el promedio |
 | `requiere_entrega` | tinyint(1) | No |  | `1` | El estudiante sube un archivo |
+| `estado` | varchar(10) | No |  | `PUBLICADA` | BORRADOR (solo la ve el docente) o PUBLICADA |
+| `puntaje_maximo` | decimal(5,2) | No |  | `20.00` | La nota se pone de 0 a este puntaje |
 | `creado_por` | bigint unsigned | Sí | FK → usuario |  |  |
 | `created_at` | timestamp | No |  | `CURRENT_TIMESTAMP` | Fecha de registro |
 | `updated_at` | timestamp | No |  | `CURRENT_TIMESTAMP` | Última modificación |
 
 **Restricciones:**
 
+- `ck_evaluacion_estado`: `(estado in ('BORRADOR','PUBLICADA'))`
 - `ck_evaluacion_fechas`: `(fecha_limite >= fecha_asignacion)`
 - `ck_evaluacion_peso`: `(peso between 1 and 10)`
+- `ck_evaluacion_puntaje`: `(puntaje_maximo between 1 and 100)`
 
 ### `evaluacion_material`
 
@@ -501,7 +505,7 @@ Nota de cada estudiante en cada evaluación
 | `id` | bigint unsigned | No | PK |  |  |
 | `evaluacion_id` | bigint unsigned | No | FK → evaluacion |  |  |
 | `matricula_id` | bigint unsigned | No | FK → matricula |  |  |
-| `nota` | decimal(4,2) | Sí |  |  | 0 a 20; NULL = aún sin calificar |
+| `nota` | decimal(5,2) | Sí |  |  | De 0 al puntaje máximo de la evaluación; NULL = aún sin calificar |
 | `estado_entrega` | varchar(15) | No |  | `PENDIENTE` | PENDIENTE, ENTREGADO, TARDIO o NO_ENTREGADO |
 | `observacion` | varchar(300) | Sí |  |  |  |
 | `registrado_por` | bigint unsigned | Sí | FK → usuario |  |  |
@@ -511,7 +515,7 @@ Nota de cada estudiante en cada evaluación
 **Restricciones:**
 
 - `ck_nota_estado_entrega`: `(estado_entrega in ('PENDIENTE','ENTREGADO','TARDIO','NO_ENTREGADO'))`
-- `ck_nota_rango`: `((nota is null) or (nota between 0 and 20))`
+- `ck_nota_rango`: `((nota is null) or (nota between 0 and 100))`
 
 ### `calificacion_periodo`
 

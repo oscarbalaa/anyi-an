@@ -162,7 +162,7 @@ class Entregas
             ->join('curso_aula as c', 'c.id', '=', 'ev.curso_aula_id')
             ->join('asignatura as asig', 'asig.id', '=', 'c.asignatura_id')
             ->join('docente as d', 'd.id', '=', 'c.docente_id')->join('persona as p', 'p.id', '=', 'd.persona_id')
-            ->where('c.aula_id', $m->aula_id)->where('ev.fecha_asignacion', '<=', today()->toDateString())
+            ->where('c.aula_id', $m->aula_id)->where('ev.estado', 'PUBLICADA')->where('ev.fecha_asignacion', '<=', today()->toDateString())
             ->when($bimestreId, fn ($q) => $q->where('ev.subperiodo_id', $bimestreId))
             ->orderBy('ev.fecha_limite')->orderBy('ev.id')
             ->get(['ev.*', 't.nombre as tipo', 'asig.nombre as asignatura', 'p.nombres', 'p.apellidos']);
@@ -172,7 +172,7 @@ class Entregas
         $notas = DB::table('nota_evaluacion')->where('matricula_id', $m->id)->whereIn('evaluacion_id', $ids)->get()->keyBy('evaluacion_id');
         $publicados = DB::table('calificacion_periodo')->where('matricula_id', $m->id)->where('estado', '!=', 'BORRADOR')
             ->get(['curso_aula_id', 'subperiodo_id'])->map(fn ($c) => "{$c->curso_aula_id}-{$c->subperiodo_id}")->flip();
-        $pesos = DB::table('evaluacion')->whereIn('curso_aula_id', $evaluaciones->pluck('curso_aula_id')->unique())
+        $pesos = DB::table('evaluacion')->whereIn('curso_aula_id', $evaluaciones->pluck('curso_aula_id')->unique())->where('estado', 'PUBLICADA')
             ->selectRaw('curso_aula_id, subperiodo_id, SUM(peso) as total')->groupBy('curso_aula_id', 'subperiodo_id')->get()
             ->mapWithKeys(fn ($p) => ["{$p->curso_aula_id}-{$p->subperiodo_id}" => (int) $p->total]);
 
@@ -210,6 +210,7 @@ class Entregas
             'peso_porcentaje' => (int) round(100 * $ev->peso / max(1, $ev->peso_total)),
             'requiere_entrega' => (bool) $ev->requiere_entrega,
             'estado' => $estado,
+            'puntaje_maximo' => (float) $ev->puntaje_maximo,
             // RN-13: el estudiante solo ve notas de cursos con el promedio publicado
             'nota' => $ev->publicada ? Calificaciones::numero($ev->nota_registro?->nota) : null,
         ];
@@ -236,7 +237,7 @@ class Entregas
             }
         }
         if ($ev->publicada && $ev->nota_registro?->nota !== null) {
-            $eventos[] = ['fecha' => Carbon::parse($ev->nota_registro->updated_at)->toIso8601String(), 'texto' => 'Calificada: '.rtrim(rtrim(number_format((float) $ev->nota_registro->nota, 2, ',', ''), '0'), ',')];
+            $eventos[] = ['fecha' => Carbon::parse($ev->nota_registro->updated_at)->toIso8601String(), 'texto' => 'Calificada: '.Calificaciones::texto((float) $ev->nota_registro->nota).' de '.Calificaciones::texto((float) $ev->puntaje_maximo)];
         }
 
         return $eventos;

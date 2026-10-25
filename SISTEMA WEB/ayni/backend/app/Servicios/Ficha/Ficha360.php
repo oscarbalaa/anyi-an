@@ -106,7 +106,7 @@ class Ficha360
     private function pendientes(object $m, int $bimestreId): array
     {
         return DB::table('evaluacion as ev')->join('curso_aula as c', 'c.id', '=', 'ev.curso_aula_id')->join('asignatura as a', 'a.id', '=', 'c.asignatura_id')
-            ->where('c.aula_id', $m->aula_id)->where('ev.subperiodo_id', $bimestreId)->where('ev.requiere_entrega', true)->where('ev.fecha_limite', '<', today()->toDateString())
+            ->where('c.aula_id', $m->aula_id)->where('ev.subperiodo_id', $bimestreId)->where('ev.requiere_entrega', true)->where('ev.estado', 'PUBLICADA')->where('ev.fecha_limite', '<', today()->toDateString())
             ->whereNotExists(fn ($q) => $q->from('entrega')->whereColumn('entrega.evaluacion_id', 'ev.id')->where('entrega.matricula_id', $m->id)->where('entrega.estado', 'ENTREGADA'))
             ->whereNotExists(fn ($q) => $q->from('nota_evaluacion')->whereColumn('nota_evaluacion.evaluacion_id', 'ev.id')->where('nota_evaluacion.matricula_id', $m->id)->whereIn('nota_evaluacion.estado_entrega', ['ENTREGADO', 'TARDIO']))
             ->orderBy('ev.fecha_limite')->get(['ev.id', 'ev.titulo', 'ev.fecha_limite', 'a.nombre as curso'])

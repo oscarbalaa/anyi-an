@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Perfil\PerfilRequest;
 use App\Support\Auditoria;
+use App\Support\AulasDelUsuario;
 use App\Support\PerfilUsuario;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -114,12 +115,14 @@ class PerfilController extends Controller
             ->where('matricula.estudiante_id', $estudiante->id)
             ->where('matricula.periodo_id', $periodo)
             ->where('matricula.estado', 'ACTIVA')
-            ->first(['persona.nombres', 'persona.apellidos']);
+            ->first(['persona.nombres', 'persona.apellidos', 'aula.id as aula_id']);
+        $aulaId = $tutor->aula_id ?? DB::table('matricula')->where('estudiante_id', $estudiante->id)->where('periodo_id', $periodo)->where('estado', 'ACTIVA')->value('aula_id');
 
         return [
             'codigo' => $estudiante->codigo,
             'aula' => PerfilUsuario::aulas([$estudiante->id])[$estudiante->id] ?? null,
             'tutor' => $tutor ? explode(' ', $tutor->nombres)[0].' '.explode(' ', $tutor->apellidos)[0] : null,
+            'coordinador' => $aulaId ? AulasDelUsuario::nombreCoordinador($aulaId) : null,
         ];
     }
 

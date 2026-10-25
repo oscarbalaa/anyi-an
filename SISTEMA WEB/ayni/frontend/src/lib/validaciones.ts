@@ -574,6 +574,8 @@ export const esquemaEvaluacion = (bimestres: (Rango & { id: number; nombre: stri
       fecha_asignacion: z.string().min(1, 'Ingresa una fecha de asignación válida.'),
       fecha_limite: z.string().min(1, 'Ingresa una fecha límite válida.'),
       peso: z.string().regex(/^([1-9]|10)$/, 'El peso es un número entero de 1 a 10.'),
+      puntaje_maximo: z.string().regex(/^([1-9]\d?|100)$/, 'El puntaje máximo es un número entero de 1 a 100.'),
+      estado: z.enum(['BORRADOR', 'PUBLICADA'], 'Elige si la evaluación queda en borrador o publicada.'),
       indicaciones: z.string().max(2000, 'Las indicaciones no deben tener más de 2000 caracteres.'),
       requiere_entrega: z.boolean(),
     })
@@ -594,13 +596,16 @@ export const esquemaEvaluacion = (bimestres: (Rango & { id: number; nombre: stri
 
 export type DatosEvaluacion = z.input<ReturnType<typeof esquemaEvaluacion>>
 
-/** RN-08: de 0 a 20, hasta 2 decimales, con punto o coma. Devuelve el error o null */
-export function errorNota(valor: string): string | null {
+/** RN-08: de 0 al puntaje máximo de la evaluación (20 si no se cambió), hasta 2 decimales, con punto o coma */
+export function errorNota(valor: string, maximo = 20): string | null {
   const v = valor.trim()
   if (v === '') return null
-  if (!/^\d{1,2}([.,]\d{1,2})?$/.test(v)) return 'La nota debe ser un número de 0 a 20, con hasta 2 decimales.'
-  return Number(v.replace(',', '.')) > 20 ? 'La nota debe estar entre 0 y 20.' : null
+  if (!/^\d{1,3}([.,]\d{1,2})?$/.test(v)) return 'La nota debe ser un número con hasta 2 decimales.'
+  return Number(v.replace(',', '.')) > maximo ? `La nota debe estar entre 0 y ${numeroTexto(maximo)}.` : null
 }
+
+/** 20 → "20"; 12.5 → "12,5" */
+export const numeroTexto = (n: number) => String(n).replace('.', ',')
 
 /** Incidencia de un estudiante (RF-49) */
 export const esquemaIncidencia = z.object({

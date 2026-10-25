@@ -8,7 +8,7 @@ import { Insignia } from '@/components/ui/insignia'
 import { Selector } from '@/components/ui/selector'
 import { TarjetaKpi } from '@/components/ui/tarjeta-kpi'
 import { fechaCorta } from '@/lib/asistencia'
-import { ESTADO_ENTREGA, nota, useMisNotas, useNotasCurso, type NotasCurso } from '@/lib/evaluaciones'
+import { ESTADO_ENTREGA, nota, notaSobre, useMisNotas, useNotasCurso, type NotasCurso } from '@/lib/evaluaciones'
 
 // RF-47 (mockups estudiante 04 y 05)
 export default function MisNotas() {
@@ -127,7 +127,9 @@ function Resumen() {
                     </span>
                     <span className="text-sm text-texto-suave">Calificado el {fechaCorta(u.fecha)}</span>
                   </span>
-                  <span className="rounded-lg bg-exito/10 px-3 py-1 text-lg font-black text-exito">{nota(u.nota)}</span>
+                  <span className="rounded-lg bg-exito/10 px-3 py-1 text-lg font-black text-exito">
+                    {notaSobre(u.nota, u.puntaje_maximo)}
+                  </span>
                 </li>
               ))}
             </ul>
@@ -215,7 +217,7 @@ function DetalleCurso({ id, bimestreInicial }: { id: number; bimestreInicial: nu
                     </span>
                   </span>
                   {e.nota !== null ? (
-                    <span className="text-xl font-black">{nota(e.nota)}</span>
+                    <span className="text-xl font-black">{notaSobre(e.nota, e.puntaje_maximo)}</span>
                   ) : (
                     <Insignia tono={ESTADO_ENTREGA[e.estado].tono}>{ESTADO_ENTREGA[e.estado].texto}</Insignia>
                   )}

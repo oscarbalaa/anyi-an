@@ -27,6 +27,9 @@ class Notas
         $tipo = DB::table('tipo_evaluacion')->where('id', $ev->tipo_evaluacion_id)->value('nombre');
         $filas = $this->filas($ev, $curso->aula_id);
         $aprobatoria = (float) DB::table('institucion')->value('nota_aprobatoria');
+        $maximo = (float) $ev->puntaje_maximo;
+        // La nota aprobatoria del colegio (sobre 20) llevada al puntaje de esta evaluación
+        $minima = round($aprobatoria * $maximo / Calificaciones::ESCALA, 2);
         $conNota = $filas->pluck('nota')->filter(fn ($n) => $n !== null);
         $publicada = DB::table('calificacion_periodo')->where('curso_aula_id', $curso->id)->where('subperiodo_id', $bimestre->id)
             ->where('estado', '!=', 'BORRADOR')->exists();
@@ -36,15 +39,19 @@ class Notas
                 'id' => $ev->id, 'titulo' => $ev->titulo, 'tipo' => $tipo, 'peso' => (int) $ev->peso,
                 'fecha_asignacion' => $ev->fecha_asignacion, 'fecha_limite' => $ev->fecha_limite,
                 'requiere_entrega' => (bool) $ev->requiere_entrega,
+                'estado' => $ev->estado,
+                'puntaje_maximo' => $maximo,
             ],
             'curso' => Cursos::datos($curso),
             'bimestre' => Cursos::datosBimestre($bimestre),
             'nota_aprobatoria' => $aprobatoria,
+            'aprobatoria_evaluacion' => $minima,
+            'escala' => Calificaciones::ESCALA,
             'publicada' => $publicada,
-            'editable' => $bimestre->estado === 'ABIERTO',
+            'editable' => $bimestre->estado === 'ABIERTO' && $ev->estado === 'PUBLICADA',
             'resumen' => [
                 'promedio' => $conNota->isEmpty() ? null : round($conNota->avg(), 1, PHP_ROUND_HALF_UP),
-                'desaprobados' => $conNota->filter(fn ($n) => $n < $aprobatoria)->count(),
+                'desaprobados' => $conNota->filter(fn ($n) => $n < $minima)->count(),
                 'sin_entregar' => $filas->where('estado_entrega', 'NO_ENTREGADO')->count(),
             ],
             'estudiantes' => $filas->values()->all(),
@@ -55,6 +62,15 @@ class Notas
     public function guardar(int $evaluacionId, array $registros, Usuario $usuario): array
     {
         $ev = $this->evaluaciones->evaluacion($evaluacionId, $usuario);
+        if ($ev->estado !== 'PUBLICADA') {
+            throw new ErrorRegla('La evaluación está en borrador: publícala antes de registrar notas.');
+        }
+        $maximo = (float) $ev->puntaje_maximo;
+        foreach (array_values($registros) as $i => $r) {
+            if ($r['nota'] !== null && $r['nota'] > $maximo) {
+                throw new ErrorRegla('La nota debe estar entre 0 y '.Calificaciones::texto($maximo).'.', "registros.{$i}.nota");
+            }
+        }
         $aulaId = DB::table('curso_aula')->where('id', $ev->curso_aula_id)->value('aula_id');
         $alumnos = $this->filas($ev, $aulaId)->keyBy('matricula_id');
         $enviados = collect($registros)->keyBy('matricula_id');
@@ -97,7 +113,7 @@ class Notas
     public function excel(int $evaluacionId, Usuario $usuario): array
     {
         $p = $this->planilla($evaluacionId, $usuario);
-        $filas = [['Código', 'Estudiante', 'Estado de entrega', 'Nota (0-20)', 'Observación']];
+        $filas = [['Código', 'Estudiante', 'Estado de entrega', 'Nota (0-'.Calificaciones::texto($p['evaluacion']['puntaje_maximo']).')', 'Observación']];
         foreach ($p['estudiantes'] as $e) {
             $filas[] = [$e['codigo'], $e['nombre'], self::NOMBRE_ESTADO[$e['estado_entrega']], $e['nota'], $e['observacion'] ?? ''];
         }

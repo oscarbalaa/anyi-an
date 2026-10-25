@@ -124,7 +124,10 @@ function Contenido({ v }: { v: VistaCalificaciones }) {
                       title={`${e.titulo} · ${fechaCorta(e.fecha_limite)}`}
                     >
                       <span className="block max-w-32 truncate">{e.titulo}</span>
-                      <span className="font-normal text-texto-suave">peso {e.peso}</span>
+                      <span className="font-normal text-texto-suave">
+                        peso {e.peso}
+                        {e.puntaje_maximo !== v.escala && ` · sobre ${nota(e.puntaje_maximo)}`}
+                      </span>
                     </th>
                   ))}
                   <th scope="col" className="px-4 py-3 text-center font-bold">
@@ -145,7 +148,9 @@ function Contenido({ v }: { v: VistaCalificaciones }) {
                           key={e.id}
                           className={cn(
                             'px-3 py-3 text-center',
-                            n === 0 || baja(n) ? 'font-bold text-peligro' : '',
+                            n === 0 || (n !== null && baja((n * v.escala) / e.puntaje_maximo))
+                              ? 'font-bold text-peligro'
+                              : '',
                             n === null && 'text-texto-suave',
                           )}
                         >

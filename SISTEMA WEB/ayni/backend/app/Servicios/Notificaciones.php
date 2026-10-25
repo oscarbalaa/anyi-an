@@ -108,7 +108,7 @@ class Notificaciones
         $hoy = today();
         $evaluaciones = DB::table('evaluacion as ev')->join('curso_aula as c', 'c.id', '=', 'ev.curso_aula_id')
             ->join('asignatura as a', 'a.id', '=', 'c.asignatura_id')->join('subperiodo as b', 'b.id', '=', 'ev.subperiodo_id')
-            ->where('c.aula_id', $m->aula_id)->where('b.estado', 'ABIERTO')->where('ev.requiere_entrega', true)
+            ->where('c.aula_id', $m->aula_id)->where('b.estado', 'ABIERTO')->where('ev.requiere_entrega', true)->where('ev.estado', 'PUBLICADA')
             ->where('ev.fecha_asignacion', '<=', $hoy->toDateString())
             ->whereBetween('ev.fecha_limite', [$hoy->toDateString(), $hoy->copy()->addDays(self::DIAS_POR_VENCER)->toDateString()])
             ->whereNotExists(fn ($q) => $q->from('entrega')->whereColumn('entrega.evaluacion_id', 'ev.id')->where('entrega.matricula_id', $m->id)->where('entrega.estado', 'ENTREGADA'))

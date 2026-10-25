@@ -14,6 +14,21 @@ use Illuminate\Support\Facades\DB;
 /** CU-19 y CU-20: promedio ponderado del bimestre, publicación y cierre (RF-44 a RF-46, RN-09 a RN-14) */
 class Calificaciones
 {
+    /** Calificación general del curso: escala vigesimal (0 a 20) */
+    public const ESCALA = 20;
+
+    /** Una nota sobre el puntaje de su evaluación (por ejemplo 40 de 50), llevada a la escala del curso (16) */
+    public static function aEscala(mixed $nota, mixed $puntajeMaximo): ?float
+    {
+        return $nota === null ? null : round((float) $nota * self::ESCALA / (float) $puntajeMaximo, 2);
+    }
+
+    /** 20.0 → "20"; 12.5 → "12,5" */
+    public static function texto(float $n): string
+    {
+        return str_replace('.', ',', rtrim(rtrim(number_format($n, 2, '.', ''), '0'), '.'));
+    }
+
     /** RN-09: Σ(nota × peso) / Σ(peso); sin nota cuenta 0; 1 decimal y 0,05 sube */
     public static function promedio(array $notasYPesos): ?float
     {
@@ -45,9 +60,9 @@ class Calificaciones
     public function calcular(int $cursoId, int $bimestreId, int $aulaId): array
     {
         $evaluaciones = DB::table('evaluacion as ev')->join('tipo_evaluacion as t', 't.id', '=', 'ev.tipo_evaluacion_id')
-            ->where('ev.curso_aula_id', $cursoId)->where('ev.subperiodo_id', $bimestreId)
+            ->where('ev.curso_aula_id', $cursoId)->where('ev.subperiodo_id', $bimestreId)->where('ev.estado', 'PUBLICADA')
             ->orderBy('ev.fecha_limite')->orderBy('ev.id')
-            ->get(['ev.id', 'ev.titulo', 'ev.peso', 'ev.fecha_limite', 't.nombre as tipo']);
+            ->get(['ev.id', 'ev.titulo', 'ev.peso', 'ev.puntaje_maximo', 'ev.fecha_limite', 't.nombre as tipo']);
         $alumnos = $this->alumnos($aulaId, $evaluaciones->pluck('id')->all());
         $notas = DB::table('nota_evaluacion')->whereIn('evaluacion_id', $evaluaciones->pluck('id'))
             ->get(['evaluacion_id', 'matricula_id', 'nota'])->keyBy(fn ($n) => "{$n->evaluacion_id}-{$n->matricula_id}");
@@ -55,7 +70,7 @@ class Calificaciones
         $promedios = [];
         foreach ($alumnos as $a) {
             $promedios[$a->matricula_id] = self::promedio($evaluaciones->map(fn ($ev) => [
-                $notas->get("{$ev->id}-{$a->matricula_id}")?->nota, (int) $ev->peso,
+                self::aEscala($notas->get("{$ev->id}-{$a->matricula_id}")?->nota, $ev->puntaje_maximo), (int) $ev->peso,
             ])->all());
         }
 
@@ -116,7 +131,8 @@ class Calificaciones
             'estado' => $bimestre->estado === 'CERRADO' ? 'CERRADA' : ($publicada ? 'PUBLICADA' : 'BORRADOR'),
             'publicado_en' => $publicada?->publicado_en,
             'nota_aprobatoria' => $aprobatoria,
-            'evaluaciones' => $evaluaciones->map(fn ($ev) => ['id' => $ev->id, 'titulo' => $ev->titulo, 'tipo' => $ev->tipo, 'peso' => (int) $ev->peso, 'fecha_limite' => $ev->fecha_limite])->all(),
+            'evaluaciones' => $evaluaciones->map(fn ($ev) => ['id' => $ev->id, 'titulo' => $ev->titulo, 'tipo' => $ev->tipo, 'peso' => (int) $ev->peso, 'puntaje_maximo' => (float) $ev->puntaje_maximo, 'fecha_limite' => $ev->fecha_limite])->all(),
+            'escala' => self::ESCALA,
             'estudiantes' => $alumnos->map(fn ($a) => [
                 'matricula_id' => $a->matricula_id,
                 'nombre' => "{$a->apellidos}, {$a->nombres}",
@@ -141,8 +157,8 @@ class Calificaciones
         $bimestre = DB::table('subperiodo')->where('id', $bimestreId)->where('periodo_id', $curso->periodo_id)->first()
             ?? throw new ErrorRegla('Elige un bimestre del periodo del curso.', 'bimestre_id');
         Evaluaciones::exigirAbierto($bimestre);
-        if (! DB::table('evaluacion')->where('curso_aula_id', $cursoId)->where('subperiodo_id', $bimestreId)->exists()) {
-            throw new ErrorRegla('El curso aún no tiene evaluaciones en este bimestre.');
+        if (! DB::table('evaluacion')->where('curso_aula_id', $cursoId)->where('subperiodo_id', $bimestreId)->where('estado', 'PUBLICADA')->exists()) {
+            throw new ErrorRegla('El curso aún no tiene evaluaciones publicadas en este bimestre.');
         }
 
         $nuevas = DB::transaction(function () use ($curso, $bimestre, $usuario) {
@@ -169,7 +185,7 @@ class Calificaciones
     {
         $periodoId = DB::table('subperiodo')->where('id', $bimestreId)->value('periodo_id');
         $cursos = DB::table('curso_aula')->join('aula', 'aula.id', '=', 'curso_aula.aula_id')->where('aula.periodo_id', $periodoId)
-            ->whereExists(fn ($q) => $q->from('evaluacion')->whereColumn('evaluacion.curso_aula_id', 'curso_aula.id')->where('evaluacion.subperiodo_id', $bimestreId))
+            ->whereExists(fn ($q) => $q->from('evaluacion')->whereColumn('evaluacion.curso_aula_id', 'curso_aula.id')->where('evaluacion.subperiodo_id', $bimestreId)->where('evaluacion.estado', 'PUBLICADA'))
             ->pluck('curso_aula.id');
         foreach ($cursos as $cursoId) {
             $this->recalcular($cursoId, $bimestreId);

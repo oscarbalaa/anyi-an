@@ -121,6 +121,7 @@ function Formulario({ planilla }: { planilla: Planilla }) {
   const cambio = useCambioEvaluaciones()
   const avisos = useAvisos()
   const { evaluacion, curso, editable } = planilla
+  const maximo = evaluacion.puntaje_maximo
 
   const sucias = Object.keys(filas).filter(
     (k) => JSON.stringify(filas[Number(k)]) !== JSON.stringify(original[Number(k)]),
@@ -143,7 +144,7 @@ function Formulario({ planilla }: { planilla: Planilla }) {
   const cambiar = (matricula: number, campo: keyof Fila, valor: string) => {
     setFilas((f) => ({ ...f, [matricula]: { ...f[matricula], [campo]: valor } }))
     if (campo === 'nota') {
-      const mensaje = errorNota(valor)
+      const mensaje = errorNota(valor, maximo)
       setErrores((e) => {
         const resto = { ...e }
         delete resto[matricula]
@@ -153,7 +154,7 @@ function Formulario({ planilla }: { planilla: Planilla }) {
   }
 
   const guardar = async () => {
-    const conError = planilla.estudiantes.filter((e) => errorNota(filas[e.matricula_id].nota))
+    const conError = planilla.estudiantes.filter((e) => errorNota(filas[e.matricula_id].nota, maximo))
     if (conError.length) {
       avisos.error('Revisa las notas marcadas en rojo antes de guardar.')
       return
@@ -195,7 +196,8 @@ function Formulario({ planilla }: { planilla: Planilla }) {
         </Link>
         <h1 className="mt-2 text-3xl font-black sm:text-4xl">{evaluacion.titulo}</h1>
         <p className="mt-1 text-lg text-texto-suave">
-          {curso.nombre} · Fecha límite: {fechaCorta(evaluacion.fecha_limite)} · Peso {evaluacion.peso}
+          {curso.nombre} · Fecha límite: {fechaCorta(evaluacion.fecha_limite)} · Peso {evaluacion.peso} · Sobre{' '}
+          {nota(maximo)} puntos
         </p>
       </div>
 
@@ -203,16 +205,26 @@ function Formulario({ planilla }: { planilla: Planilla }) {
         <Indicador valor={nota(planilla.resumen.promedio)} etiqueta="Promedio del aula" />
         <Indicador
           valor={planilla.resumen.desaprobados}
-          etiqueta={`Desaprobados (< ${nota(planilla.nota_aprobatoria)})`}
+          etiqueta={`Desaprobados (< ${nota(planilla.aprobatoria_evaluacion)})`}
           tono="text-peligro"
         />
         <Indicador valor={planilla.resumen.sin_entregar} etiqueta="Sin entregar" tono="text-aviso" />
       </div>
 
-      {!editable && (
-        <p className="rounded-xl bg-texto/6 px-4 py-3" role="note">
-          El {planilla.bimestre.nombre} está cerrado: sus notas ya no se modifican.
+      {evaluacion.estado === 'BORRADOR' ? (
+        <p className="rounded-xl bg-aviso/12 px-4 py-3" role="note">
+          Esta evaluación está en <b>borrador</b>: los estudiantes aún no la ven. Publícala desde{' '}
+          <Link to={`/docente/evaluaciones?curso=${curso.id}`} className="font-bold text-accion underline">
+            Evaluaciones
+          </Link>{' '}
+          para registrar notas.
         </p>
+      ) : (
+        !editable && (
+          <p className="rounded-xl bg-texto/6 px-4 py-3" role="note">
+            El {planilla.bimestre.nombre} está cerrado: sus notas ya no se modifican.
+          </p>
+        )
       )}
       {planilla.publicada && editable && (
         <p className="flex items-center gap-2 rounded-xl bg-info/10 px-4 py-3 text-info" role="note">
@@ -228,7 +240,7 @@ function Formulario({ planilla }: { planilla: Planilla }) {
         >
           <span>Estudiante</span>
           <span>Estado de entrega</span>
-          <span>Nota (0 – 20)</span>
+          <span>Nota (0 – {nota(maximo)})</span>
           <span>Observación</span>
         </div>
         <ul className="divide-y divide-borde" aria-label="Notas de los estudiantes">
@@ -236,7 +248,7 @@ function Formulario({ planilla }: { planilla: Planilla }) {
             const f = filas[e.matricula_id]
             const error = errores[e.matricula_id]
             const valor = Number(f.nota.replace(',', '.'))
-            const baja = f.nota !== '' && !error && valor < planilla.nota_aprobatoria
+            const baja = f.nota !== '' && !error && valor < planilla.aprobatoria_evaluacion
             return (
               <li
                 key={e.matricula_id}
@@ -263,7 +275,7 @@ function Formulario({ planilla }: { planilla: Planilla }) {
                   )}
                 </div>
                 <label className="flex flex-col gap-1 text-sm md:text-base">
-                  <span className="text-texto-suave md:sr-only">Estado de entrega de {e.nombre}</span>
+                  <span className="font-semibold text-texto-suave md:sr-only">Estado de entrega</span>
                   <select
                     value={f.estado_entrega}
                     disabled={!editable}
@@ -280,10 +292,18 @@ function Formulario({ planilla }: { planilla: Planilla }) {
                   </select>
                 </label>
                 <div className="flex flex-col gap-1">
+                  {/* En el celular no se ve la cabecera de la tabla: cada campo lleva su rótulo */}
+                  <label
+                    htmlFor={`nota-${e.matricula_id}`}
+                    className="text-sm font-semibold text-texto-suave md:sr-only"
+                  >
+                    Nota (0 – {nota(maximo)})
+                  </label>
                   <input
+                    id={`nota-${e.matricula_id}`}
                     type="text"
                     inputMode="decimal"
-                    maxLength={5}
+                    maxLength={6}
                     value={f.nota}
                     disabled={!editable}
                     placeholder="—"
@@ -301,16 +321,25 @@ function Formulario({ planilla }: { planilla: Planilla }) {
                     </p>
                   )}
                 </div>
-                <input
-                  type="text"
-                  maxLength={300}
-                  value={f.observacion}
-                  disabled={!editable}
-                  placeholder="—"
-                  onChange={(x) => cambiar(e.matricula_id, 'observacion', x.target.value)}
-                  aria-label={`Observación de ${e.nombre}`}
-                  className="h-10 w-full rounded-lg border border-borde bg-superficie px-3 outline-none focus:border-accion disabled:bg-transparent"
-                />
+                <div className="flex flex-col gap-1">
+                  <label
+                    htmlFor={`observacion-${e.matricula_id}`}
+                    className="text-sm font-semibold text-texto-suave md:sr-only"
+                  >
+                    Observación (opcional)
+                  </label>
+                  <input
+                    id={`observacion-${e.matricula_id}`}
+                    type="text"
+                    maxLength={300}
+                    value={f.observacion}
+                    disabled={!editable}
+                    placeholder="—"
+                    onChange={(x) => cambiar(e.matricula_id, 'observacion', x.target.value)}
+                    aria-label={`Observación de ${e.nombre}`}
+                    className="h-10 w-full rounded-lg border border-borde bg-superficie px-3 outline-none focus:border-accion disabled:bg-transparent"
+                  />
+                </div>
               </li>
             )
           })}
@@ -319,7 +348,8 @@ function Formulario({ planilla }: { planilla: Planilla }) {
 
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <p className="flex items-center gap-2 text-texto-suave">
-          <Info className="size-5 shrink-0" aria-hidden /> Notas permitidas: 0 a 20, con punto o coma (15,5).
+          <Info className="size-5 shrink-0" aria-hidden /> Notas permitidas: 0 a {nota(maximo)}, con punto o coma
+          (15,5).{maximo !== planilla.escala && ` En el promedio del curso cuentan sobre ${planilla.escala}.`}
         </p>
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end">
           {sinGuardar && (

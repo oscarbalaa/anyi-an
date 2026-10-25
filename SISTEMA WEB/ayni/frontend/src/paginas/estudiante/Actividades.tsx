@@ -26,7 +26,7 @@ import { descargar, type ErrorApi } from '@/lib/api'
 import { fechaCorta } from '@/lib/asistencia'
 import {
   ESTADO_ENTREGA,
-  nota,
+  notaSobre,
   tamano,
   useActividad,
   useCambioEvaluaciones,
@@ -57,7 +57,7 @@ function EstadoActividad({ a }: { a: Actividad }) {
   return (
     <Insignia tono={e.tono} punto>
       {e.texto}
-      {a.nota !== null && ` · ${nota(a.nota)}`}
+      {a.nota !== null && ` · ${notaSobre(a.nota, a.puntaje_maximo)}`}
     </Insignia>
   )
 }

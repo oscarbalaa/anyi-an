@@ -227,7 +227,10 @@ Para un servidor propio (por ejemplo, un VPS de Hostinger con **Ubuntu 24.04 wit
    La base también se puede importar desde phpMyAdmin (CloudPanel → Databases → Manage).
 3. Abre `https://ayni.ruta-practica.com/api/v1/health` (debe responder) y luego `https://ayni.ruta-practica.com/`.
 
-**Para publicar una versión nueva:** vuelve a armar el paquete **sin** `-BaseDeDatos` (así no se tocan los datos), súbelo y descomprímelo encima. Los archivos que subieron los usuarios se conservan.
+**Para publicar una versión nueva:** vuelve a armar el paquete **sin** `-BaseDeDatos` (así no se tocan los datos), súbelo y descomprímelo encima. Los archivos que subieron los usuarios se conservan. Si la versión trae cambios en la base de datos, aplícalos por SSH (no borra datos):
+```bash
+cd ~/htdocs/ayni.ruta-practica.com/backend && php artisan migrate --force
+```
 
 **Acceso para el profesor:** **Admin Area → Users → Add User** con el rol **User** y solo el sitio de AYNI: ve sus archivos, su base de datos y phpMyAdmin, y nada de los demás sitios del servidor.
 

@@ -2,7 +2,7 @@
 
 > Sección del Módulo 11.
 
-AYNI calcula el **nivel de riesgo académico** de cada estudiante (bajo, medio o alto) con **reglas**, sin inteligencia artificial (modelo *reglas v0*). Cuando un estudiante pasa a riesgo medio o alto, crea una **alerta** para que alguien le dé seguimiento.
+AYNI calcula el **nivel de riesgo académico** de cada estudiante (bajo, medio o alto) con **reglas**, sin inteligencia artificial (modelo *reglas v0*). En la Unidad 2 un modelo de inteligencia artificial reemplaza estas reglas, con las mismas pantallas. Cuando un estudiante pasa a riesgo medio o alto, crea una **alerta** para que alguien le dé seguimiento.
 
 ## 1. Cómo se calcula el riesgo (RN-19)
 
@@ -12,13 +12,16 @@ Se usan los datos del **bimestre en curso**:
 |---|---|---|
 | **Faltas frecuentes** | Alto | Asistencia menor a **85 %** |
 | **Faltas frecuentes** | Medio | Asistencia menor a **90 %** |
-| **Promedio bajo con tareas pendientes** | Alto | Promedio menor a **11** y **3 o más** entregas vencidas sin entregar |
+| **Promedio bajo** | Alto | Promedio **desaprobatorio**: menor a **11** |
+| **Promedio desaprobatorio con tareas pendientes** | Alto | Promedio menor a **11** y **3 o más** entregas vencidas sin entregar (una sola regla) |
 | **Promedio bajo** | Medio | Promedio menor a **12** |
+| **Tareas pendientes** | Medio | **3 o más** entregas vencidas sin entregar |
 | **Notas en descenso** | Medio | Tres notas seguidas que bajan en un mismo curso (por ejemplo, 15 → 13 → 10) |
 
 - La **asistencia** se calcula como en Mi asistencia: (clases − faltas) ÷ clases. Tardanzas y faltas justificadas no restan.
 - El **promedio** es el de las notas **ya registradas** en cada curso, promediado entre los cursos. A diferencia del promedio del bimestre, aquí lo que aún no tiene nota **no cuenta como 0**, para no señalar a nadie antes de tiempo.
 - Una **entrega pendiente** es una actividad con archivo cuya fecha límite ya pasó y que el estudiante no entregó.
+- Todo se mira con **todos los cursos** del estudiante: la asistencia general y el promedio general. Por eso, en **Mis estudiantes**, el nivel puede no coincidir con el promedio o la asistencia de **un solo curso**. Por ejemplo, un estudiante con 65 % de asistencia en Matemática pero 88 % en todos sus cursos tiene riesgo **medio**; uno con 9 en un curso pero 14 de promedio general no tiene riesgo por notas. Debajo de cada nivel se muestra el motivo.
 - El nivel es el de la regla más grave. El **puntaje** (de 10 % a 99 %) suma el peso de cada regla activada: una regla de riesgo alto pesa más que tres de riesgo medio.
 - Los umbrales se cambian en **Estructura académica → Colegio**.
 

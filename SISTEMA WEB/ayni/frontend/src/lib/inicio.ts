@@ -70,6 +70,8 @@ export type InicioDocente = Saludo & {
 export type InicioEstudiante = Saludo & {
   aula: string | null
   tutor: string | null
+  /** Quien coordina su aula (la más cercana: aula, grado, nivel o colegio) */
+  coordinador?: string | null
   promedio: number | null
   promedio_bimestre?: string | null
   cursos: { id: number; asignatura: string; promedio: number | null }[]
@@ -127,6 +129,10 @@ export type CursoDocente = { id: number; nombre: string; asignatura: string; aul
 export type MisEstudiantes = {
   cursos: CursoDocente[]
   curso: CursoDocente | null
+  /** El aula de la que es tutor, si tiene una */
+  tutoria: { aula_id: number; aula: string } | null
+  /** CURSO: sus notas y sus clases; TUTORIA: toda el aula, con todos los cursos */
+  modo: 'CURSO' | 'TUTORIA'
   bimestre: { id: number; nombre: string } | null
   total: number
   estudiantes: {
@@ -136,6 +142,8 @@ export type MisEstudiantes = {
     promedio: number | null
     asistencia: number | null
     nivel: NivelRiesgo | null
+    /** Por qué tiene ese nivel: las reglas que se activaron */
+    motivos: { titulo: string; descripcion: string }[]
   }[]
 }
 
@@ -151,10 +159,14 @@ export const useInicio = <T>(rol: 'admin' | 'docente' | 'estudiante') =>
 export const useFicha = (rol: 'admin' | 'docente', matricula: number) =>
   useQuery({ queryKey: ['ficha', rol, matricula], queryFn: () => pedir<Ficha>(`/${rol}/fichas/${matricula}`) })
 
-export const useMisEstudiantes = (curso: number | null) =>
+/** curso: un curso del docente; 'tutoria': toda su aula de tutoría; null: lo primero que tenga */
+export const useMisEstudiantes = (curso: number | 'tutoria' | null) =>
   useQuery({
     queryKey: ['mis-estudiantes', curso],
-    queryFn: () => pedir<MisEstudiantes>(`/docente/estudiantes${curso ? `?curso_id=${curso}` : ''}`),
+    queryFn: () =>
+      pedir<MisEstudiantes>(
+        `/docente/estudiantes${curso === 'tutoria' ? '?tutoria=1' : curso ? `?curso_id=${curso}` : ''}`,
+      ),
     placeholderData: keepPreviousData,
   })
 
