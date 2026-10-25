@@ -1,0 +1,13 @@
+<html><head><meta charset="utf-8"><style>body{margin:0;background:#fff;font-family:Arial}text{font-family:Arial}</style><script src="cajas.js"></script></head><body><script>
+const L=lienzo(1300,600);
+L.caja(470,20,360,70,'Sitio público',['Landing · ¿Cómo deseas ingresar? · Contacto'],'gris');
+const cols=[
+ {x:20,t:'Estudiante (/estudiante)',c:'azul',items:['Ingreso con código + captcha','Inicio','Mis notas → detalle por curso, boleta PDF','Mi asistencia (resumen y calendario)','Mi horario','Actividades → detalle y entrega PDF','Notificaciones','Barra superior: campana · Mi perfil · Salir']},
+ {x:450,t:'Docente (/docente)',c:'verde',items:['Ingreso con DNI + captcha','Inicio (pendientes y clases de hoy)','Mis estudiantes (curso o tutoría) → Ficha 360°','Asistencia por clase','Evaluaciones (borrador o publicada)','Notas (0 al puntaje máximo)','Calificaciones (publicar promedios)','Incidencias','Alertas asignadas → detalle e intervenciones','Coordinación (solo si tiene ámbito)','Barra superior: campana · Mi perfil · Salir']},
+ {x:880,t:'Administración (/admin)',c:'naranja',items:['Ingreso con usuario + captcha','Inicio (indicadores del colegio)','Panel de riesgo','Alertas (estudiantiles y administrativas)','Estudiantes (apoderados, importar Excel, matrículas)','Docentes','Asistencia (corregir y justificar)','Usuarios (crear, desbloquear)','Estructura académica (periodos, aulas,','  asignaturas, carga, horarios, colegio)','Incidencias','Reportes · Ficha 360° · Notificaciones']}];
+cols.forEach(c=>{const h=60+c.items.length*30;
+ L.caja(c.x,150,400,h,c.t,[],c.c);
+ c.items.forEach((it,i)=>{L.texto(c.x+20,150+50+i*30,(it.startsWith('  ')?'    ':(i===0?'▸ ':'• '))+it.trim(),{tam:13,color:'#222'});});
+ L.flecha([[650,90],[650,120],[c.x+200,120],[c.x+200,150]]);});
+L.texto(20,590,'Las tres áreas comparten el diseño: menú lateral (☰ en el celular), campana de notificaciones y cierre de sesión. El coordinador académico es un docente con ámbito.',{tam:12.5});
+</script></body></html>

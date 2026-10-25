@@ -1,0 +1,40 @@
+erDiagram
+    aula ||--o{ matricula : "aula_id"
+    periodo_academico ||--o{ matricula : "periodo_id"
+    estudiante ||--o{ matricula : "estudiante_id"
+    asignatura ||--o{ curso_aula : "asignatura_id"
+    aula ||--o{ curso_aula : "aula_id"
+    docente ||--o{ curso_aula : "docente_id"
+    curso_aula ||--o{ horario : "curso_aula_id"
+    asignatura {
+        bigint id PK
+        varchar codigo UK
+    }
+    curso_aula {
+        bigint id PK
+        bigint aula_id FK
+        bigint asignatura_id FK
+        bigint docente_id FK
+    }
+    horario {
+        bigint id PK
+        bigint curso_aula_id FK
+    }
+    matricula {
+        bigint id PK
+        bigint estudiante_id FK
+        bigint aula_id FK
+        bigint periodo_id FK
+    }
+    aula {
+        bigint id PK
+    }
+    docente {
+        bigint id PK
+    }
+    estudiante {
+        bigint id PK
+    }
+    periodo_academico {
+        bigint id PK
+    }

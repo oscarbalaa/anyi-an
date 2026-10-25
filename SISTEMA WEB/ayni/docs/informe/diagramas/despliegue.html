@@ -1,0 +1,23 @@
+<html><head><meta charset="utf-8"><style>body{margin:0;background:#fff;font-family:Arial}text{font-family:Arial}</style><script src="cajas.js"></script></head><body><script>
+const L=lienzo(1300,640);
+L.grupo(20,20,400,600,'Desarrollo y entrega (PC del equipo o del profesor)','azul');
+L.caja(40,60,360,120,'Repositorio GitHub',['github.com/oscarbalaa/anyi-an','GitHub Actions: Pint, oxlint, Pest, Vitest,','Playwright (PC y celular) y hosting simulado'],'azul');
+L.caja(40,210,360,190,'Docker Compose (local)',['Panel AYNI.bat (Windows) / AYNI.sh (Linux)','web: React + Laravel en :5173','MySQL 8.4 en :3307 · phpMyAdmin :8080','Mailpit (correos de prueba) :8025','Playwright para pruebas E2E','datos de demostración con fechas relativas'],'azul');
+L.caja(40,430,360,170,'publicar-hosting.ps1',['Prepara el paquete: compila React,','instala vendor sin dependencias de desarrollo,','escribe el .env del servidor y el script SQL','· modo FTP (hosting del curso)','· modo paquete .tar.gz (VPS)'],'azul');
+L.grupo(460,20,820,370,'Producción actual: VPS Hostinger KVM 2 · Ubuntu 24.04 · CloudPanel','verde');
+L.caja(480,60,250,140,'Nginx (CloudPanel)',['ayni.ruta-practica.com','HTTPS con Let’s Encrypt','http → https (301)','proxy a PHP-FPM'],'verde');
+L.caja(760,60,250,140,'PHP 8.1 + Laravel 10',['backend/public como raíz','React compilado (SPA)','APP_ENV=production','APP_DEBUG=false'],'verde');
+L.caja(1040,60,220,140,'MySQL 8',['base ayni','usuario propio del sitio','solo 127.0.0.1'],'naranja');
+L.caja(480,230,250,140,'Acceso del equipo',['SFTP con el usuario del sitio','SSH para extraer el paquete','y ejecutar php artisan','migrate --force'],'gris');
+L.caja(760,230,500,140,'Seguridad del servidor',['Firewall con los puertos mínimos (SSH, HTTP, HTTPS y CloudPanel)','Proxies confiables (AYNI_PROXIES_CONFIABLES) para ver la IP real','credenciales en CREDENCIALES_VPS.txt (fuera de GitHub)','el profesor recibe una cuenta propia, nunca la de administrador'],'gris');
+L.grupo(460,420,400,200,'Alternativa compatible: hosting del curso','gris',true);
+L.caja(480,460,360,140,'Apache/LiteSpeed · solo FTP',['PHP 8.1.34 · MySQL/MariaDB','sin SSH, sin cron, sin colas','.htaccess: todo a backend/public','tareas diarias en el primer uso del día'],'gris',true);
+L.grupo(890,420,390,200,'Unidad 3: Google Cloud','morado',true);
+L.caja(910,460,350,140,'Compute Engine (rehost)',['VM e2-small Ubuntu + Nginx + PHP','Cloud SQL o MySQL en la VM','Cloud Storage para archivos','ver Anexo F'],'morado',true);
+L.flecha([[220,180],[220,210]]);
+L.flecha([[220,400],[220,430]]);
+L.flecha([[400,470],[440,470],[440,300],[480,300]],'SFTP',{lx:405,ly:462});
+L.flecha([[400,560],[480,560]],'FTPS',{lx:405,ly:553});
+L.flecha([[730,130],[760,130]]); L.flecha([[1010,130],[1040,130]]);
+L.flecha([[605,200],[605,230]],'',{doble:true});
+</script></body></html>

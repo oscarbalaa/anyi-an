@@ -1,0 +1,19 @@
+<html><head><meta charset="utf-8"><style>body{margin:0;background:#fff;font-family:Arial}text{font-family:Arial}</style><script src="carriles.js"></script></head><body><script>
+carriles({carriles:['Docente','App de asistencia y plataforma actual','Coordinación y dirección','Estudiante y familia'], anchoCarril:310,
+nodos:{
+ i:{c:0,f:0,t:'Inicio del bimestre',tipo:'fin'},
+ a1:{c:0,f:1,t:'Toma asistencia en una|app móvil (solo Android)'},
+ a2:{c:1,f:2,t:'Envía la notificación|al apoderado'},
+ a3:{c:1,f:3,t:'¿Hora y aviso|correctos?',tipo:'decision'},
+ a4:{c:3,f:3,t:'Padre recibe hora desfasada|o no recibe aviso',tipo:'problema'},
+ a5:{c:2,f:4,t:'Atiende consultas y|confirma la asistencia a mano',tipo:'problema'},
+ n1:{c:0,f:5,t:'Registra notas en la|plataforma por competencias'},
+ n2:{c:2,f:6,t:'Aplica equivalencias|asignatura → competencia',tipo:'problema'},
+ s1:{c:2,f:7,t:'Simulacro 4.º–5.º: puntaje|bruto en plantilla Excel',tipo:'problema'},
+ s2:{c:2,f:8,t:'Calcula nota vigesimal|y genera un PDF por alumno',tipo:'problema'},
+ f1:{c:3,f:9,t:'Recibe el PDF por mensaje'},
+ n3:{c:2,f:10,t:'Consolida notas al cierre|y emite la boleta'},
+ f2:{c:3,f:11,t:'El riesgo se ve en la boleta,|cuando ya desaprobó',tipo:'problema'},
+ fin:{c:3,f:12,t:'Fin del bimestre',tipo:'fin'}},
+aristas:[['i','a1'],['a1','a2'],['a2','a3'],['a3','a4','No','lado'],['a4','a5'],['a3','n1','Sí'],['n1','n2'],['n2','s1'],['s1','s2'],['s2','f1'],['f1','n3'],['n3','f2'],['f2','fin']]});
+</script></body></html>
