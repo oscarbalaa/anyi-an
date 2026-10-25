@@ -195,11 +195,16 @@ function Manifiesto {
     return $m
 }
 
-function Comparar($actual) {
-    $anterior = @{}
+function Leer-Manifiesto {
+    $m = @{}
     if (Test-Path -LiteralPath $manifiestoSubido) {
-        (Get-Content -LiteralPath $manifiestoSubido -Raw -Encoding UTF8 | ConvertFrom-Json).PSObject.Properties | ForEach-Object { $anterior[$_.Name] = $_.Value }
+        (Get-Content -LiteralPath $manifiestoSubido -Raw -Encoding UTF8 | ConvertFrom-Json).PSObject.Properties | ForEach-Object { $m[$_.Name] = $_.Value }
     }
+    return $m
+}
+
+function Comparar($actual) {
+    $anterior = Leer-Manifiesto
     $nuevos = @($actual.Keys | Where-Object { -not $anterior.ContainsKey($_) } | Sort-Object)
     $cambiados = @($actual.Keys | Where-Object { $anterior.ContainsKey($_) -and $anterior[$_] -ne $actual[$_] } | Sort-Object)
     $borrados = @($anterior.Keys | Where-Object { -not $actual.ContainsKey($_) } | Sort-Object)
@@ -217,6 +222,7 @@ function Ftp-Solicitud($c, [string]$ruta, [string]$metodo, [switch]$DesdeLaRaiz)
     $solicitud.UsePassive = $true
     $solicitud.UseBinary = $true
     $solicitud.KeepAlive = $true
+    $solicitud.ConnectionGroupName = $script:conexionFtp
     return $solicitud
 }
 
@@ -227,6 +233,20 @@ function Ftp-Carpeta($c, [string]$ruta, $creadas) {
         if ($creadas.Contains($acumulada)) { continue }
         try { (Ftp-Solicitud $c $acumulada ([Net.WebRequestMethods+Ftp]::MakeDirectory)).GetResponse().Close() } catch { }
         [void]$creadas.Add($acumulada)
+    }
+}
+
+$script:conexionFtp = 'ayni'
+
+# Algunos FTP compartidos cortan la conexión TLS de vez en cuando (451, 425): se reintenta con una conexión nueva
+function Ftp-Subir-Reintentando($c, [string]$relativa, $creadas) {
+    for ($intento = 1; ; $intento++) {
+        try { Ftp-Subir $c $relativa $creadas; return }
+        catch {
+            if ($intento -ge 4) { throw }
+            $script:conexionFtp = [guid]::NewGuid().ToString()
+            Start-Sleep -Seconds (2 * $intento)
+        }
     }
 }
 
@@ -268,19 +288,27 @@ function Subir($c, $cambios, $actual) {
     # El .htaccess y el .env van al final: así la web no queda a medias con reglas nuevas
     $ultimos = @($lista | Where-Object { $_ -match '(^|/)\.(htaccess|env)$' })
     $orden = @($lista | Where-Object { $ultimos -notcontains $_ }) + $ultimos
+    # El manifiesto guarda lo que ya subió: si algo se corta, la próxima vez sigue desde ahí
+    $registro = Leer-Manifiesto
+    $fallidos = @()
     $n = 0
-    foreach ($relativa in $orden) {
-        $n++
-        Write-Progress -Activity 'Subiendo por FTPS' -Status $relativa -PercentComplete ([int](100 * $n / [Math]::Max(1, $orden.Count)))
-        try { Ftp-Subir $c $relativa $creadas }
-        catch { Write-Progress -Activity 'Subiendo por FTPS' -Completed; Fallo "No se pudo subir $relativa : $($_.Exception.Message)" }
+    try {
+        foreach ($relativa in $orden) {
+            $n++
+            Write-Progress -Activity 'Subiendo por FTPS' -Status "$n de $($orden.Count): $relativa" -PercentComplete ([int](100 * $n / [Math]::Max(1, $orden.Count)))
+            try { Ftp-Subir-Reintentando $c $relativa $creadas; $registro[$relativa] = $actual[$relativa] }
+            catch { $fallidos += $relativa; Aviso "No se pudo subir $relativa : $($_.Exception.Message)" }
+            if ($n % 50 -eq 0) { Escribir-Utf8 $manifiestoSubido ($registro | ConvertTo-Json -Depth 2) }
+        }
+        Write-Progress -Activity 'Subiendo por FTPS' -Completed
+        foreach ($relativa in $cambios.borrados) {
+            try { (Ftp-Solicitud $c $relativa ([Net.WebRequestMethods+Ftp]::DeleteFile)).GetResponse().Close() }
+            catch { Aviso "No se pudo borrar $relativa del FTP (ya no estaba)." }
+            $registro.Remove($relativa)
+        }
     }
-    Write-Progress -Activity 'Subiendo por FTPS' -Completed
-    foreach ($relativa in $cambios.borrados) {
-        try { (Ftp-Solicitud $c $relativa ([Net.WebRequestMethods+Ftp]::DeleteFile)).GetResponse().Close() }
-        catch { Aviso "No se pudo borrar $relativa del FTP (ya no estaba)." }
-    }
-    Escribir-Utf8 $manifiestoSubido ($actual | ConvertTo-Json -Depth 2)
+    finally { Escribir-Utf8 $manifiestoSubido ($registro | ConvertTo-Json -Depth 2) }
+    if ($fallidos.Count) { Fallo "Archivos sin subir: $($fallidos.Count). Vuelve a ejecutar el mismo comando: solo sube lo que falta." }
     Ok "Subidos $($orden.Count) archivos; borrados $(@($cambios.borrados).Count)"
 }
 
@@ -297,14 +325,14 @@ function Humo($c) {
     $resultado = 1
     try {
         Escribir-Utf8 $envDestino (Env-Hosting $c $secreto $hasta)
-        Ftp-Subir $c 'backend/.env' $creadas
+        Ftp-Subir-Reintentando $c 'backend/.env' $creadas
         & docker compose --profile pruebas run --rm --no-deps -e "AYNI_URL=$($c['URL'])" -e "AYNI_SECRETO_E2E=$secreto" pruebas-e2e sh -c 'npm ci --no-audit --no-fund && npx playwright test -c playwright.humo.config.ts'
         $resultado = $LASTEXITCODE
     }
     finally {
         # Siempre se vuelve a subir el .env sin el secreto
         Escribir-Utf8 $envDestino (Env-Hosting $c)
-        Ftp-Subir $c 'backend/.env' $creadas
+        Ftp-Subir-Reintentando $c 'backend/.env' $creadas
         Ok 'Se quitó el secreto de la prueba del servidor'
     }
     if ($resultado -ne 0) { Fallo 'La prueba de humo falló: revisa reportes\actual\humo.xml' }
