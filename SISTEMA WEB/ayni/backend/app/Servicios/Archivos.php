@@ -133,7 +133,7 @@ class Archivos
             ->where('estudiante.usuario_id', $usuario->id)->where('matricula.estado', 'ACTIVA')->pluck('matricula.aula_id');
 
         return $entrega->clone()->where('e.usuario_id', $usuario->id)->exists()
-            || $material->clone()->whereIn('c.aula_id', $aulas)->where('ev.fecha_asignacion', '<=', today()->toDateString())->exists();
+            || $material->clone()->whereIn('c.aula_id', $aulas)->where('ev.estado', 'PUBLICADA')->where('ev.fecha_asignacion', '<=', today()->toDateString())->exists();
     }
 
     private function validarTamano(UploadedFile $archivo, string $campo): void

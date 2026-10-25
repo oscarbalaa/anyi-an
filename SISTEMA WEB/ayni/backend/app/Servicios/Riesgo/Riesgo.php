@@ -112,15 +112,15 @@ class Riesgo
 
         $notas = DB::table('nota_evaluacion as n')->join('evaluacion as ev', 'ev.id', '=', 'n.evaluacion_id')
             ->join('curso_aula as c', 'c.id', '=', 'ev.curso_aula_id')->join('asignatura as asig', 'asig.id', '=', 'c.asignatura_id')
-            ->whereIn('n.matricula_id', $ids)->where('ev.subperiodo_id', $b->id)->whereNotNull('n.nota')
+            ->whereIn('n.matricula_id', $ids)->where('ev.subperiodo_id', $b->id)->where('ev.estado', 'PUBLICADA')->whereNotNull('n.nota')
             ->orderBy('ev.fecha_limite')->orderBy('ev.id')
-            ->get(['n.matricula_id', 'c.id as curso_id', 'asig.nombre as curso', 'n.nota', 'ev.peso'])
+            ->get(['n.matricula_id', 'c.id as curso_id', 'asig.nombre as curso', 'n.nota', 'ev.peso', 'ev.puntaje_maximo'])
             ->groupBy('matricula_id');
 
         // Entregas vencidas: actividades con archivo cuya fecha límite ya pasó, sin entrega ni estado "entregado"
         $vencidas = DB::table('evaluacion as ev')->join('curso_aula as c', 'c.id', '=', 'ev.curso_aula_id')
             ->whereIn('c.aula_id', $alumnos->pluck('aula_id')->unique()->all())->where('ev.subperiodo_id', $b->id)
-            ->where('ev.requiere_entrega', true)->where('ev.fecha_limite', '<', today()->toDateString())
+            ->where('ev.requiere_entrega', true)->where('ev.estado', 'PUBLICADA')->where('ev.fecha_limite', '<', today()->toDateString())
             ->get(['ev.id', 'c.aula_id'])->groupBy('aula_id');
         $evIds = $vencidas->flatten()->pluck('id')->all();
         $hechas = $evIds ? DB::table('entrega')->whereIn('evaluacion_id', $evIds)->whereIn('matricula_id', $ids)->where('estado', 'ENTREGADA')
@@ -139,8 +139,9 @@ class Riesgo
             $descenso = null;
             foreach ($porCurso as $filas) {
                 $nombre = $filas[0]->curso;
-                $promedios[$nombre] = Calificaciones::promedio($filas->map(fn ($n) => [(float) $n->nota, (int) $n->peso])->all());
-                $ultimas = $filas->slice(-3)->pluck('nota')->map(fn ($n) => (float) $n)->values()->all();
+                // Todo en la escala del curso (0 a 20), aunque cada evaluación tenga su propio puntaje
+                $promedios[$nombre] = Calificaciones::promedio($filas->map(fn ($n) => [Calificaciones::aEscala($n->nota, $n->puntaje_maximo), (int) $n->peso])->all());
+                $ultimas = $filas->slice(-3)->map(fn ($n) => Calificaciones::aEscala($n->nota, $n->puntaje_maximo))->values()->all();
                 if (! $descenso && count($ultimas) === 3 && $ultimas[0] > $ultimas[1] && $ultimas[1] > $ultimas[2]) {
                     $descenso = ['curso' => $nombre, 'notas' => $ultimas];
                 }

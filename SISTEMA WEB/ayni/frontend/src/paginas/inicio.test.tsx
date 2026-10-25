@@ -120,10 +120,22 @@ const curso = (id: number, asignatura: string) => ({
 const misEstudiantes: MisEstudiantes = {
   cursos: [curso(4, 'Matemática'), curso(5, 'Comunicación')],
   curso: curso(4, 'Matemática'),
+  tutoria: { aula_id: 1, aula: '3.º B' },
+  modo: 'CURSO',
   bimestre: { id: 2, nombre: 'II Bimestre' },
   total: 2,
   estudiantes: [
-    { matricula_id: 9, nombre: 'Aranda Ruiz, Kevin', codigo: 'E-2026-001', promedio: 9, asistencia: 70, nivel: 'ALTO' },
+    {
+      matricula_id: 9,
+      nombre: 'Aranda Ruiz, Kevin',
+      codigo: 'E-2026-001',
+      promedio: 9,
+      asistencia: 70,
+      nivel: 'ALTO',
+      motivos: [
+        { titulo: 'Faltas frecuentes', descripcion: 'Asistencia de 70 % (menos de 85 %): 6 faltas en 20 clases.' },
+      ],
+    },
     {
       matricula_id: 10,
       nombre: 'Benítez Soto, Lucía',
@@ -131,6 +143,7 @@ const misEstudiantes: MisEstudiantes = {
       promedio: 16,
       asistencia: 100,
       nivel: 'BAJO',
+      motivos: [],
     },
   ],
 }
@@ -294,15 +307,37 @@ describe('Mis estudiantes (RF-61)', () => {
     await userEvent.selectOptions(screen.getByLabelText('Nivel de riesgo'), 'ALTO')
     expect(screen.queryAllByText('Benítez Soto, Lucía')).toHaveLength(0)
 
-    await userEvent.selectOptions(screen.getByLabelText('Curso'), '5')
+    // El nivel dice por qué (el riesgo mira todos los cursos)
+    expect(screen.getAllByText('Asistencia de 70 % (menos de 85 %): 6 faltas en 20 clases.').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Riesgo (todos los cursos)').length).toBeGreaterThan(0)
+
+    await userEvent.selectOptions(screen.getByLabelText('Ver'), '5')
     await waitFor(() =>
       expect(fetch).toHaveBeenCalledWith(expect.stringContaining('/docente/estudiantes?curso_id=5'), expect.anything()),
     )
+    // El tutor ve toda su aula
+    await userEvent.selectOptions(screen.getByLabelText('Ver'), 'tutoria')
+    await waitFor(() =>
+      expect(fetch).toHaveBeenCalledWith(expect.stringContaining('/docente/estudiantes?tutoria=1'), expect.anything()),
+    )
+  })
+
+  it('en la tutoría muestra el promedio y la asistencia generales del aula', async () => {
+    comoRol('docente', '/docente/estudiantes', {
+      '/docente/estudiantes': [200, { ...misEstudiantes, curso: null, modo: 'TUTORIA' }],
+    })
+    expect(await screen.findByText('Tu aula de tutoría, 3.º B', { exact: false })).toBeInTheDocument()
+    expect(screen.getAllByText('Promedio general').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Asistencia general').length).toBeGreaterThan(0)
+    expect(screen.getByLabelText('Ver')).toHaveValue('tutoria')
   })
 
   it('sin cursos a cargo lo explica', async () => {
     comoRol('docente', '/docente/estudiantes', {
-      '/docente/estudiantes': [200, { cursos: [], curso: null, bimestre: null, total: 0, estudiantes: [] }],
+      '/docente/estudiantes': [
+        200,
+        { cursos: [], curso: null, tutoria: null, modo: 'CURSO', bimestre: null, total: 0, estudiantes: [] },
+      ],
     })
     expect(await screen.findByText('Aún no tienes cursos a cargo')).toBeInTheDocument()
   })

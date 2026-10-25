@@ -16,9 +16,9 @@ import { cn } from '@/lib/utils'
 
 // RF-61 (mockup docente 04)
 export default function MisEstudiantes() {
-  const [curso, setCurso] = useState<number | null>(null)
+  const [vista, setVista] = useState<number | 'tutoria' | null>(null)
   const [nivel, setNivel] = useState('')
-  const { data, isPending, isError, refetch } = useMisEstudiantes(curso)
+  const { data, isPending, isError, refetch } = useMisEstudiantes(vista)
   const avisos = useAvisos()
 
   if (isPending) return <Esqueleto className="mx-auto h-96 max-w-7xl" />
@@ -29,7 +29,7 @@ export default function MisEstudiantes() {
         accion={<Button onClick={() => refetch()}>Reintentar</Button>}
       />
     )
-  if (!data.curso)
+  if (!data.curso && !data.tutoria)
     return (
       <div className="mx-auto max-w-7xl">
         <h1 className="text-3xl font-black sm:text-4xl">Mis estudiantes</h1>
@@ -40,11 +40,13 @@ export default function MisEstudiantes() {
       </div>
     )
 
+  const tutoria = data.modo === 'TUTORIA' ? data.tutoria : null
   const actual = data.curso
+  const aula = tutoria ? { id: tutoria.aula_id, nombre: tutoria.aula } : { id: actual!.aula_id, nombre: actual!.aula }
   const filas = data.estudiantes.filter((e) => !nivel || e.nivel === nivel)
   const exportar = () =>
     descargar(
-      `/docente/reportes/asistencia?aula_id=${actual.aula_id}${data.bimestre ? `&bimestre_id=${data.bimestre.id}` : ''}`,
+      `/docente/reportes/asistencia?aula_id=${aula.id}${data.bimestre ? `&bimestre_id=${data.bimestre.id}` : ''}`,
       'asistencia.xlsx',
     ).catch((e) => avisos.error((e as ErrorApi).message))
 
@@ -54,27 +56,43 @@ export default function MisEstudiantes() {
         <div>
           <h1 className="text-3xl font-black sm:text-4xl">Mis estudiantes</h1>
           <p className="mt-1 text-lg text-texto-suave">
-            Estudiantes de tus cursos{data.bimestre && ` · ${data.bimestre.nombre}`}.
+            {tutoria ? `Tu aula de tutoría, ${tutoria.aula}` : 'Estudiantes de tus cursos'}
+            {data.bimestre && ` · ${data.bimestre.nombre}`}.
           </p>
         </div>
         <Button variante="secundario" onClick={exportar}>
-          <Download className="size-5" aria-hidden /> Asistencia de {actual.aula} en Excel
+          <Download className="size-5" aria-hidden /> Asistencia de {aula.nombre} en Excel
         </Button>
       </header>
       <p className="flex items-start gap-3 rounded-xl border border-info/25 bg-info/6 p-4" role="note">
         <Info className="mt-0.5 size-5 shrink-0 text-info" aria-hidden />
         <span>
-          Solo se muestran tus cursos: <strong>{data.cursos.map((c) => c.nombre).join(', ')}</strong> · {data.total}{' '}
-          {data.total === 1 ? 'estudiante' : 'estudiantes'}.
+          {data.cursos.length > 0 && (
+            <>
+              Tus cursos: <strong>{data.cursos.map((c) => c.nombre).join(', ')}</strong>
+              {data.tutoria && ' · '}
+            </>
+          )}
+          {data.tutoria && (
+            <>
+              Tu tutoría: <strong>{data.tutoria.aula}</strong>
+            </>
+          )}{' '}
+          · {data.total} {data.total === 1 ? 'estudiante' : 'estudiantes'}.
         </span>
       </p>
       <Card className="flex flex-col gap-4">
         <div className="grid gap-4 sm:grid-cols-2 lg:max-w-2xl">
           <Selector
-            etiqueta="Curso"
-            value={String(actual.id)}
-            onChange={(e) => setCurso(Number(e.target.value))}
-            opciones={data.cursos.map((c) => ({ valor: String(c.id), texto: c.nombre }))}
+            etiqueta="Ver"
+            value={tutoria ? 'tutoria' : String(actual!.id)}
+            onChange={(e) => setVista(e.target.value === 'tutoria' ? 'tutoria' : Number(e.target.value))}
+            opciones={[
+              ...(data.tutoria
+                ? [{ valor: 'tutoria', texto: `Mi tutoría: ${data.tutoria.aula} (todos los cursos)` }]
+                : []),
+              ...data.cursos.map((c) => ({ valor: String(c.id), texto: c.nombre })),
+            ]}
           />
           <Selector
             etiqueta="Nivel de riesgo"
@@ -92,7 +110,7 @@ export default function MisEstudiantes() {
           filas={filas}
           claveFila={(e) => e.matricula_id}
           textoBusqueda={(e) => `${e.nombre} ${e.codigo}`}
-          descripcion={`Estudiantes de ${actual.nombre}`}
+          descripcion={`Estudiantes de ${tutoria ? tutoria.aula : actual!.nombre}`}
           vacio="Ningún estudiante coincide con los filtros."
           columnas={[
             {
@@ -108,7 +126,7 @@ export default function MisEstudiantes() {
             },
             {
               clave: 'promedio',
-              titulo: `Promedio de ${actual.asignatura}`,
+              titulo: tutoria ? 'Promedio general' : `Promedio de ${actual!.asignatura}`,
               celda: (e) => (
                 <span
                   className={cn('font-bold tabular-nums', e.promedio !== null && e.promedio < 11 && 'text-peligro')}
@@ -117,15 +135,26 @@ export default function MisEstudiantes() {
                 </span>
               ),
             },
-            { clave: 'asistencia', titulo: 'Asistencia', celda: (e) => porcentaje(e.asistencia) },
+            {
+              clave: 'asistencia',
+              titulo: tutoria ? 'Asistencia general' : 'Asistencia en el curso',
+              celda: (e) => porcentaje(e.asistencia),
+            },
             {
               clave: 'nivel',
-              titulo: 'Nivel de riesgo',
+              titulo: 'Riesgo (todos los cursos)',
               celda: (e) =>
                 e.nivel ? (
-                  <Insignia tono={NIVEL[e.nivel].tono} punto>
-                    {NIVEL[e.nivel].texto}
-                  </Insignia>
+                  <span className="flex flex-col items-start gap-1">
+                    <Insignia tono={NIVEL[e.nivel].tono} punto>
+                      {NIVEL[e.nivel].texto}
+                    </Insignia>
+                    {e.motivos.length > 0 && (
+                      <span className="max-w-64 text-sm text-texto-suave">
+                        {e.motivos.map((m) => m.descripcion).join(' ')}
+                      </span>
+                    )}
+                  </span>
                 ) : (
                   <span className="text-texto-suave">Sin calcular</span>
                 ),
@@ -144,8 +173,11 @@ export default function MisEstudiantes() {
           ]}
         />
         <p className="text-sm text-texto-suave">
-          El promedio es el del curso en el bimestre en curso, contando como 0 lo que aún no tiene nota (RN-09). La
-          asistencia es la de tus clases.
+          {tutoria
+            ? 'El promedio y la asistencia son los de todos los cursos del aula en el bimestre en curso.'
+            : 'El promedio es el del curso en el bimestre en curso, contando como 0 lo que aún no tiene nota (RN-09). La asistencia es la de tus clases.'}{' '}
+          El riesgo mira todos los cursos del estudiante (su asistencia general y el promedio de lo ya calificado), por
+          eso puede no coincidir con las columnas de un solo curso: debajo de cada nivel se explica el motivo.
         </p>
       </Card>
     </div>

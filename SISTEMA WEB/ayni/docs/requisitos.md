@@ -148,12 +148,12 @@ Funciona en la web (hosting del curso) y en local (panel `AYNI.bat` / `AYNI.sh`)
 
 | Código | Requisito | Actor | Prioridad |
 |---|---|---|---|
-| RF-38 | Crear y editar evaluaciones: título, tipo, fecha de asignación, fecha límite, peso relativo e indicaciones | Docente | A |
+| RF-38 | Crear y editar evaluaciones: título, tipo, fecha de asignación, fecha límite, peso relativo, **puntaje máximo** (por ejemplo, un examen sobre 50) e indicaciones; dejarlas en **borrador** (solo las ve el docente) o **publicadas** | Docente | A |
 | RF-39 | Adjuntar material de apoyo a una evaluación | Docente | M |
 | RF-40 | Consultar mis actividades (pendientes y entregadas) y su detalle, con el peso en % del bimestre | Estudiante | A |
 | RF-41 | Subir mi entrega (PDF), guardar borrador, entregar y ver el historial de la actividad | Estudiante | A |
 | RF-42 | Calcular el estado de entrega (entregado, tardío, no entregado) según la fecha límite, permitiendo que el docente lo corrija | Sistema / Docente | A |
-| RF-43 | Registrar notas de 0 a 20 por evaluación, con aviso de cambios sin guardar, y exportarlas a Excel | Docente | A |
+| RF-43 | Registrar notas de 0 al puntaje máximo de la evaluación (20 por defecto), con aviso de cambios sin guardar, y exportarlas a Excel | Docente | A |
 | RF-44 | Calcular el promedio ponderado de cada bimestre por curso | Sistema | A |
 | RF-45 | Publicar los promedios del curso, mostrando antes a quiénes se les asignará 0 por evaluaciones sin nota | Docente | A |
 | RF-46 | Cerrar un bimestre manualmente, y cerrarlo automáticamente al llegar su fecha de cierre | Administrador / Sistema | A |
@@ -186,7 +186,7 @@ Funciona en la web (hosting del curso) y en local (panel `AYNI.bat` / `AYNI.sh`)
 |---|---|---|---|
 | RF-59 | Mostrar el inicio de cada rol con indicadores, pendientes, horario del día y fecha de cierre del bimestre | Todos | A |
 | RF-60 | Mostrar la ficha 360° del estudiante: datos, notas, asistencia, entregas, incidencias, alertas y apoderados | Docente / Coordinador / Administrador | A |
-| RF-61 | Listar mis estudiantes con sus indicadores | Docente | M |
+| RF-61 | Listar mis estudiantes con sus indicadores, por curso o, si es tutor, de toda su aula; con el motivo de su nivel de riesgo | Docente | M |
 | RF-62 | Generar la boleta de notas en PDF | Administrador / Estudiante | M |
 | RF-63 | Exportar la asistencia por aula a Excel | Administrador / Docente | M |
 | RF-64 | Exportar el consolidado de notas por bimestre | Administrador | M |
@@ -234,8 +234,8 @@ Funciona en la web (hosting del curso) y en local (panel `AYNI.bat` / `AYNI.sh`)
 | RN-05 | Un docente o un aula no pueden tener dos clases que se crucen en horario. |
 | RN-06 | La asistencia solo se registra en días en que el curso tiene clase según el horario, dentro del bimestre y nunca en fechas futuras. |
 | RN-07 | El docente puede corregir la asistencia hasta las **11:59 p. m. del mismo día** de la clase; después solo el administrador, y queda registrado quién la corrigió. Una clase pasada que nunca se registró (o quedó en borrador) el docente aún puede registrarla una vez. |
-| RN-08 | Las notas van de **0 a 20**, con hasta 2 decimales; se aceptan con punto o coma. |
-| RN-09 | **Promedio del bimestre** = Σ(nota × peso) / Σ(peso) de las evaluaciones del curso en el bimestre. Las evaluaciones **sin nota cuentan como 0**. Se redondea a 1 decimal (0,05 sube). |
+| RN-08 | Cada evaluación se califica de **0 a su puntaje máximo** (20 si no se cambió; hasta 100), con hasta 2 decimales; se aceptan con punto o coma. La **calificación general del curso es sobre 20**. |
+| RN-09 | **Promedio del bimestre** = Σ(nota sobre 20 × peso) / Σ(peso) de las evaluaciones **publicadas** del curso en el bimestre; cada nota se lleva a 20 (nota × 20 ÷ puntaje máximo: 40 de 50 → 16). Las evaluaciones **sin nota cuentan como 0**; las que están en borrador no cuentan. Se redondea a 1 decimal (0,05 sube). |
 | RN-10 | Aprobado si el promedio es ≥ la nota aprobatoria (11 por defecto). |
 | RN-11 | **Equivalencia literal** por defecto: AD = 18–20, A = 14–17,99, B = 11–13,99, C = 0–10,99. Es configurable. |
 | RN-12 | Una entrega es **tardía** si se envía después de las 11:59 p. m. del día límite. Sin entrega al pasar la fecha límite = **no entregado**. |
@@ -245,7 +245,7 @@ Funciona en la web (hosting del curso) y en local (panel `AYNI.bat` / `AYNI.sh`)
 | RN-16 | **Contraseñas** — docente y administrador: ≥ 8 caracteres con mayúscula, minúscula, número y símbolo. Estudiante: ≥ 8 caracteres con letras y números. |
 | RN-17 | La sesión se cierra tras **1 hora sin actividad**. |
 | RN-18 | El captcha es de un solo uso, vence a los 5 minutos, no distingue mayúsculas y evita caracteres confusos (0/O, 1/l/I). |
-| RN-19 | **Riesgo ALTO:** asistencia < 85 %, o promedio < 11 con ≥ 3 entregas pendientes. **Riesgo MEDIO:** asistencia < 90 %, o promedio < 12, o notas en descenso en dos evaluaciones seguidas. **BAJO:** en otro caso. Umbrales configurables. Se calcula sobre el bimestre en curso: la asistencia como en RN-27; el promedio con las notas **ya registradas** (aquí lo que no tiene nota no cuenta como 0), promediando los cursos; una entrega pendiente es una actividad con archivo vencida y no entregada; el descenso son tres notas seguidas que bajan en un mismo curso. |
+| RN-19 | **Riesgo ALTO:** asistencia < 85 %, o promedio desaprobatorio (< 11). **Riesgo MEDIO:** asistencia < 90 %, o promedio < 12, o ≥ 3 entregas pendientes, o notas en descenso en tres evaluaciones seguidas. Un promedio < 11 con ≥ 3 entregas pendientes es una sola regla de riesgo alto. **BAJO:** en otro caso. Umbrales configurables. Se calcula sobre el bimestre en curso: la asistencia como en RN-27; el promedio con las notas **ya registradas** (aquí lo que no tiene nota no cuenta como 0), promediando los cursos; una entrega pendiente es una actividad con archivo vencida y no entregada; el descenso son tres notas seguidas que bajan en un mismo curso. |
 | RN-20 | Hay **una sola alerta activa por estudiante y bimestre**; si el nivel cambia, se actualiza y queda en el historial. |
 | RN-21 | La alerta se asigna al **tutor del aula**; si no hay, al coordinador del ámbito; si tampoco hay, se genera una alerta administrativa "aula sin tutor". |
 | RN-22 | El **código de estudiante** se genera como `E-AAAA-NNN` (año de ingreso + correlativo) si no se indica. |

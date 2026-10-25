@@ -39,7 +39,7 @@ const lista: ListaEvaluaciones = {
     { id: 1, nombre: 'Examen' },
     { id: 2, nombre: 'Práctica' },
   ],
-  resumen: { evaluaciones: 1, entregas: 81, por_calificar: 1 },
+  resumen: { evaluaciones: 1, borradores: 0, entregas: 81, por_calificar: 1 },
   evaluaciones: [
     {
       id: 50,
@@ -51,6 +51,8 @@ const lista: ListaEvaluaciones = {
       fecha_limite: '2026-10-16',
       indicaciones: null,
       requiere_entrega: true,
+      estado: 'PUBLICADA',
+      puntaje_maximo: 20,
       momento: 'VENCIDA',
       entregas: 25,
       calificadas: 0,
@@ -111,8 +113,36 @@ describe('Evaluaciones del docente (RF-38)', () => {
       fecha_asignacion: '2026-10-19',
       fecha_limite: '2026-10-23',
       peso: 2,
+      puntaje_maximo: 20,
+      estado: 'PUBLICADA',
       indicaciones: null,
       requiere_entrega: true,
+    })
+  })
+
+  it('crea un examen sobre 50 en borrador', async () => {
+    const fetch = comoRol('docente', '/docente/evaluaciones', {
+      '/docente/cursos/7/evaluaciones': [200, lista],
+      'POST /docente/cursos/7/evaluaciones': [201, { mensaje: 'Evaluación creada.', id: 61 }],
+    })
+    await userEvent.click(await screen.findByRole('button', { name: 'Nueva evaluación' }))
+    const v = await screen.findByRole('dialog', { name: 'Nueva evaluación' })
+    await userEvent.type(within(v).getByLabelText('Título'), 'Examen parcial')
+    await userEvent.type(within(v).getByLabelText('Fecha de asignación'), '2026-10-19')
+    await userEvent.type(within(v).getByLabelText('Fecha límite'), '2026-10-19')
+    await userEvent.clear(within(v).getByLabelText('Puntaje máximo'))
+    await userEvent.type(within(v).getByLabelText('Puntaje máximo'), '0')
+    await userEvent.click(within(v).getByRole('button', { name: 'Crear evaluación' }))
+    expect(await within(v).findByText('El puntaje máximo es un número entero de 1 a 100.')).toBeInTheDocument()
+
+    await userEvent.clear(within(v).getByLabelText('Puntaje máximo'))
+    await userEvent.type(within(v).getByLabelText('Puntaje máximo'), '50')
+    await userEvent.selectOptions(within(v).getByLabelText('Estado'), 'BORRADOR')
+    await userEvent.click(within(v).getByRole('button', { name: 'Crear evaluación' }))
+    expect(await screen.findByText('Evaluación creada.')).toBeInTheDocument()
+    expect(cuerpoEnviado(fetch, '/docente/cursos/7/evaluaciones')).toMatchObject({
+      puntaje_maximo: 50,
+      estado: 'BORRADOR',
     })
   })
 
@@ -135,10 +165,14 @@ const planilla: Planilla = {
     fecha_asignacion: '2026-10-12',
     fecha_limite: '2026-10-16',
     requiere_entrega: true,
+    estado: 'PUBLICADA',
+    puntaje_maximo: 20,
   },
   curso,
   bimestre,
   nota_aprobatoria: 11,
+  aprobatoria_evaluacion: 11,
+  escala: 20,
   publicada: false,
   editable: true,
   resumen: { promedio: 13.2, desaprobados: 1, sin_entregar: 1 },
@@ -201,6 +235,38 @@ describe('Notas (RF-43, RN-08)', () => {
       ],
     })
   })
+
+  it('un examen sobre 50 acepta hasta 50 y cada campo tiene su rótulo (en el celular no hay cabecera)', async () => {
+    const sobre50 = {
+      ...planilla,
+      evaluacion: { ...planilla.evaluacion, puntaje_maximo: 50 },
+      aprobatoria_evaluacion: 27.5,
+    }
+    comoRol('docente', '/docente/notas?evaluacion=50', { '/docente/evaluaciones/50/notas': [200, sobre50] })
+
+    const kevin = await screen.findByLabelText('Nota de Aranda Ruiz, Kevin')
+    expect(screen.getAllByText('Nota (0 – 50)').length).toBeGreaterThan(1)
+    expect(screen.getAllByText('Observación (opcional)').length).toBe(2)
+    expect(screen.getAllByText('Estado de entrega').length).toBeGreaterThan(1)
+    expect(screen.getByText(/En el promedio del curso cuentan sobre 20/)).toBeInTheDocument()
+
+    await userEvent.type(kevin, '45')
+    expect(screen.queryByText('La nota debe estar entre 0 y 50.')).not.toBeInTheDocument()
+    await userEvent.type(kevin, '1')
+    expect(screen.getByText('La nota debe estar entre 0 y 50.')).toBeInTheDocument()
+  })
+
+  it('una evaluación en borrador no se califica', async () => {
+    const borrador = {
+      ...planilla,
+      evaluacion: { ...planilla.evaluacion, estado: 'BORRADOR' as const },
+      editable: false,
+    }
+    comoRol('docente', '/docente/notas?evaluacion=50', { '/docente/evaluaciones/50/notas': [200, borrador] })
+    expect(await screen.findByText(/Esta evaluación está en/)).toHaveTextContent('borrador')
+    expect(screen.getByLabelText('Nota de Aranda Ruiz, Kevin')).toBeDisabled()
+    expect(screen.queryByRole('button', { name: /Guardar notas/ })).not.toBeInTheDocument()
+  })
 })
 
 const vista: VistaCalificaciones = {
@@ -211,9 +277,10 @@ const vista: VistaCalificaciones = {
   publicado_en: null,
   nota_aprobatoria: 11,
   evaluaciones: [
-    { id: 50, titulo: 'Práctica 6', tipo: 'Práctica', peso: 1, fecha_limite: '2026-10-16' },
-    { id: 51, titulo: 'Proyecto', tipo: 'Proyecto', peso: 2, fecha_limite: '2026-10-23' },
+    { id: 50, titulo: 'Práctica 6', tipo: 'Práctica', peso: 1, puntaje_maximo: 20, fecha_limite: '2026-10-16' },
+    { id: 51, titulo: 'Proyecto', tipo: 'Proyecto', peso: 2, puntaje_maximo: 20, fecha_limite: '2026-10-23' },
   ],
+  escala: 20,
   estudiantes: [
     { matricula_id: 1, nombre: 'Aranda Ruiz, Kevin', notas: { 50: null, 51: 10 }, promedio: 6.7, literal: 'C' },
     { matricula_id: 2, nombre: 'Quispe Mendoza, Valeria', notas: { 50: 18, 51: 16 }, promedio: 16.7, literal: 'A' },
@@ -260,6 +327,7 @@ const actividad: DetalleActividad = {
   fecha_limite: '2026-10-19',
   peso: 1,
   peso_porcentaje: 20,
+  puntaje_maximo: 20,
   requiere_entrega: true,
   estado: 'PENDIENTE',
   nota: null,
@@ -339,7 +407,9 @@ describe('Mis notas y Mi horario (RF-47, RF-48)', () => {
       ],
       promedio: 16.8,
       anterior: { nombre: 'III Bimestre', promedio: 16.2 },
-      ultimas: [{ id: 50, titulo: 'Práctica 6', curso: 'Matemática', nota: 18, fecha: '2026-10-16' }],
+      ultimas: [
+        { id: 50, titulo: 'Práctica 6', curso: 'Matemática', nota: 18, puntaje_maximo: 20, fecha: '2026-10-16' },
+      ],
     }
     comoRol('estudiante', '/estudiante/notas', { '/estudiante/notas': [200, notas] })
 
@@ -388,12 +458,15 @@ describe('Mis notas y Mi horario (RF-47, RF-48)', () => {
 })
 
 describe('validaciones del M9', () => {
-  it('nota de 0 a 20 con punto o coma (RN-08)', () => {
+  it('nota de 0 al puntaje de la evaluación (20 si no se indica), con punto o coma (RN-08)', () => {
     expect(errorNota('15,5')).toBeNull()
     expect(errorNota('20')).toBeNull()
     expect(errorNota('')).toBeNull()
     expect(errorNota('20,5')).toBe('La nota debe estar entre 0 y 20.')
-    expect(errorNota('15.555')).toBe('La nota debe ser un número de 0 a 20, con hasta 2 decimales.')
+    expect(errorNota('15.555')).toBe('La nota debe ser un número con hasta 2 decimales.')
+    // Un examen sobre 50
+    expect(errorNota('45,5', 50)).toBeNull()
+    expect(errorNota('51', 50)).toBe('La nota debe estar entre 0 y 50.')
     expect(filtros.nota('1a5,,5')).toBe('15,5')
   })
 
@@ -405,11 +478,17 @@ describe('validaciones del M9', () => {
       fecha_asignacion: '2026-10-19',
       fecha_limite: '2026-10-23',
       peso: '2',
+      puntaje_maximo: '20',
+      estado: 'PUBLICADA' as const,
       indicaciones: '',
       requiere_entrega: true,
     }
     expect(esquemaEvaluacion().safeParse(base).success).toBe(true)
     expect(esquemaEvaluacion().safeParse({ ...base, peso: '11' }).success).toBe(false)
+    // Puntaje propio de 1 a 100 y estado borrador o publicada
+    expect(esquemaEvaluacion().safeParse({ ...base, puntaje_maximo: '50', estado: 'BORRADOR' }).success).toBe(true)
+    expect(esquemaEvaluacion().safeParse({ ...base, puntaje_maximo: '0' }).success).toBe(false)
+    expect(esquemaEvaluacion().safeParse({ ...base, puntaje_maximo: '101' }).success).toBe(false)
     expect(esquemaEvaluacion().safeParse({ ...base, fecha_limite: '2026-10-18' }).success).toBe(false)
 
     // Con el bimestre elegido, las fechas deben caer dentro de él (como en el servidor)

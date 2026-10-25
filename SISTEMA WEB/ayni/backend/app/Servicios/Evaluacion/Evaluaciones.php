@@ -71,13 +71,16 @@ class Evaluaciones
             'fecha_limite' => $ev->fecha_limite,
             'indicaciones' => $ev->indicaciones,
             'requiere_entrega' => (bool) $ev->requiere_entrega,
+            'estado' => $ev->estado,
+            'puntaje_maximo' => (float) $ev->puntaje_maximo,
             'momento' => $ev->fecha_asignacion > $hoy ? 'POR_ASIGNAR' : ($ev->fecha_limite < $hoy ? 'VENCIDA' : 'EN_CURSO'),
             'entregas' => (int) ($entregas[$ev->id] ?? 0),
             'calificadas' => (int) ($calificadas[$ev->id] ?? 0),
             'estudiantes' => $total,
             'material' => ($material[$ev->id] ?? collect())->map(fn ($a) => Archivos::datos($a))->values()->all(),
         ]);
-        $conEntrega = $filas->filter(fn ($f) => $f['requiere_entrega'] && $f['momento'] !== 'POR_ASIGNAR');
+        $publicadas = $filas->where('estado', 'PUBLICADA');
+        $conEntrega = $publicadas->filter(fn ($f) => $f['requiere_entrega'] && $f['momento'] !== 'POR_ASIGNAR');
         $esperadas = $conEntrega->count() * $total;
 
         return [
@@ -87,8 +90,9 @@ class Evaluaciones
             'tipos' => DB::table('tipo_evaluacion')->where('estado', 'ACTIVO')->orderBy('nombre')->get(['id', 'nombre'])->all(),
             'resumen' => [
                 'evaluaciones' => $filas->count(),
+                'borradores' => $filas->count() - $publicadas->count(),
                 'entregas' => $esperadas ? (int) round(100 * $conEntrega->sum('entregas') / $esperadas) : null,
-                'por_calificar' => $filas->filter(fn ($f) => $f['momento'] === 'VENCIDA' && $f['calificadas'] < $total)->count(),
+                'por_calificar' => $publicadas->filter(fn ($f) => $f['momento'] === 'VENCIDA' && $f['calificadas'] < $total)->count(),
             ],
             'evaluaciones' => $filas->values()->all(),
             'editable' => $bimestre->estado === 'ABIERTO',
@@ -116,6 +120,16 @@ class Evaluaciones
         if (DB::table('tipo_evaluacion')->where('id', $d['tipo_evaluacion_id'])->value('estado') !== 'ACTIVO') {
             throw new ErrorRegla('Elige un tipo de evaluación activo.', 'tipo_evaluacion_id');
         }
+        $estado = $d['estado'] ?? ($previa->estado ?? 'PUBLICADA');
+        $puntaje = (float) ($d['puntaje_maximo'] ?? ($previa->puntaje_maximo ?? Calificaciones::ESCALA));
+        if ($previa && $previa->estado === 'PUBLICADA' && $estado === 'BORRADOR' && $this->tieneTrabajo($previa->id)) {
+            throw new ErrorRegla('La evaluación ya tiene entregas o notas: no puede volver a borrador.', 'estado');
+        }
+        // Las notas ya puestas están sobre el puntaje anterior
+        if ($previa && (float) $previa->puntaje_maximo !== $puntaje
+            && DB::table('nota_evaluacion')->where('evaluacion_id', $previa->id)->whereNotNull('nota')->exists()) {
+            throw new ErrorRegla('Ya hay notas registradas sobre '.Calificaciones::texto((float) $previa->puntaje_maximo).' puntos: el puntaje máximo no se puede cambiar.', 'puntaje_maximo');
+        }
 
         $fila = [
             'subperiodo_id' => $bimestre->id,
@@ -126,18 +140,20 @@ class Evaluaciones
             'fecha_limite' => $d['fecha_limite'],
             'peso' => $d['peso'],
             'requiere_entrega' => (bool) $d['requiere_entrega'],
+            'estado' => $estado,
+            'puntaje_maximo' => $puntaje,
         ];
 
         $id = DB::transaction(function () use ($previa, $fila, $curso, $usuario) {
             if ($previa) {
                 DB::table('evaluacion')->where('id', $previa->id)->update($fila + ['updated_at' => now()]);
-                $cambios = collect($fila)->filter(fn ($v, $k) => (string) $previa->{$k} !== (string) $v)
+                $cambios = collect($fila)->filter(fn ($v, $k) => (string) $previa->{$k} !== (string) $v && ! ($k === 'puntaje_maximo' && (float) $previa->{$k} === (float) $v))
                     ->map(fn ($v, $k) => ['antes' => $previa->{$k}, 'despues' => $v])->all();
                 Auditoria::registrar('ACTUALIZAR', 'evaluacion', $previa->id, $cambios);
                 $id = $previa->id;
             } else {
                 $id = DB::table('evaluacion')->insertGetId($fila + ['curso_aula_id' => $curso->id, 'creado_por' => $usuario->id]);
-                Auditoria::registrar('CREAR', 'evaluacion', $id, ['titulo' => $fila['titulo'], 'peso' => $fila['peso']]);
+                Auditoria::registrar('CREAR', 'evaluacion', $id, ['titulo' => $fila['titulo'], 'peso' => $fila['peso'], 'estado' => $fila['estado'], 'puntaje_maximo' => $fila['puntaje_maximo']]);
             }
             // El peso o el bimestre cambian los promedios (RN-09)
             $this->calificaciones->recalcular($curso->id, $fila['subperiodo_id']);

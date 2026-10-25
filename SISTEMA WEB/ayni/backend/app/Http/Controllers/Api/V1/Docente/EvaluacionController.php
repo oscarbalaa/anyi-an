@@ -94,7 +94,7 @@ class EvaluacionController extends Controller
     public function excelCalificaciones(Request $request, Calificaciones $calificaciones, int $curso): BinaryFileResponse
     {
         $v = $calificaciones->vista($curso, $this->bimestre($request), $request->user()->load('rol'));
-        $filas = [['Estudiante', ...array_map(fn ($e) => "{$e['titulo']} (peso {$e['peso']})", $v['evaluaciones']), 'Promedio', 'Literal']];
+        $filas = [['Estudiante', ...array_map(fn ($e) => "{$e['titulo']} (sobre ".Calificaciones::texto($e['puntaje_maximo']).", peso {$e['peso']})", $v['evaluaciones']), 'Promedio (0-20)', 'Literal']];
         foreach ($v['estudiantes'] as $e) {
             $filas[] = [$e['nombre'], ...array_map(fn ($ev) => $e['notas'][$ev['id']], $v['evaluaciones']), $e['promedio'], $e['literal']];
         }

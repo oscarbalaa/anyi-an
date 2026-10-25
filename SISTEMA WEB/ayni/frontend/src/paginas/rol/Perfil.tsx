@@ -128,7 +128,11 @@ function DatosPersonales({ perfil }: { perfil: Perfil }) {
     if (perfil.coordinacion) filas.push(['Coordinación', perfil.coordinacion])
   }
   if (perfil.rol === 'ESTUDIANTE')
-    filas.push(['Aula', perfil.aula ?? 'Sin matrícula'], ['Tutor(a)', perfil.tutor ?? '—'])
+    filas.push(
+      ['Aula', perfil.aula ?? 'Sin matrícula'],
+      ['Tutor(a)', perfil.tutor ?? '—'],
+      ['Coordinación', perfil.coordinador ?? '—'],
+    )
 
   return (
     <Card>
