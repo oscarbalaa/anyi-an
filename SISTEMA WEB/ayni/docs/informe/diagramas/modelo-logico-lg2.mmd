@@ -1,0 +1,34 @@
+erDiagram
+    persona ||--o{ personal_administrativo : "persona_id"
+    usuario ||--o{ personal_administrativo : "usuario_id"
+    persona ||--o{ docente : "persona_id"
+    usuario ||--o{ docente : "usuario_id"
+    persona ||--o{ estudiante : "persona_id"
+    usuario ||--o{ estudiante : "usuario_id"
+    estudiante ||--o{ apoderado : "estudiante_id"
+    persona {
+        bigint id PK
+    }
+    personal_administrativo {
+        bigint id PK
+        bigint persona_id FK
+        bigint usuario_id FK
+    }
+    docente {
+        bigint id PK
+        bigint persona_id FK
+        bigint usuario_id FK
+    }
+    estudiante {
+        bigint id PK
+        bigint persona_id FK
+        bigint usuario_id FK
+        varchar codigo UK
+    }
+    apoderado {
+        bigint id PK
+        bigint estudiante_id FK
+    }
+    usuario {
+        bigint id PK
+    }

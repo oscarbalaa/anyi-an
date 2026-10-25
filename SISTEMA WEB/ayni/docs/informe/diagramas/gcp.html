@@ -1,0 +1,17 @@
+<html><head><meta charset="utf-8"><style>body{margin:0;background:#fff;font-family:Arial}text{font-family:Arial}</style><script src="cajas.js"></script></head><body><script>
+const L=lienzo(1300,560);
+L.caja(20,200,200,110,'Usuarios',['PC, tableta o celular','HTTPS'],'azul');
+L.grupo(260,20,1020,520,'Google Cloud · región southamerica-west1 (Santiago) · proyecto ayni','morado');
+L.caja(280,200,190,110,'IP estática externa',['DNS: ayni.ruta-practica.com','(registro A)'],'gris');
+L.grupo(500,60,500,400,'VPC por defecto · reglas de firewall: 80/443 abiertos, 22 solo con IAP','gris');
+L.caja(520,100,460,250,'VM Compute Engine e2-small (Ubuntu 24.04)',['Nginx + PHP 8.1-FPM (mismo stack del VPS actual)','Laravel 10 (API) + React compilado','.env con secretos desde Secret Manager','cuenta de servicio con permisos mínimos','Certbot (Let’s Encrypt) para HTTPS','disco persistente 20 GB + instantánea diaria','Ops Agent: logs y métricas a Cloud Logging'],'verde');
+L.caja(520,370,460,70,'Opción por fases',['Fase 1: MySQL 8 dentro de la VM · Fase 2: Cloud SQL'],'gris',true);
+L.caja(1030,100,230,110,'Cloud SQL (fase 2)',['MySQL 8 · IP privada','respaldos automáticos'],'naranja',true);
+L.caja(1030,240,230,110,'Cloud Storage',['bucket privado para','entregas, material y respaldos'],'naranja');
+L.caja(1030,380,230,110,'Cloud Monitoring',['tiempo de actividad','alerta por correo'],'naranja');
+L.flecha([[220,255],[280,255]]);
+L.flecha([[470,255],[520,255]]);
+L.flecha([[980,150],[1030,150]],'',{punteado:true});
+L.flecha([[980,295],[1030,295]]);
+L.flecha([[980,330],[1005,330],[1005,435],[1030,435]]);
+</script></body></html>

@@ -1,0 +1,35 @@
+erDiagram
+    curso_aula ||--o{ sesion_clase : "curso_aula_id"
+    subperiodo ||--o{ sesion_clase : "subperiodo_id"
+    matricula ||--o{ asistencia : "matricula_id"
+    sesion_clase ||--o{ asistencia : "sesion_clase_id"
+    matricula ||--o{ incidencia : "matricula_id"
+    tipo_incidencia ||--o{ incidencia : "tipo_incidencia_id"
+    sesion_clase {
+        bigint id PK
+        bigint curso_aula_id FK
+        bigint subperiodo_id FK
+    }
+    asistencia {
+        bigint id PK
+        bigint sesion_clase_id FK
+        bigint matricula_id FK
+    }
+    tipo_incidencia {
+        bigint id PK
+        varchar nombre UK
+    }
+    incidencia {
+        bigint id PK
+        bigint matricula_id FK
+        bigint tipo_incidencia_id FK
+    }
+    curso_aula {
+        bigint id PK
+    }
+    subperiodo {
+        bigint id PK
+    }
+    matricula {
+        bigint id PK
+    }

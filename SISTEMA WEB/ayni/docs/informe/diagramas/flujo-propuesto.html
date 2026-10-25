@@ -1,0 +1,22 @@
+<html><head><meta charset="utf-8"><style>body{margin:0;background:#fff;font-family:Arial}text{font-family:Arial}</style><script src="carriles.js"></script></head><body><script>
+carriles({carriles:['Administrador','Docente','AYNI (sistema)','Tutor o coordinador','Estudiante'], anchoCarril:270,
+nodos:{
+ i:{c:0,f:0,t:'Inicio del periodo',tipo:'fin'},
+ p1:{c:0,f:1,t:'Configura periodo, bimestres,|aulas, carga y horario'},
+ p2:{c:0,f:2,t:'Registra o importa|estudiantes y matricula'},
+ d1:{c:1,f:3,t:'Registra asistencia por|clase (PC o celular)'},
+ s1:{c:2,f:4,t:'Guarda con hora de Lima|y avisa la falta'},
+ d2:{c:1,f:5,t:'Crea evaluación con su|puntaje máximo y la publica'},
+ d3:{c:1,f:6,t:'Registra notas de 0|al puntaje máximo'},
+ s2:{c:2,f:7,t:'Lleva cada nota a la escala|de 20 y recalcula el promedio'},
+ s3:{c:2,f:8,t:'Calcula el riesgo|con reglas (v0)'},
+ q:{c:2,f:9,t:'¿Riesgo MEDIO|o ALTO?',tipo:'decision'},
+ s4:{c:2,f:10,t:'Crea alerta con sus|motivos y la asigna'},
+ t1:{c:3,f:11,t:'Registra intervenciones|y cierra la alerta'},
+ d4:{c:1,f:11,t:'Publica los promedios|del bimestre'},
+ e1:{c:4,f:12,t:'Consulta notas, asistencia,|actividades y horario'},
+ a1:{c:0,f:13,t:'Cierra el bimestre (o el|sistema, en su fecha)'},
+ a2:{c:0,f:14,t:'Boleta en PDF y|consolidado en Excel'},
+ fin:{c:4,f:14,t:'Fin del bimestre',tipo:'fin'}},
+aristas:[['i','p1'],['p1','p2'],['p2','d1'],['d1','s1'],['s1','d2'],['d2','d3'],['d3','s2'],['s2','s3'],['s3','q'],['q','s4','Sí'],['q','d4','No','lado'],['s4','t1'],['t1','e1'],['d4','e1'],['e1','a1'],['a1','a2'],['a2','fin','','lado-lado']]});
+</script></body></html>

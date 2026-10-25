@@ -1,0 +1,43 @@
+erDiagram
+    periodo_academico ||--o{ subperiodo : "periodo_id"
+    grado ||--o{ aula : "grado_id"
+    periodo_academico ||--o{ aula : "periodo_id"
+    seccion ||--o{ aula : "seccion_id"
+    docente ||--o{ aula : "tutor_docente_id"
+    aula ||--o{ coordinacion : "aula_id"
+    docente ||--o{ coordinacion : "docente_id"
+    grado ||--o{ coordinacion : "grado_id"
+    periodo_academico ||--o{ coordinacion : "periodo_id"
+    periodo_academico {
+        bigint id PK
+        varchar nombre UK
+        tinyint en_curso_unico UK
+    }
+    subperiodo {
+        bigint id PK
+        bigint periodo_id FK
+    }
+    grado {
+        bigint id PK
+    }
+    seccion {
+        bigint id PK
+        varchar nombre UK
+    }
+    aula {
+        bigint id PK
+        bigint periodo_id FK
+        bigint grado_id FK
+        bigint seccion_id FK
+        bigint tutor_docente_id FK
+    }
+    coordinacion {
+        bigint id PK
+        bigint docente_id FK
+        bigint periodo_id FK
+        bigint aula_id FK
+        bigint grado_id FK
+    }
+    docente {
+        bigint id PK
+    }
